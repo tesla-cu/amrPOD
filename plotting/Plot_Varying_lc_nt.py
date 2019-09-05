@@ -162,6 +162,8 @@ def Plot_Varying_lc_nt(txtdir):
 	plt.title('A Unaltered RMS')
 	plt.set_cmap('bwr')
 
+	plt.close('all')
+
 
 	
 	return fig_R, fig_R_imp_rms, fig_R_unalt_rms, fig_Phi_1, fig_Phi_1_imp_rms, fig_Phi_1_unalt_rms, fig_Phi_5, fig_Phi_5_imp_rms, fig_Phi_5_unalt_rms, fig_A, fig_A_imp_rms, fig_A_unalt_rms

@@ -4,6 +4,8 @@ import multiprocessing as mp
 import os
 import sys
 from numpy import linalg as LA
+sys.path.insert(1, '../source/')
+sys.path.insert(1, '../plotting/')
 from Compute_POD import Compute_POD
 from Plot_Varying_rc_nt import Plot_Varying_rc_nt
 

@@ -4,11 +4,13 @@ import multiprocessing as mp
 import os
 import sys
 from numpy import linalg as LA
+sys.path.insert(1, '../source/')
+sys.path.insert(1, '../plotting/')
 from Compute_POD import Compute_POD
 from Plot_Varying_level_comp import Plot_Varying_level_comp
 
 def parallel_run(args):
-   return Compute_POD(*args)
+    return Compute_POD(*args)
 
 if __name__ == '__main__':
 
@@ -17,7 +19,7 @@ if __name__ == '__main__':
         ny                         = 32
         nz                         = 1
         finest                     = 2
-        nsample                    = 2
+        nsample                    = 1
         nlev                       = finest+1
         nt                         = 25  
         ndim_driver                = 2
@@ -26,8 +28,8 @@ if __name__ == '__main__':
         for i in range(nlev):
             d_l[i]    = (2**ndim_driver)**(finest-i) 
         
-        l_frac_0     = np.arange(.25, .5, .025)
-        l_frac_1     = np.arange(.25, .5, .025)
+        l_frac_0     = np.arange(.25, .5025, .25)
+        l_frac_1     = np.arange(.25, .5025, .25)
         rc_arr       = np.zeros((np.size(l_frac_0), np.size(l_frac_1)))
 
         lc_fracs_arr             = np.zeros((4, 3))
@@ -74,7 +76,7 @@ if __name__ == '__main__':
 
                 # Start parallel processing
                 nthread = mp.cpu_count()
-                nthread = 2
+                nthread = 1
                 print('starting pool with %i threads ...' % nthread)
                 pool = mp.Pool(processes=nthread)
 

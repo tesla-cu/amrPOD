@@ -1,0 +1,7 @@
+Data Generated: True
+finest: 2
+samples: 1
+nx: 32
+ny: 32
+nz: 1
+nt: 25
