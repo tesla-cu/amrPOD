@@ -14,7 +14,7 @@ from Phi_TC  import   compute_Phi_TC
 from A_CPU   import   compute_A_CPU
 from A_TC    import   compute_A_TC
 
-def Compute_POD(generate_data, nx, ny, nz, finest, l_fracs, lc_fracs, nt):
+def Compute_POD(gen_data, nx, ny, nz, finest, l_fracs, lc_fracs, nt, TC_CPU='TC', amr_datadir=None):
  
         nspat             = nx*ny*nz    
         nlev              = finest + 1
@@ -29,13 +29,13 @@ def Compute_POD(generate_data, nx, ny, nz, finest, l_fracs, lc_fracs, nt):
         levels = np.arange(0, nlev)
         
         for i in range(nlev):
-                 c_l[i]    = 2**(finest-i)                  # Was c_reshape
-                 d_l[i]    = (2**ndim)**(finest-i)  # Was c
+            c_l[i]    = 2**(finest-i)          # Was c_reshape
+            d_l[i]    = (2**ndim)**(finest-i)  # Was c
 
-        print('Computing for nt = %i, l_0=%0.8f, l_1 = %0.8f, l_2 = %0.8f' % (nt, l_fracs[0],l_fracs[1], l_fracs[2]))
+        # print('Computing for nt = %i, l_0=%0.8f, l_1 = %0.8f, l_2 = %0.8f' % (nt, l_fracs[0],l_fracs[1], l_fracs[2]))
 
         #--------- Load or generate data
-        if generate_data:
+        if gen_data:
                 X_grid = GridGen_Modified(nx, ny, nz, nt, c_l, d_l, l_fracs, lc_fracs)
                 X      = X_grid
 

@@ -2,10 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt 
 import random as rand
 
-import numpy as np
-import matplotlib.pyplot as plt 
-import random as rand
-
 def GridGen_Modified(nx, ny, nz, nt, c_l, d_l, l_arr, lc_arr):
 
         # ---------- Arguments ------------------------------------------
