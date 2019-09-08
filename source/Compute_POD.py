@@ -41,7 +41,7 @@ def Compute_POD(gen_grid, nx, ny, nz, finest, l_fracs, lc_fracs, nt, TC_CPU='TC'
 
         if gen_grid:
             grid = GenGrid(nx, ny, nz, c_l, d_l, l_fracs, lc_fracs)
-            data = grid
+            data = grid 
         else:
             print('need to write this code!!')
             sys.exit()
@@ -119,10 +119,10 @@ def Compute_POD(gen_grid, nx, ny, nz, finest, l_fracs, lc_fracs, nt, TC_CPU='TC'
         # Strategy: simply add fractions for each time step then average
         for l in levels:
             l_comp[l] += np.sum(X_grid[:,n] == l)/nspat
-        #print(l_comp)
 
     # Take average
     l_comp = l_comp/nt
+    # print(l_comp)
 
     # Compute lc_comp from grid_lc
     for l in levels:
@@ -136,12 +136,10 @@ def Compute_POD(gen_grid, nx, ny, nz, finest, l_fracs, lc_fracs, nt, TC_CPU='TC'
     X_tp             = np.transpose(X)
     R                = np.matmul(X_tp, X)
     Lambda, Psi      = LA.eig(R)
-    Lambda_inv_sqrt  = 1/np.sqrt(Lambda)
-    Lambda_diag      = np.diag(Lambda_inv_sqrt)
+    Lambda_diag      = np.diag(Lambda)
     Phi              = np.matmul(X,Psi)
-    Phi              = np.matmul(Phi, Lambda_diag)
+    Phi              = np.matmul(Phi, 1/np.sqrt(Lambda_diag))
     A                = np.matmul(X_tp, Phi)
-    Lambda           = np.diag(Lambda)
 
     #--------- Get CPU time and time complexity for R
     # time_R_imp[int_arr], time_R_unalt[int_arr], time_R_theory[int_arr] = compute_R_CPU(X, X_grid, R, d_l, nt, nspat)
