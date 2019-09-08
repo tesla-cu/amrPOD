@@ -22,16 +22,16 @@ if __name__ == '__main__':
     print('starting script to perform POD on AMR grids ...')
 
     # ---------- User defined inputs -------------------------------- 
-    gen_data    = True  # are we generating synthetic data?
+    gen_grid    = True  # are we generating synthetic data?
     compute_tc  = True  # are we computing the time complexity?
     compute_cpu = False # are we computing the cpu time?
-    nx          = 32    # x spatial points                  
-    ny          = 32    # y spatial points
+    nx          = 64    # x spatial points                  
+    ny          = 64    # y spatial points
     nz          = 1     # z spatial points
     finest      = 1     # finest level of AMR in the domain
     nsample     = 8     # number of samples for each parameter set
-    nt_arr      = np.arange(10, 21, 10)     # spanning nt
-    l1_arr      = np.arange(0.0, 0.75, .25) # spanning l1
+    nt_arr      = np.arange(10, 21, 5)     # spanning nt
+    l1_arr      = np.arange(0.0, 0.01+0.0625, .0625) # spanning l1
     lcs         = np.zeros((finest+1)) # fraction of grid that stays constant in time
     # lc_fracs     = np.array([1/16, 0/16, 0/16])
 
@@ -61,7 +61,7 @@ if __name__ == '__main__':
         os.mkdir(datadir)
 
     # Directory that describes the study we are looking at
-    studydir = datadir + 'nt_l1/'
+    studydir = datadir + 'nt_l1_small/'
     if not os.path.exists(studydir):
         os.mkdir(studydir)
 
@@ -129,8 +129,8 @@ if __name__ == '__main__':
     # TC_A_unalt_rms     = np.zeros((np.size(rc_arr), np.size(nt_arr)))
 
     # Start parallel processing
-    nthread = mp.cpu_count()
-    # nthread = 2
+    # nthread = mp.cpu_count()
+    nthread = 1
     print('starting pool with %i threads ...' % nthread)
     pool = mp.Pool(processes=nthread)
 
@@ -149,10 +149,10 @@ if __name__ == '__main__':
             if compute_tc:
                 # Generate tuple that stores all relevant parameters
                 #    - note, we need list of these equal to number of samples
-                if gen_data:
-                    arg_tuple = (gen_data, nx, ny, nz, finest, ls, lcs, nt)
+                if gen_grid:
+                    arg_tuple = (gen_grid, nx, ny, nz, finest, ls, lcs, nt)
                 else:
-                    arg_tuple = (gen_data, nx, ny, nz, finest, ls, lcs, nt, \
+                    arg_tuple = (gen_grid, nx, ny, nz, finest, ls, lcs, nt, \
                         'TC', amr_datadir)
                 arg_list = []
                 [arg_list.append(arg_tuple) for i in range(nsample)]
@@ -171,8 +171,8 @@ if __name__ == '__main__':
 
                     res_avg = np.mean(res)
                     res_rms = np.std(res-res_avg)
-                    print('res_avg = ', res_avg)
-                    print('res_rms =', res_rms)
+                    # print('res_avg = ', res_avg)
+                    # print('res_rms =', res_rms)
 
                     if   i==0: 
                         TC_avg_imp[ixval, iyval, 0]   = res_avg
@@ -199,7 +199,60 @@ if __name__ == '__main__':
                         TC_avg_unalt[ixval, iyval, 3] = res_avg
                         TC_rms_unalt[ixval, iyval, 3] = res_rms
 
+            # ========== Compute CPU time
+            if compute_cpu:
+                # Generate tuple that stores all relevant parameters
+                #    - note, we need list of these equal to number of samples
+                if gen_grid:
+                    arg_tuple = (gen_grid, nx, ny, nz, finest, ls, lcs, nt, \
+                        'CPU')
+                else:
+                    arg_tuple = (gen_grid, nx, ny, nz, finest, ls, lcs, nt, \
+                        'CPU', amr_datadir)
+                arg_list = []
+                [arg_list.append(arg_tuple) for i in range(nsample)]
+                # print(arg_list)
 
+                # Farm out nsample to each processor
+                res_tuple = pool.map(parallel_run, arg_list)
+                # print('res_tuple = ', res_tuple)
+                # print('comp ratio = ', rc_arr[irc_arr])
+
+                for i in range(8):
+                    res = np.zeros((nsample))
+
+                    for j in range(nsample):
+                            res[j] = res_tuple[j][i]
+
+                    res_avg = np.mean(res)
+                    res_rms = np.std(res-res_avg)
+                    # print('res_avg = ', res_avg)
+                    # print('res_rms =', res_rms)
+
+                    if   i==0: 
+                        CPU_avg_imp[ixval, iyval, 0]   = res_avg
+                        CPU_rms_imp[ixval, iyval, 0]   = res_rms
+                    elif i==1: 
+                        CPU_avg_unalt[ixval, iyval, 0] = res_avg
+                        CPU_rms_unalt[ixval, iyval, 0] = res_rms
+                    elif i==2: 
+                        CPU_avg_imp[ixval, iyval, 1]   = res_avg
+                        CPU_rms_imp[ixval, iyval, 1]   = res_rms
+                    elif i==3: 
+                        CPU_avg_unalt[ixval, iyval, 1] = res_avg
+                        CPU_rms_unalt[ixval, iyval, 1] = res_rms
+                    elif i==4: 
+                        CPU_avg_imp[ixval, iyval, 2]   = res_avg
+                        CPU_rms_imp[ixval, iyval, 2]   = res_rms
+                    elif i==5: 
+                        CPU_avg_unalt[ixval, iyval, 2] = res_avg
+                        CPU_rms_unalt[ixval, iyval, 2] = res_rms
+                    elif i==6: 
+                        CPU_avg_imp[ixval, iyval, 3]   = res_avg
+                        CPU_rms_imp[ixval, iyval, 3]   = res_rms
+                    elif i==7: 
+                        CPU_avg_unalt[ixval, iyval, 3] = res_avg
+                        CPU_rms_unalt[ixval, iyval, 3] = res_rms
 
     pool.close()
     pool.join()
@@ -208,7 +261,7 @@ if __name__ == '__main__':
 
     # Write out data from this run
     sim_info = open(txtdir + '/sim_info.txt', 'w')
-    sim_info.write("gen_data: %s\n" % gen_data)
+    sim_info.write("gen_grid: %s\n" % gen_grid)
     sim_info.write("finest:   %i\n" % finest)
     sim_info.write("nsample:  %i\n" % nsample)
     sim_info.write("nx:       %i\n" % nx)

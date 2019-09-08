@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt 
+import matplotlib.ticker as ticker
 import os
 import sys
 
@@ -7,20 +8,86 @@ def gen_fig(num, den, imgdir, figfile, xaxis, yaxis, xlabel, ylabel):
 	# num - numerator of images
 	# den - denomenator for normalization
 
+	# img = np.transpose(np.divide(num, den))
 	img = np.divide(num, den)
 	Xaxis, Yaxis = np.meshgrid(xaxis, yaxis, copy=False, indexing='ij')
 	cont_levs = 100
+	xmin = np.min(xaxis)
+	xmax = np.max(xaxis)
+	ymin = np.min(yaxis)
+	ymax = np.max(yaxis)
 
-	fig = plt.figure()
-	plt.contourf(Xaxis, Yaxis, img, cont_levs, origin='lower')
-	cbar = plt.colorbar()
+
+	fig = plt.figure(clear=True)
+	ax = fig.add_subplot(1,1,1)
+
+	# plt.contourf(Xaxis, Yaxis, img, cont_levs, origin='lower')
+	im = ax.contourf(Xaxis, Yaxis, img, cont_levs, origin='lower', \
+		extent=[xmin,xmax,ymin,ymax], cmap='bwr')
+	# im = ax.imshow(img, aspect='auto', origin='lower', \
+	# 	extent=[xmin,xmax,ymin,ymax], cmap='bwr')
+	# im = ax.imshow(img, aspect='auto', origin='lower')
+	cbar = ax.figure.colorbar(im, ax=ax)
+	# cbar = plt.colorbar()
 	# cbar.set_label('${T_{imp}}/{T_{unalt}}$')
-	plt.xticks(xaxis)
-	plt.yticks(yaxis)
-	plt.xlabel(xlabel)
-	plt.ylabel(ylabel)
-	plt.title(figfile)
-	plt.set_cmap('bwr')
+	# plt.xticks(xaxis)
+	# plt.yticks(yaxis)
+	# plt.xlabel(xlabel)
+	# plt.ylabel(ylabel)
+	# plt.title(figfile)
+
+	# ax.set_xticks(xaxis)
+	# ax.set_yticks(yaxis)
+
+	# ax.set_xticks(xaxis-2.5, minor=True)
+	# ax.set_yticks(yaxis-.03125, minor=True)
+
+	# ax.xaxis.set_major_locator(plt.NullLocator())
+	# ax.xaxis.set_major_formatter(plt.NullFormatter())
+	# ax.yaxis.set_major_locator(plt.NullLocator())
+	# ax.yaxis.set_major_formatter(plt.NullFormatter())
+
+	ax.set_xticks(xaxis)
+	ax.set_yticks(yaxis)
+	ax.set_xlabel(xlabel)
+	ax.set_ylabel(ylabel)
+
+	# ax.set_yticks([0.5,1.5], minor=True)
+
+	# ax.set_xticklabels(['10','15','20'], minor=True)
+	# ax.set_yticklabels(['0','1'])
+
+    # Turn spines off and create white grid.
+	# for edge, spine in ax.spines.items():
+	# 	spine.set_visible(False)
+
+	
+
+	# plt.setp(ax.get_xticklabels(), ha="right")
+
+	# Hide major tick labels
+	# ax.set_xticklabels('')
+	# ax.set_yticklabels('')
+	# ax.tick_params(axis='both', which	='minor')
+
+	# # Customize minor tick labels
+	# ax.set_xticks(xaxis + (np.diff(xaxis[0:2])/2.0),      minor=True)
+	# ax.set_xticklabels(['10','15','20'], minor=True)
+
+
+	# # Hide major tick labels
+	# ax.xaxis.set_major_formatter(ticker.NullFormatter())
+
+	# # Customize minor tick labels
+	# ax.xaxis.set_minor_locator(ticker.FixedLocator(xaxis))
+	# ax.xaxis.set_minor_formatter(ticker.FixedFormatter(['10','15','20']))
+
+
+
+	# ax.tick_params(ha='right')
+	# for label in ax.get_xticklabels():
+	# 	label.set_horizontalalignment('right')
+	# plt.set_cmap('bwr')
 	plt.savefig(imgdir + figfile, dpi=300)
 	plt.close()
 
@@ -29,20 +96,6 @@ def gen_fig(num, den, imgdir, figfile, xaxis, yaxis, xlabel, ylabel):
 
 
 def plot_single(txtdir, imgdir, compute_tc, compute_cpu, xaxis, yaxis, xlabel, ylabel):
-
-	# Find all the txt files for computation speed
-	# txtfiles = []
-	# for root, dirs, files in os.walk(txtdir):
-	# 	for file in files:
-	# 		if '.txt' in file and not file=='sim_info.txt':
-	# 			txtfiles.append(file)
-	
-	# print(txtfiles)
-
-	# if any(txtfiles.startswith('TC')):
-	# 	compute_tc = True
-
-	# print(compute_tc)
 
 	# ========== Load data
 	if compute_tc:

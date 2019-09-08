@@ -101,7 +101,7 @@ def compute_A_TC(X_grid, R, d_l, nt, nspat, finest):
                         break
 
         Precomp_count += A_count_imp_access + A_count_imp_arith + A_count_imp_assign + A_count_imp_logtest
-        print('Precomp ops = ', Precomp_count)
+        # print('Precomp ops = ', Precomp_count)
 
 
 
@@ -182,7 +182,7 @@ def compute_A_TC(X_grid, R, d_l, nt, nspat, finest):
         A_count_unalt = A_count_unalt_access + A_count_unalt_assign + A_count_unalt_arith
         A_count_imp   = A_count_imp_access + A_count_imp_assign + A_count_imp_arith + A_count_imp_logtest
 
-        print('jloop_count = ', jloop_count)
-        print('if_X_grid_count = ', if_X_grid_count)
+        # print('jloop_count = ', jloop_count)
+        # print('if_X_grid_count = ', if_X_grid_count)
 
         return A_count_imp, A_count_unalt 
