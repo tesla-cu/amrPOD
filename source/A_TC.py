@@ -1,6 +1,6 @@
 import numpy as np
 
-def compute_A_TC(X_grid, R, d_l, nt, nspat, finest):
+def compute_A_TC(X_grid, d_l, nt, nspat, finest):
 
         A_count_unalt        = 0
         A_count_unalt_arith  = 0

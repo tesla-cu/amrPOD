@@ -1,9 +1,105 @@
 import numpy as np
 import time
-from Compute_H import compute_H
-from find_lvl_indices import find_lvl_indices
+# from Compute_H import compute_H
+# from find_lvl_indices import find_lvl_indices
 
-def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat):
+
+ # X_grid - X matrix with all grid levels
+ # i      - spatial location
+ # idx    - location within lvl=0 block
+ # n      - time step
+ # clvl   - current lvl within recursion
+ # finest - finest lvl 
+ # d_l    - array of c 
+ # G_mat  - matrix holding elements that contribute to particular lvl within coarse cell
+ # nl     - matrix holding number of cells for each lvl within coarse cell
+
+def find_lvl_indices(X_grid, i, idx, n, clvl, finest, d_l, G_mat, nl):
+
+	print(i)
+	print(X_grid[i,:])
+
+	if clvl < finest-1:
+		for j in range(i, i+d_l[clvl-1]-1, d_l[clvl]):
+			#print(j)
+			lvl = X_grid[j,n]
+
+			if lvl == clvl:
+				nl[clvl, idx] += 1
+				G_mat[clvl, idx, nl[clvl, idx]-1] = n
+
+			else:
+				G_mat, nl = find_lvl_indices(X_grid, j, idx, n, clvl+1, finest, d_l, G_mat, nl)
+			idx += d_l[clvl+1]
+
+	else:
+		for j in range(i, i+d_l[clvl-1]-1, d_l[clvl]):
+			lvl = X_grid[j,n]
+			if lvl == clvl:
+				# print(nl)
+				nl[clvl, idx] += 1
+				G_mat[clvl, idx, nl[clvl, idx]-1] = n
+			else:
+				nl[finest, idx] += 1
+				G_mat[finest, idx, nl[finest, idx]-1] = n
+
+			idx += 1
+
+	return G_mat, nl
+
+def compute_H(X, Psi, i, idx, n, nt, clvl, finest, d_l, G_mat, nl, H):
+    
+    if clvl < finest-1:
+        for j in range(i, i+d_l[clvl-1]-1, d_l[clvl]):
+
+            if nl[clvl, idx] > 0:
+
+                l_sum = 0
+                for m in range(nl[clvl, idx]):
+                    k = G_mat[clvl, idx, m]
+                    l_sum += X[j,k] * Psi[k,n]
+
+                l_idx = int([j-i]/d_l[clvl])
+                for m in range(l_idx*d_l[clvl], (l_idx+1)*d_l[clvl]):
+                    H[m, clvl] = l_sum
+
+            nccells = 0
+            for l in range(clvl+1):
+                nccells += nl[l, idx]
+
+            if nccells < nt:
+                H = compute_H(X, Psi, j, idx, n, nt, clvl+1, finest, d_l, G_mat, nl, H)
+            idx += d_l[clvl + 1]
+            
+    else:
+
+        for j in range(i, i+d_l[clvl-1]-1, d_l[clvl]):
+
+            if nl[clvl, idx] > 0:
+                l_sum = 0
+                for m in range(nl[clvl, idx]):
+
+                    k = G_mat[clvl, idx, m]
+                    l_sum += X[j,k] * Psi[k,n]
+
+                for m in range((idx)*d_l[clvl], (idx+1)*d_l[clvl]):
+                    H[m, clvl] = l_sum
+
+            if nl[finest, idx] > 0:
+
+                for k in range(j, j+d_l[clvl]):
+                    l_sum = 0
+                    for m in range(nl[finest, idx]):
+                        p = G_mat[finest, idx, m]
+                        l_sum += X[k,p] * Psi[p,n]
+
+                    H[k-j+d_l[finest-1] * (idx), finest] = l_sum
+
+            idx += 1
+
+    return H
+
+def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest):
 
 #--------- Unaltered 
 
@@ -18,6 +114,7 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat):
 	time_Phi_unalt = time.time() - tic
 
 	tic = time.time()
+
 #------------------
 #--------- Method 1
 #------------------ 
@@ -51,117 +148,6 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat):
 					Phi_imp[j:j+G[j], i] = phi_sum / np.sqrt(Lambda[i,i])
 					j = j + G[j]
 
-# #------------------
-# #--------- Method 4
-# #------------------ 
-
-# 	elif method == 4:
-
-# 		idx_arr = np.arange(0, nt)
-# 		Phi_imp = np.zeros((nspat, nt))
-# 		rat     = int(d_l[0]/d_l[1])
-
-# 		for i in range(0, nspat, d_l[0]):
-# 			G0_mat = np.zeros((nt), dtype=int)
-# 			G1_mat = np.zeros((rat, nt), dtype=int)
-# 			G2_mat = np.zeros((rat*rat, nt), dtype=int)
-# 			G3_mat = np.zeros((rat*rat, nt), dtype=int)
-
-# 			nl0    = -1
-# 			nl1	   = -1*np.ones((rat), dtype=int)
-# 			nl2    = -1*np.ones((rat*rat), dtype=int)
-# 			nl3    = -1*np.ones((rat*rat), dtype=int)
-
-# 			for n in range(nt):
-# 				il1 = 0
-# 				il2 = 0
-# 				lvl = X_grid[i,n]
-
-# 				if lvl == 0:
-# 					nl0 += 1
-# 					G0_mat[nl0] = n
-# 				else:
-# 					for j in range(i, i+d_l[0]-1, d_l[1]): # Check -1
-# 						lvl = X_grid[j,n]
-
-# 						if lvl == 1:
-# 							nl1[il1] += 1
-# 							G1_mat[il1, nl1[il1]] = n
-
-# 							il1 += 1
-# 							il2 += d_l[2]
-
-# 						else:
-# 							for k in range(j, j+d_l[1]-1, d_l[2]):
-# 								lvl = X_grid[k,n]
-
-# 								if lvl == 2:
-# 									nl2[il2] += 1
-# 									G2_mat[il2, nl2[il2]] = n
-
-# 								else:
-# 									nl3[il2] += 1
-# 									#print(il2)
-# 									#print('\n', nl3.shape)
-# 									print(nl3[il2])
-# 									print('\n', G3_mat.shape)
-# 									G3_mat[il2, nl3[il2]] = n
-
-# 							il2 += 1
-
-# 			for m in range(nt):
-# 				il1 = 0
-# 				il2 = 0
-# 				H   = np.zeros((d_l[0], 4))
-
-# 				if nl0 > 0:
-# 					l0_sum = 0
-# 					for n in range(nl0):
-# 						idx = G0_mat[n]
-# 						l0_sum += X[i,idx] * Psi[idx,m]
-# 					for n in range(d_l[0]):
-# 						H[n,0] = l0_sum
-
-# 				if nl0 < nt:
-# 					for j in range(i, i+d_l[0]-1, d_l[1]):
-# 						if nl1[il1] > 0:
-# 							l1_sum = 0
-# 							for n in range(nl1[il1]):
-# 								idx = G1_mat[il1,n]
-# 								l1_sum += X[j,idx] * Psi[idx,m]
-# 							for n in range(j-i+1, j-i+d_l[1]):
-# 								H[n,1] = l1_sum
-
-# 						if nl0 + nl1[il1] < nt:
-# 							for k in range(j, j+d_l[1]-1, d_l[2]):
-# 								if nl2[il2] > 0:
-# 									l2_sum = 0
-# 									for n in range(nl2[il2]):
-# 										idx = G2_mat[il2,n]
-# 										l2_sum += X[k,idx] * Psi[idx,m]
-# 									for n in range(k-i+1, k-i+d_l[2]):
-# 										H[n,2] = l2_sum
-
-# 								if nl3[il2] > 0:
-# 									for l in range(k, k+d_l[2]-1):
-# 										l3_sum = 0
-# 										for n in range(nl3[il2]):
-# 											idx = G3_mat[il2, n]
-# 											l3_sum += X[l,idx] * Psi[idx,m]
-# 										H[l-i+1,4] = l3_sum
-
-# 								il2 += 1
-# 						else:
-# 							il2 += d_l[2]
-
-# 						il1 += 1
-
-# 				for n in range(d_l[0]):
-# 					H_sum = 0
-# 					for l in range(4):
-# 						H_sum += H[n,l]
-# 					Phi_imp[n+i-1,m] = H_sum/np.sqrt(Lambda[m,m])
-
 #------------------
 #--------- Method 5
 #------------------ 
@@ -169,7 +155,6 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat):
 	elif method == 5:
 
 		Phi_imp = np.zeros((nspat, nt))
-		rat = d_l[0]/d_l[1]
 		finest = len(d_l) - 1
 
 		for i in range(0, nspat, d_l[0]):
@@ -226,12 +211,12 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat):
 
 	time_Phi_imp = time.time() - tic
 
-	if np.max(abs(np.subtract(Phi_imp, Phi))) < 1e-2:
+	if np.max(abs(np.subtract(Phi_imp, Phi))) < 1e-8:
 		print('The implemented Phi is correct')
 	else:
 		print('The implemented Phi is incorrect')
 
-	if np.max(abs(np.subtract(Phi_unalt, Phi))) < 1e-2:
+	if np.max(abs(np.subtract(Phi_unalt, Phi))) < 1e-8:
 		print('The unaltered Phi is correct')
 	else:
 		print('The unaltered Phi is incorrect')

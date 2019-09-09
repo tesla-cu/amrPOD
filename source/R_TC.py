@@ -1,7 +1,7 @@
 import numpy as np
 import time
 
-def compute_R_TC(X_grid, R, d_l, nt, nspat):
+def compute_R_TC(X_grid, d_l, nt, nspat):
 
 
 	R_count_unalt        = 0

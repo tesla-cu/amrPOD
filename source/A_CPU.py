@@ -1,7 +1,7 @@
 import numpy as np
 import time
 
-def compute_A_CPU(X, X_grid, Phi, A, d_l, nt, nspat):
+def compute_A_CPU(X, X_grid, Phi, A, d_l, nt, nspat, finest):
 
 #--------- Unaltered 
 
@@ -82,17 +82,17 @@ def compute_A_CPU(X, X_grid, Phi, A, d_l, nt, nspat):
 
 #--------- Check matrices for correctness
 
-	if np.max(abs(np.subtract(A_imp, A))) < 1e-6:
+	if np.max(abs(np.subtract(A_imp, A))) < 1e-8:
 		print('The implemented A is correct')
 	else:
 		print('The implemented A is incorrect')
 
-	if np.max(abs(np.subtract(A_unalt, A))) < 1e-6:
+	if np.max(abs(np.subtract(A_unalt, A))) < 1e-8:
 		print('The unaltered A is correct')
 	else:
 		print('The unaltered A is incorrect')
 
-	return time_A_unalt, time_A_imp, time_A_theory
+	return time_A_unalt, time_A_imp
 
 
 

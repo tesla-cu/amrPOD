@@ -34,7 +34,7 @@ def Compute_POD(gen_grid, nx, ny, nz, finest, l_fracs, lc_fracs, nt, TC_CPU='TC'
 
     # print('Computing for nt = %i, l_0=%0.8f, l_1 = %0.8f, l_2 = %0.8f' % (nt, l_fracs[0],l_fracs[1], l_fracs[2]))
 
-    #--------- Load or generate data
+    # ---------- Load or generate data
     X      = np.zeros((nspat,nt))
     X_grid = np.zeros((nspat,nt), dtype=int)
     for n in range(nt):
@@ -94,75 +94,61 @@ def Compute_POD(gen_grid, nx, ny, nz, finest, l_fracs, lc_fracs, nt, TC_CPU='TC'
         X[:,n]      = data_1D
         X_grid[:,n] = grid_1D
 
-    #--------- Compute grid information from X_grid
+    # ---------- Compute grid information from X_grid
     l_comp  = np.zeros((nlev)) # computed level fractions
     lc_comp = np.zeros((nlev)) # computed level constant fractions
-
-    # Place holder for 
-    grid_lc = np.zeros((nlev))
 
     # Iterate through all time steps
     for n in range(nt):
 
-        # Find fraction of grid that is lc based on if there is a
-        # difference in level from grid_lc. 
-        #
-        # Strategy: if there is a difference, mark that grid cell in 
-        # grid_lc as -1, so not there will also be a difference for the
-        # rest of time. At the end, we will just look at the final grid_lc
-        # to see how many cells of each level there are
-        #grid_diff = X_grid[:,n] - grid_lc
-        #grid_lc[grid_diff != 0] = -1
-
-        # Find fraction of grid at a particular level. 
-        #
-        # Strategy: simply add fractions for each time step then average
+        # Find fraction of grid at a particular level. Add fractions
+        # for each time step then average
         for l in levels:
             l_comp[l] += np.sum(X_grid[:,n] == l)/nspat
 
     # Take average
     l_comp = l_comp/nt
-    # print(l_comp)
+    # print("l_comp = ", l_comp)
 
-    # Compute lc_comp from grid_lc
+    # Compute lc_comp
     for l in levels:
         for i in range(nspat):
             if np.all(X_grid[i,:] == l):
                 lc_comp[l] += 1
     lc_comp = lc_comp/nspat
-    # print('lc_comp= ', lc_comp)
+    # print("lc_comp = ", lc_comp)
 
-    #--------- Calculate POD with matrix operations
-    X_tp             = np.transpose(X)
-    R                = np.matmul(X_tp, X)
-    Lambda, Psi      = LA.eig(R)
-    Lambda_diag      = np.diag(Lambda)
-    Phi              = np.matmul(X,Psi)
-    Phi              = np.matmul(Phi, 1/np.sqrt(Lambda_diag))
-    A                = np.matmul(X_tp, Phi)
-
-    #--------- Get CPU time and time complexity for R
-    # time_R_imp[int_arr], time_R_unalt[int_arr], time_R_theory[int_arr] = compute_R_CPU(X, X_grid, R, d_l, nt, nspat)
-    TC_R_imp, TC_R_unalt = compute_R_TC(X_grid, R, d_l, nt, nspat)
-
-    #--------- Get CPU time and time complexity for Phi Method 1
-    method = 1
-    # time_Phi_1_imp[int_arr], time_Phi_1_unalt[int_arr] = compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat)
-    TC_Phi_1_imp, TC_Phi_1_unalt     = compute_Phi_TC(X_grid, method, d_l, nt, nspat, finest)
-
-    #--------- Get CPU time and time complexity for Phi Method 4
-    # method = 4
-    # time_Phi_4_imp[int_arr], time_Phi_4_unalt[int_arr] = compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat)
-    # TC_Phi_4_imp, TC_Phi_4_unalt    = compute_Phi_TC(X_grid, method, d_l, nt, nspat)
-
-    #--------- Get CPU time and time complexity for Phi Method 4
-    method = 5
-    # time_Phi_5_imp, time_Phi_5_unalt = compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat)
-    TC_Phi_5_imp, TC_Phi_5_unalt   = compute_Phi_TC(X_grid, method, d_l, nt, nspat, finest)
+    # ---------- Calculate POD with matrix operations
+    X_tp        = np.transpose(X)
+    R           = np.matmul(X_tp, X)
+    Lambda, Psi = LA.eig(R)
+    Phi         = np.matmul(X,Psi)
+    Phi         = np.matmul(Phi, np.diag(1/np.sqrt(Lambda)))
+    A           = np.matmul(X_tp, Phi)
+    Lambda      = np.diag(Lambda) # make this a matrix
 
 
-    #--------- Get CPU time and time complexity for A
-    # time_A_unalt[int_arr], time_A_imp[int_arr], time_A_theory[int_arr] = compute_A_CPU(X, X_grid, Phi, A, d_l, nt, nspat)
-    TC_A_imp, TC_A_unalt = compute_A_TC(X_grid, R, d_l, nt, nspat, finest)
+    # ---------- Compute time complexity of each operation
+    if TC_CPU == 'TC':
 
-    return TC_R_imp, TC_R_unalt, TC_Phi_1_imp, TC_Phi_1_unalt, TC_Phi_5_imp, TC_Phi_5_unalt, TC_A_imp, TC_A_unalt
+        R_imp,  R_unalt  = compute_R_TC(X_grid, d_l, nt, nspat)
+        P1_imp, P1_unalt = compute_Phi_TC(X_grid, 1, d_l, nt, nspat, finest)
+        P2_imp, P2_unalt = compute_Phi_TC(X_grid, 5, d_l, nt, nspat, finest)
+        A_imp,  A_unalt  = compute_A_TC(X_grid, d_l, nt, nspat, finest)
+
+        return R_imp, R_unalt, P1_imp, P1_unalt, P2_imp, P2_unalt, A_imp, A_unalt
+
+    # ---------- Compute CPU time of each operation
+    elif TC_CPU == 'CPU':
+
+        R_imp,  R_unalt  = compute_R_CPU(X, X_grid, R, d_l, nt, nspat)
+        P1_imp, P1_unalt = compute_Phi_CPU(X, X_grid, Psi, Lambda, 1, Phi, d_l, nt, nspat, finest)
+        P2_imp, P2_unalt = compute_Phi_CPU(X, X_grid, Psi, Lambda, 5, Phi, d_l, nt, nspat, finest)
+        A_imp,  A_unalt  = compute_A_CPU(X, X_grid, Phi, A, d_l, nt, nspat, finest)
+
+        return R_imp, R_unalt, P1_imp, P1_unalt, P2_imp, P2_unalt, A_imp, A_unalt
+
+    else:
+        print("Input must be either 'CPU' or 'TC'")
+        sys.exit()
+

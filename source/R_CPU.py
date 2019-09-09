@@ -130,17 +130,18 @@ def compute_R_CPU(X, X_grid, R, d_l, nt, nspat):
 
 #--------- Check matrices for correctness
 
-	if np.max(abs(np.subtract(R_imp, R))) < 1e-6:
+	if np.max(abs(np.subtract(R_imp, R))) < 1e-8:
 		print('The implemented R is correct')
 	else:
 		print('The implemented R is incorrect')
 
-	if np.max(abs(np.subtract(R_unalt, R))) < 1e-6:
+	if np.max(abs(np.subtract(R_unalt, R))) < 1e-8:
 		print('The unaltered R is correct')
 	else:
 		print('The unaltered R is incorrect')
 
-	return time_imp, time_unalt, time_theory
+	# return time_imp, time_unalt, time_theory
+	return time_imp, time_unalt
 
 	
 
