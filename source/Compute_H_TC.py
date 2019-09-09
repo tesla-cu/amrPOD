@@ -2,17 +2,17 @@ import numpy as np
 
 def compute_H_TC(X, i, idx, n, nt, clvl, finest, d_l, G_mat, nl, H, Phi_count_imp_arith, Phi_count_imp_access, Phi_count_imp_assign, Phi_count_imp_logtest, Phi_count_imp_func):
     
+    Phi_count_imp_arith   += 1
+    Phi_count_imp_logtest += 1
     if clvl < finest-1:
-        Phi_count_imp_arith   += 1
-        Phi_count_imp_logtest += 1
 
         for j in range(i, i+d_l[clvl-1]-1, d_l[clvl]):
             Phi_count_imp_arith  += 1
             Phi_count_imp_access += 1
 
+            Phi_count_imp_logtest += 1
+            Phi_count_imp_access  += 1
             if nl[clvl, idx] > 0:
-                Phi_count_imp_logtest += 1
-                Phi_count_imp_access  += 1
 
                 l_sum = 0
                 Phi_count_imp_assign += 1
@@ -55,8 +55,8 @@ def compute_H_TC(X, i, idx, n, nt, clvl, finest, d_l, G_mat, nl, H, Phi_count_im
                 Phi_count_imp_arith  += 1
                 Phi_count_imp_assign += 1
 
+            Phi_count_imp_logtest += 1
             if nccells < nt:
-                Phi_count_imp_logtest += 1
 
                 H = compute_H(X, j, idx, n, nt, clvl+1, finest, d_l, G_mat, nl, H, Phi_count_imp_arith, Phi_count_imp_access, Phi_count_imp_assign, Phi_count_imp_logtest, Phi_count_imp_func)
                 Phi_count_imp_func += 1
@@ -74,10 +74,10 @@ def compute_H_TC(X, i, idx, n, nt, clvl, finest, d_l, G_mat, nl, H, Phi_count_im
             Phi_count_imp_arith  += 1
             Phi_count_imp_access += 1
 
+            Phi_count_imp_access  += 1
+            Phi_count_imp_logtest += 1
             if nl[clvl, idx] > 0:
-                Phi_count_imp_access  += 1
-                Phi_count_imp_logtest += 1
-
+                
                 #l_sum = 0
                 Phi_count_imp_assign += 1
 
@@ -102,9 +102,9 @@ def compute_H_TC(X, i, idx, n, nt, clvl, finest, d_l, G_mat, nl, H, Phi_count_im
                     Phi_count_imp_access += 1
                     Phi_count_imp_assign += 1
 
+            Phi_count_imp_access  += 1
+            Phi_count_imp_logtest += 1
             if nl[finest, idx] > 0:
-                Phi_count_imp_access  += 1
-                Phi_count_imp_logtest += 1
 
                 for k in range(j, j+d_l[clvl]):
                     Phi_count_imp_arith  += 1

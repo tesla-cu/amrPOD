@@ -11,10 +11,11 @@ import numpy as np
  # nl     - matrix holding number of cells for each lvl within coarse cell
 
 def find_lvl_indices_TC(X_grid, i, idx, n, clvl, finest, d_l, G_mat, nl, Phi_count_imp_arith, Phi_count_imp_access, Phi_count_imp_assign, Phi_count_imp_logtest, Phi_count_imp_func):
-		
+	
+	Phi_count_imp_arith   += 1
+	Phi_count_imp_logtest += 1
 	if clvl < finest-1:
-		Phi_count_imp_arith   += 1
-		Phi_count_imp_logtest += 1
+		
 
 		for j in range(i, i+d_l[clvl-1]-1, d_l[clvl]):
 			Phi_count_imp_arith  += 1
@@ -24,9 +25,9 @@ def find_lvl_indices_TC(X_grid, i, idx, n, clvl, finest, d_l, G_mat, nl, Phi_cou
 			Phi_count_imp_access += 1
 			Phi_count_imp_assign += 1
 
+			Phi_count_imp_logtest += 1
 			if lvl == clvl:
-				Phi_count_imp_logtest += 1
-
+				
 				nl[clvl, idx] += 1
 				Phi_count_imp_access += 1
 				Phi_count_imp_assign += 1
@@ -58,8 +59,8 @@ def find_lvl_indices_TC(X_grid, i, idx, n, clvl, finest, d_l, G_mat, nl, Phi_cou
 			Phi_count_imp_access += 1
 			Phi_count_imp_assign += 1
 
+			Phi_count_imp_logtest += 1
 			if lvl == clvl:
-				Phi_count_imp_logtest += 1
 
 				nl[clvl, idx] += 1
 				Phi_count_imp_arith  += 1
