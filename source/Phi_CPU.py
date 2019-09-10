@@ -16,12 +16,9 @@ import time
 
 def find_lvl_indices(X_grid, i, idx, n, clvl, finest, d_l, G_mat, nl):
 
-	print(i)
-	print(X_grid[i,:])
-
 	if clvl < finest-1:
 		for j in range(i, i+d_l[clvl-1]-1, d_l[clvl]):
-			#print(j)
+			
 			lvl = X_grid[j,n]
 
 			if lvl == clvl:
@@ -112,7 +109,6 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest)
 				phi_sum += X[j,k] * Psi[k,i]
 			Phi_unalt[j,i] = phi_sum/np.sqrt(Lambda[i,i])
 	time_Phi_unalt = time.time() - tic
-
 	tic = time.time()
 
 #------------------
@@ -136,6 +132,7 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest)
 			else:
 				break
 
+
 #--------- Compute Phi
 
 		for i in range(nt):
@@ -147,6 +144,52 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest)
 						phi_sum += X[j,k] * Psi[k,i]
 					Phi_imp[j:j+G[j], i] = phi_sum / np.sqrt(Lambda[i,i])
 					j = j + G[j]
+
+
+	if method == 2:
+
+		Phi_imp = np.zeros((nspat, nt))
+
+
+		for i in range(0, nspat, d_l[0]):
+
+			G = np.zeros((d_l[0]), dtype=int)
+
+			idx = 0
+			j = i
+			for ii in range(d_l[0]):
+				
+				if idx < d_l[0]:
+					X_grid_max = X_grid[j,0]
+					for n in range(1,nt):
+						if X_grid[i,n] > X_grid_max:
+							X_grid_max = X_grid[i,n]
+							if X_grid_max == finest:
+								break
+					G_val = d_l[X_grid_max]
+					G[idx] = G_val
+					idx   += G_val
+					j   += G_val
+
+				else:
+					break
+
+#--------- Compute Phi
+
+			for n in range(nt):
+				idx = 0
+				j = i
+				for ii in range(d_l[0]):
+					if idx < d_l[0]:
+						phi_sum = 0
+						for k in range(nt):
+							phi_sum += X[j,k] * Psi[k,n]
+						G_val = G[idx]
+						Phi_imp[j:j+G_val, n] = phi_sum / np.sqrt(Lambda[n,n])
+						j += G_val
+						idx += G_val
+					else:
+						break
 
 #------------------
 #--------- Method 5
@@ -221,7 +264,7 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest)
 	else:
 		print('The unaltered Phi is incorrect')
 
-	return time_Phi_unalt, time_Phi_imp
+	return time_Phi_imp, time_Phi_unalt
 
 
 
