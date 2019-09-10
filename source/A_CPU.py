@@ -1,98 +1,139 @@
+# ================================================= #
+# Code:        Computing A in POD                   #
+# Authors:     Michael Meehan and Sam Simons-Wellin #
+# Institution: University of Colorado Boulder       #
+# Year:        2019                                 #
+# ================================================= #
+
 import numpy as np
 import time
 
+# ================================================================= #
+# Function to compute the covariance A in POD using a standard 
+# matrix operation technique and the new algorithm leveraging AMR
+# repetitions
+#
+# Inputs:
+# - X      : snapshot matrix
+# - X_grid : companion matrix to snapshot matrix that stores grid 
+#            levels instead of solution values
+# - Phi    : spatial mode matrix computed using matrix operations 
+#            (this is used as a check we did the computation right)
+# - A      : temporal coefficent matrix computed using matrix 
+#            operations (this is used as a check we did the 
+#            computation right)
+# - d_l    : number of repeated cells for a given level l (called 
+#            c_\ell^d in the paper)
+# - nt     : number of time steps
+# - nspat  : number of spatial locations
+# - finest : finest AMR grid level
+#
+# Outputs:
+# - time_im : CPU time to compute A using implemented algorithm
+# - time_un : CPU time to compute A using unaltered algorithm
+# ================================================================= #
 def compute_A_CPU(X, X_grid, Phi, A, d_l, nt, nspat, finest):
 
-#--------- Unaltered 
+	# ========== Unaltered Computation ============================ #
 
+	# Initialize timer
 	tic     = time.time()
-	A_unalt = np.zeros((nt, nt))
-	for i in range(nt):
-		for j in range(nt):
+
+	# Initialize A matrix for unaltered computation
+	A_un = np.zeros((nt, nt))
+
+	# Compute A matrix with unaltered algorithm
+	for m in range(nt):     # iterate over nt rows
+		for n in range(nt): # iterate over nt columns
+
+			# Initialize temporary variable to store sum of an 
+			# element of A
 			a_sum = 0
-			for k in range(nspat):
-				a_sum += X[k,i] * Phi[k,j]
-			A_unalt[i,j] = a_sum
-	time_A_unalt = time.time() - tic
 
-#--------- Implemented
+			# Compute inner product
+			for i in range(nspat):
+				a_sum += X[i,m] * Phi[i,n]
 
+			# Assign value of element of A
+			A_un[m,n] = a_sum
+
+	# Compute total cpu time
+	time_un = time.time() - tic
+
+	# ========== Implemented Computation ========================== #
+
+	# Initialize timer
 	tic   = time.time()
-	A_imp = np.zeros((nt,nt))
-	G     = np.zeros(nspat, dtype=int)
+
+	# Initialize R matrix for computation of implemented algorithm
+	A_im = np.zeros((nt, nt))
+
+	# Initialize matrix to store maximum grid level
+	G     = np.zeros((nspat), dtype=int)	
+
+	# Initialize index of spatial location
 	i     = 0
-	for n in range(nspat):
-		if i < nspat:
+
+	# Find the finest cell for all spatial locations
+	for ii in range(nspat): # dummy loop
+		if i < nspat:       # exit loop if we are at the end
+
+			# Initialize max grid level
 			X_grid_max = X_grid[i,0]
+
+			# Find the max grid level for a spatial location
 			for j in range(1,nt):
+
+				# Check if current cell is bigger than current max
 				if X_grid[i,j] > X_grid_max:
 					X_grid_max = X_grid[i,j]
-			G[i]  = d_l[X_grid_max]
-			i    += G[i]
+
+					# If this is the finest, no point in continuing
+					# looking for finer cells
+					if X_grid_max == finest:
+							break
+
+			G[i] =  d_l[X_grid_max] # get # of repeats
+			i    += G[i]            # skip cells that are repeated
 		else:
 			break
 
-	for i in range(nt):
-		for j in range(nt):
+	# Compute elements of A
+	for m in range(nt):     # iterate over rows
+		for n in range(nt): # iterate over columns
+
+			# Initialize temporary variable to store sum of an 
+			# element of A
 			a_sum = 0
-			k     = 0
-			for n in range(nspat):
-				if k < nspat:
-					a_sum += G[k] * X[k,i] * Phi[k,j]
-					k += G[k]
-				else:
-					break
-			A_imp[i,j] = a_sum
-	time_A_imp = time.time() - tic
 
-#--------- Theoretical Computation
+			# Initialize index of spatial location
+			i = 0
 
-	theory_mult = 0
-	theory_add  = 0
-
-	for i in range(nt):
-		for j in range(nt):
-			k = 0
-			for n in range(nt):
-				if k < nspat:
-					theory_mult += 2
-					theory_add  += 1
-					k += G[k]
+			# Compute value of one element in A
+			for ii in range(nspat): # dummy loop
+				if i < nspat:       # exit loop if at end
+					a_sum += G[i]*X[i,m]*Phi[i,n] # weight computation
+					i += G[i]                     # skip repeats
 				else:
 					break
 
-	unalt_mult = nspat * nt**2
-	unalt_add  = nspat * (nt-1) * nt
+			# Assign values of element of R
+			A_im[m,n] = a_sum
 
-#--------- Time for individual operations
+	# Compute total cpu time
+	time_im = time.time() - tic
 
-	B = 0
-	tic = time.time()
-	for i in range(unalt_add):
-		B = B + 1
-	time_add_unalt = time.time() - tic
+	# ========== Check Correctness of Matrices ==================== #
 
-	B = 1.0000001
-	tic = time.time()
-	for i in range(unalt_mult):
-		B = B*1.0000001
-	time_mult_unalt = time.time() - tic
-
-	time_A_theory = (theory_mult/unalt_mult)*time_mult_unalt + (theory_add/unalt_add)*time_add_unalt
-
-#--------- Check matrices for correctness
-
-	if np.max(abs(np.subtract(A_imp, A))) < 1e-8:
+	if np.max(abs(np.subtract(A_im, A))) < 1e-8:
 		print('The implemented A is correct')
 	else:
 		print('The implemented A is incorrect')
 
-	if np.max(abs(np.subtract(A_unalt, A))) < 1e-8:
+	if np.max(abs(np.subtract(A_un, A))) < 1e-8:
 		print('The unaltered A is correct')
 	else:
 		print('The unaltered A is incorrect')
 
-	return time_A_imp, time_A_unalt
-
-
-
+	# Return CPU time of implemented and unaltered algorithm
+	return time_im, time_un
