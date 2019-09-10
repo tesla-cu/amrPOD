@@ -92,7 +92,7 @@ def compute_A_CPU(X, X_grid, Phi, A, d_l, nt, nspat, finest):
 	else:
 		print('The unaltered A is incorrect')
 
-	return time_A_unalt, time_A_imp
+	return time_A_imp, time_A_unalt
 
 
 
