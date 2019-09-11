@@ -125,20 +125,20 @@ def plot_single(txtdir, imgdir, compute_tc, compute_cpu, xaxis, yaxis, xlabel, y
 		CPU_R_rms_imp   = np.loadtxt(txtdir + "/CPU_R_rms_imp.txt")
 		CPU_R_rms_unalt = np.loadtxt(txtdir + "/CPU_R_rms_unalt.txt")
 
-		np.loadtxt(txtdir + "/CPU_P1_avg_imp.txt",   CPU_P1_avg_imp)
-		np.loadtxt(txtdir + "/CPU_P1_avg_unalt.txt", CPU_P1_avg_unalt)
-		np.loadtxt(txtdir + "/CPU_P1_rms_imp.txt",   CPU_P1_rms_imp)
-		np.loadtxt(txtdir + "/CPU_P1_rms_unalt.txt", CPU_P1_rms_unalt)
+		CPU_P1_avg_imp   = np.loadtxt(txtdir + "/CPU_P1_avg_imp.txt")
+		CPU_P1_avg_unalt = np.loadtxt(txtdir + "/CPU_P1_avg_unalt.txt")
+		CPU_P1_rms_imp   = np.loadtxt(txtdir + "/CPU_P1_rms_imp.txt")
+		CPU_P1_rms_unalt = np.loadtxt(txtdir + "/CPU_P1_rms_unalt.txt")
 
-		np.loadtxt(txtdir + "/CPU_P2_avg_imp.txt",   CPU_P2_avg_imp)
-		np.loadtxt(txtdir + "/CPU_P2_avg_unalt.txt", CPU_P2_avg_unalt)
-		np.loadtxt(txtdir + "/CPU_P2_rms_imp.txt",   CPU_P2_rms_imp)
-		np.loadtxt(txtdir + "/CPU_P2_rms_unalt.txt", CPU_P2_rms_unalt)
+		CPU_P2_avg_imp   = np.loadtxt(txtdir + "/CPU_P2_avg_imp.txt")
+		CPU_P2_avg_unalt = np.loadtxt(txtdir + "/CPU_P2_avg_unalt.txt")
+		CPU_P2_rms_imp   = np.loadtxt(txtdir + "/CPU_P2_rms_imp.txt")
+		CPU_P2_rms_unalt = np.loadtxt(txtdir + "/CPU_P2_rms_unalt.txt")
 
-		np.loadtxt(txtdir + "/CPU_A_avg_imp.txt",    CPU_A_avg_imp)
-		np.loadtxt(txtdir + "/CPU_A_avg_unalt.txt",  CPU_A_avg_unalt)
-		np.loadtxt(txtdir + "/CPU_A_rms_imp.txt",    CPU_A_rms_imp)
-		np.loadtxt(txtdir + "/CPU_A_rms_unalt.txt",  CPU_A_rms_unalt)
+		CPU_A_avg_imp   = np.loadtxt(txtdir + "/CPU_A_avg_imp.txt")
+		CPU_A_avg_unalt = np.loadtxt(txtdir + "/CPU_A_avg_unalt.txt")
+		CPU_A_rms_imp   = np.loadtxt(txtdir + "/CPU_A_rms_imp.txt")
+		CPU_A_rms_unalt = np.loadtxt(txtdir + "/CPU_A_rms_unalt.txt")
 
     # ========== Plot data
 

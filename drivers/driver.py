@@ -25,13 +25,13 @@ if __name__ == '__main__':
     gen_grid    = True  # are we generating synthetic data?
     compute_tc  = True  # are we computing the time complexity?
     compute_cpu = True # are we computing the cpu time?
-    nx          = 64    # x spatial points                  
-    ny          = 64    # y spatial points
+    nx          = 128    # x spatial points                  
+    ny          = 128    # y spatial points
     nz          = 1     # z spatial points
-    finest      = 1     # finest level of AMR in the domain
-    nsample     = 8     # number of samples for each parameter set
-    nt_arr      = np.arange(5, 11, 5)     # spanning nt
-    l1_arr      = np.arange(0.0, 0.01+0.0625, .0625) # spanning l1
+    finest      = 4     # finest level of AMR in the domain
+    nsample     = 1     # number of samples for each parameter set
+    nt_arr      = np.arange(5, 16, 5)     # spanning nt
+    l1_arr      = np.arange(0.0625, 3*0.0625, .0625) # spanning l1
     lcs         = np.zeros((finest+1)) # fraction of grid that stays constant in time
     # lc_fracs     = np.array([1/16, 0/16, 0/16])
 
@@ -142,7 +142,8 @@ if __name__ == '__main__':
             print('nt = %i, l1 = %0.4f' % (nt, l1))
 
             # Since we have l in our vars, we need to ls
-            ls = np.array([1.0-l1, l1])
+            # ls = np.array([1.0-l1, l1])
+            ls = np.array([1.0-l1-0.125-0.0625, l1, 0.0625, 0.0625, 0.0625])
             # l_fracs       = l_frac_data[irc_arr,:] 
 
             # ========== Compute time complexity
@@ -303,6 +304,7 @@ if __name__ == '__main__':
         np.savetxt(txtdir + "/TC_A_rms_imp.txt",    TC_rms_imp[:,:,3])
         np.savetxt(txtdir + "/TC_A_rms_unalt.txt",  TC_rms_unalt[:,:,3])
 
+    # Write out CPU time data
     if compute_cpu:
         np.savetxt(txtdir + "/CPU_R_avg_imp.txt",    CPU_avg_imp[:,:,0])
         np.savetxt(txtdir + "/CPU_R_avg_unalt.txt",  CPU_avg_unalt[:,:,0])
@@ -327,31 +329,6 @@ if __name__ == '__main__':
     
     # Plot these various quantities
     plot_single(txtdir, imgdir, compute_tc, compute_cpu, xvals, yvals, 'nt', 'l1')
-    
-
-    
-    # ------ Plot Results 
-    plot_res = 600                      #image resolution in dpi
-
-
-    # fig_R, fig_R_imp_rms, fig_R_unalt_rms, fig_Phi_1, fig_Phi_1_imp_rms, fig_Phi_1_unalt_rms, fig_Phi_5, fig_Phi_5_imp_rms, \
-    # fig_Phi_5_unalt_rms, fig_A, fig_A_imp_rms, fig_A_unalt_rms = Plot_Varying_rc_nt(txtdir)
-
-    # fig_R.savefig(plotdir + 'R_efficiency.png', dpi = plot_res)
-    # fig_R_imp_rms.savefig(plotdir + 'R_imp_rms.png', dpi = plot_res)
-    # fig_R_unalt_rms.savefig(plotdir + 'R_unalt_rms.png', dpi = plot_res)
-
-    # fig_Phi_1.savefig(plotdir + 'Phi_1_efficiency.png', dpi = plot_res)
-    # fig_Phi_1_imp_rms.savefig(plotdir + 'Phi_1_imp_rms.png', dpi = plot_res)
-    # fig_Phi_1_unalt_rms.savefig(plotdir + 'Phi_1_unalt_rms.png', dpi = plot_res)
-
-    # fig_Phi_5.savefig(plotdir + 'Phi_5_efficiency.png', dpi = plot_res)
-    # fig_Phi_5_imp_rms.savefig(plotdir + 'Phi_5_imp_rms.png', dpi = plot_res)
-    # fig_Phi_5_unalt_rms.savefig(plotdir + 'Phi_5_unalt_rms.png', dpi = plot_res)
-
-    # fig_A.savefig(plotdir + 'A_efficiency.png', dpi = plot_res)
-    # fig_A_imp_rms.savefig(plotdir + 'A_imp_rms.png', dpi = plot_res)
-    # fig_A_unalt_rms.savefig(plotdir + 'A_unalt_rms.png', dpi = plot_res)
 
 
     # Code if we want to span rc

@@ -29,7 +29,7 @@ def Compute_POD(gen_grid, nx, ny, nz, finest, l_fracs, lc_fracs, nt, TC_CPU='TC'
     levels = np.arange(0, nlev)
     
     for i in range(nlev):
-        c_l[i]    = 2**(finest-i)        
+        c_l[i]    = 2**(finest-i)
         d_l[i]    = (2**ndim)**(finest-i)
 
     # print('Computing for nt = %i, l_0=%0.8f, l_1 = %0.8f, l_2 = %0.8f' % (nt, l_fracs[0],l_fracs[1], l_fracs[2]))
@@ -143,7 +143,7 @@ def Compute_POD(gen_grid, nx, ny, nz, finest, l_fracs, lc_fracs, nt, TC_CPU='TC'
 
         R_imp,  R_unalt  = compute_R_CPU(X, X_grid, R, d_l, nt, nspat)
         P1_imp, P1_unalt = compute_Phi_CPU(X, X_grid, Psi, Lambda, 1, Phi, d_l, nt, nspat, finest)
-        P2_imp, P2_unalt = compute_Phi_CPU(X, X_grid, Psi, Lambda, 5, Phi, d_l, nt, nspat, finest)
+        P2_imp, P2_unalt = compute_Phi_CPU(X, X_grid, Psi, Lambda, 2, Phi, d_l, nt, nspat, finest)
         A_imp,  A_unalt  = compute_A_CPU(X, X_grid, Phi, A, d_l, nt, nspat, finest)
 
         return R_imp, R_unalt, P1_imp, P1_unalt, P2_imp, P2_unalt, A_imp, A_unalt

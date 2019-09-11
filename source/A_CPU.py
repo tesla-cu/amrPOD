@@ -9,16 +9,15 @@ import numpy as np
 import time
 
 # ================================================================= #
-# Function to compute the covariance A in POD using a standard 
-# matrix operation technique and the new algorithm leveraging AMR
-# repetitions
+# Function to compute the temporal coefficients A in POD using a 
+# standard matrix operation technique and the new algorithm 
+# leveraging AMR repetitions
 #
 # Inputs:
 # - X      : snapshot matrix
 # - X_grid : companion matrix to snapshot matrix that stores grid 
 #            levels instead of solution values
 # - Phi    : spatial mode matrix computed using matrix operations 
-#            (this is used as a check we did the computation right)
 # - A      : temporal coefficent matrix computed using matrix 
 #            operations (this is used as a check we did the 
 #            computation right)
@@ -82,11 +81,11 @@ def compute_A_CPU(X, X_grid, Phi, A, d_l, nt, nspat, finest):
 			X_grid_max = X_grid[i,0]
 
 			# Find the max grid level for a spatial location
-			for j in range(1,nt):
+			for m in range(1,nt):
 
 				# Check if current cell is bigger than current max
-				if X_grid[i,j] > X_grid_max:
-					X_grid_max = X_grid[i,j]
+				if X_grid[i,m] > X_grid_max:
+					X_grid_max = X_grid[i,m]
 
 					# If this is the finest, no point in continuing
 					# looking for finer cells
