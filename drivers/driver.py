@@ -47,8 +47,6 @@ if __name__ == '__main__':
     # l2_frac_arr  = np.zeros(np.size(rc_arr))
     # l_frac_data  = np.zeros((np.size(l1_frac_arr), nlev))
 
-
-
     # Direction where /code/ lives
     basedir = '/Users/mikemeehan/Research/Papers/2019_POD_AMR/'
 
