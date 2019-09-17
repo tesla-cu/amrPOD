@@ -22,13 +22,13 @@ if __name__ == '__main__':
     print('starting script to perform POD on AMR grids ...')
 
     # ---------- User defined inputs -------------------------------- 
-    gen_grid    = False  # are we generating synthetic data?
+    gen_grid    = True  # are we generating synthetic data?
     compute_tc  = False  # are we computing the time complexity?
     compute_cpu = True # are we computing the cpu time?
-    nx          = 512    # x spatial points                  
-    ny          = 512    # y spatial points
+    nx          = 32    # x spatial points                  
+    ny          = 1    # y spatial points
     nz          = 1     # z spatial points
-    finest      = 3     # finest level of AMR in the domain
+    finest      = 4     # finest level of AMR in the domain
     nsample     = 1     # number of samples for each parameter set
     # nt_arr      = np.arange(101, 102, 5)     # spanning nt
     nt_arr      = np.arange(5, 6, 5)     # spanning nt
@@ -143,7 +143,11 @@ if __name__ == '__main__':
             # Since we have l in our vars, we need to ls
             # ls = np.array([1.0-l1, l1])
             # ls = np.array([1.0-3*l1, l1, l1, l1/2, l1/2])
-            ls = np.array([1.0-3*l1, l1, l1, l1])
+            # ls = np.array([1.0-3*l1, l1, l1, l1])
+
+            ls = np.array([0.5, 0.25, 0.125, 0.0625, 0.0625])
+            # ls = np.array([0.5, 0.25, 0.125, 0.125])
+
             # ls = np.array([1.0-l1-0.125-0.0625, l1, 0.0625, 0.0625, 0.0625])
             # l_fracs       = l_frac_data[irc_arr,:] 
 
