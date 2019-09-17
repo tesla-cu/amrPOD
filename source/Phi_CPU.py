@@ -130,7 +130,10 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest)
 
 						g_val = G[idx] # # of repetitions of cell
 						# Assign value of Phi after dividing by sqrt(lamb_ii)
-						Phi_im[j:j+g_val, m] = phi_sum / np.sqrt(Lambda[m,m])
+						phi_sum = phi_sum / np.sqrt(Lambda[m,m])
+						for k in range(j,j+g_val):
+							Phi_im[k,m] = phi_sum
+							
 						idx += g_val # skip repeats in local coarse cell
 						j += g_val # skip repeats in global cell
 						
@@ -188,6 +191,14 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest)
 						nl[1,0] += 1
 						G_mat[1,0,nl[1,0]-1] = n
 
+			# print('---------------')
+			# print(X_grid[i,:])
+			# print(G_mat[:,0,:])
+			# print(nl[:,0])
+			# print(X_grid[i+4,:])
+			# print(G_mat[:,0+4,:])
+			# print(nl[:,0])
+
 			# Compute values of Phi for the elements contained in 
 			# coarse cell
 			for n in range(nt):
@@ -217,7 +228,7 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest)
 					# Check if the finest is greater than 1. If it is,
 					# we will need to perform recursion
 					if finest > 1:
-						H = compute_H(X_grid, Psi, i, 0, n, nt, 1, finest, d_l, G_mat, nl, H)
+						H = compute_H(X, Psi, i, 0, n, nt, 1, finest, d_l, G_mat, nl, H)
 					# If not, we know the last cells must be l=1
 					else:
 						# Compute contributions of l=1 cells
@@ -253,6 +264,9 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest)
 
 		# Compute total cpu time
 		time_im = time.time() - tic
+
+	# print(np.max(abs(np.subtract(Phi_im, Phi))))
+	# print(np.max(abs(np.subtract(Phi_un, Phi))))
 
 	if np.max(abs(np.subtract(Phi_im, Phi))) < 1e-8:
 		print('The implemented Phi is correct')
@@ -369,122 +383,130 @@ def find_lvl_indices(X_grid, i, idx, n, clvl, finest, d_l, G_mat, nl):
 # - H      : (as above) but updated with clvl contributions to H
 # ================================================================= #
 def compute_H(X, Psi, i, idx, n, nt, clvl, finest, d_l, G_mat, nl, H):
-    
-    # If this current level is 2 or less more than the finest, we 
+	
+	# If this current level is 2 or less more than the finest, we 
 	# can skip cells  
-    if clvl < finest-1:
+	if clvl < finest-1:
 
-    	# Iterate on a cell with repeats corresponding to clvl
-        for j in range(i, i+d_l[clvl-1]-1, d_l[clvl]):
+		# Iterate on a cell with repeats corresponding to clvl
+		for j in range(i, i+d_l[clvl-1]-1, d_l[clvl]):
 
-        	# Check if we have any cells at the current level
-            if nl[clvl, idx] > 0:
+			# Check if we have any cells at the current level
+			if nl[clvl, idx] > 0:
 
-            	# Initialize temporary variable to store sum of  
+				# Initialize temporary variable to store sum of  
 				# clvl contributions to an element of Phi
-                l_sum = 0
+				l_sum = 0
 
-                # Compute contribution of current level
-                for m in range(nl[clvl, idx]):
-                    k = G_mat[clvl, idx, m]
-                    l_sum += X[j,k] * Psi[k,n]
+				# Compute contribution of current level
+				for m in range(nl[clvl, idx]):
+					k = G_mat[clvl, idx, m]
+					l_sum += X[j,k] * Psi[k,n]
 
-                # Temporary index needed for assigning 
-                # contribution to correct cells in H
-                l_idx = int((j-i)/d_l[clvl])
+				# Temporary index needed for assigning 
+				# contribution to correct cells in H
+				l_idx = int((j-i)/d_l[clvl])
 
-                # Assign contribution to H
-                for m in range(l_idx*d_l[clvl], (l_idx+1)*d_l[clvl]):
-                    H[m, clvl] = l_sum
+				# print('-------------------')
+				# print('clvl = %i' % clvl)
+				# print('i = %i' % i)
+				# print('l_idx = %i' % l_idx)
+				# print('xo = %i' % (l_idx*d_l[clvl]))
+				# print('xf = %i' % ((l_idx+1)*d_l[clvl]))
 
-            # Determine if we need to look at a finer level
-            nccells = 0
-            for l in range(clvl+1):
-                nccells += nl[l, idx]
 
-            # If this is true, we need to check contributions of 
-            # finer cells
-            if nccells < nt:
-                H = compute_H(X, Psi, j, idx, n, nt, clvl+1, finest, d_l, G_mat, nl, H)
+				# Assign contribution to H
+				for m in range(l_idx*d_l[clvl], (l_idx+1)*d_l[clvl]):
+					H[m, clvl] = l_sum
 
-            # Move index forward for idx within one finer cell
-            idx += d_l[clvl + 1]
-    
-    # If this current level is the finest or one coarse, we know 
-    # where the rest of the cells reside
-    else:
+			# Determine if we need to look at a finer level
+			nccells = 0
+			for l in range(clvl+1):
+				nccells += nl[l, idx]
 
-    	# Iterate on a cell with repeats corresponding to clvl
-        for j in range(i, i+d_l[clvl-1]-1, d_l[clvl]):
+			# If this is true, we need to check contributions of 
+			# finer cells
+			if nccells < nt:
+				H = compute_H(X, Psi, j, idx, n, nt, clvl+1, finest, d_l, G_mat, nl, H)
 
-        	# Check if we have any cells at the current level
-            if nl[clvl, idx] > 0:
+			# Move index forward for idx within one finer cell
+			idx += d_l[clvl + 1]
+	
+	# If this current level is the finest or one coarse, we know 
+	# where the rest of the cells reside
+	else:
 
-            	# Initialize temporary variable to store sum of  
+		# Iterate on a cell with repeats corresponding to clvl
+		for j in range(i, i+d_l[clvl-1]-1, d_l[clvl]):
+
+			# Check if we have any cells at the current level
+			if nl[clvl, idx] > 0:
+
+				# Initialize temporary variable to store sum of  
 				# clvl contributions to an element of Phi
-                l_sum = 0
+				l_sum = 0
 
-                # Compute contribution of current level
-                for m in range(nl[clvl, idx]):
-                    k = G_mat[clvl, idx, m]
-                    l_sum += X[j,k] * Psi[k,n]
+				# Compute contribution of current level
+				for m in range(nl[clvl, idx]):
+					k = G_mat[clvl, idx, m]
+					l_sum += X[j,k] * Psi[k,n]
 
-                # Assign contribution to H
-                for m in range((idx)*d_l[clvl], (idx+1)*d_l[clvl]):
-                    H[m, clvl] = l_sum
+				# Assign contribution to H
+				for m in range((idx)*d_l[clvl], (idx+1)*d_l[clvl]):
+					H[m, clvl] = l_sum
 
-            # Check if we have any cells at the finest level
-            if nl[finest, idx] > 0:
+			# Check if we have any cells at the finest level
+			if nl[finest, idx] > 0:
 
-            	# Compute contribution of current level
-                for k in range(j, j+d_l[clvl]):
+				# Compute contribution of current level
+				for k in range(j, j+d_l[clvl]):
 
-                	# Initialize temporary variable to store sum of  
+					# Initialize temporary variable to store sum of  
 					# clvl contributions to an element of Phi
-                    l_sum = 0
+					l_sum = 0
 
-                    # Compute contribution of current level
-                    for m in range(nl[finest, idx]):
-                        p = G_mat[finest, idx, m]
-                        l_sum += X[k,p] * Psi[p,n]
+					# Compute contribution of current level
+					for m in range(nl[finest, idx]):
+						p = G_mat[finest, idx, m]
+						l_sum += X[k,p] * Psi[p,n]
 
-                    # Assign contribution to H
-                    H[k-j+d_l[finest-1] * (idx), finest] = l_sum
+					# Assign contribution to H
+					H[k-j+d_l[finest-1] * (idx), finest] = l_sum
 
-            # Move index forward for number of repeats of finest, 
+			# Move index forward for number of repeats of finest, 
 			# which is always 1
-            idx += 1
+			idx += 1
 
-    return H
+	return H
 
 
 
 # Old method 1
 # if method == 1:
 
-# 	Phi_imp = np.zeros((nspat, nt))
-# 	G       = np.zeros((nspat), dtype=int)
-# 	i       = 0
+#   Phi_imp = np.zeros((nspat, nt))
+#   G       = np.zeros((nspat), dtype=int)
+#   i       = 0
 
-# 	for n in range(nspat):
-# 		if i < nspat:
-# 			X_grid_max = X_grid[i,0]
-# 			for j in range(1,nt):
-# 				if X_grid[i,j] > X_grid_max:
-# 					X_grid_max = X_grid[i,j]
-# 			G[i]  = d_l[X_grid_max]
-# 			i     += G[i]
-# 		else:
-# 			break
+#   for n in range(nspat):
+#       if i < nspat:
+#           X_grid_max = X_grid[i,0]
+#           for j in range(1,nt):
+#               if X_grid[i,j] > X_grid_max:
+#                   X_grid_max = X_grid[i,j]
+#           G[i]  = d_l[X_grid_max]
+#           i     += G[i]
+#       else:
+#           break
 
-# 	for i in range(nt):
-# 		j = 0
-# 		for n in range(nspat):
-# 			if j < nspat:
-# 				phi_sum = 0
-# 				for k in range(nt):
-# 					phi_sum += X[j,k] * Psi[k,i]
-# 				Phi_imp[j:j+G[j], i] = phi_sum / np.sqrt(Lambda[i,i])
-# 				j = j + G[j]
+#   for i in range(nt):
+#       j = 0
+#       for n in range(nspat):
+#           if j < nspat:
+#               phi_sum = 0
+#               for k in range(nt):
+#                   phi_sum += X[j,k] * Psi[k,i]
+#               Phi_imp[j:j+G[j], i] = phi_sum / np.sqrt(Lambda[i,i])
+#               j = j + G[j]
 	
 
