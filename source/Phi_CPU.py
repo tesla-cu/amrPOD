@@ -191,14 +191,6 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest)
 						nl[1,0] += 1
 						G_mat[1,0,nl[1,0]-1] = n
 
-			# print('---------------')
-			# print(X_grid[i,:])
-			# print(G_mat[:,0,:])
-			# print(nl[:,0])
-			# print(X_grid[i+4,:])
-			# print(G_mat[:,0+4,:])
-			# print(nl[:,0])
-
 			# Compute values of Phi for the elements contained in 
 			# coarse cell
 			for n in range(nt):
@@ -403,20 +395,8 @@ def compute_H(X, Psi, i, idx, n, nt, clvl, finest, d_l, G_mat, nl, H):
 					k = G_mat[clvl, idx, m]
 					l_sum += X[j,k] * Psi[k,n]
 
-				# Temporary index needed for assigning 
-				# contribution to correct cells in H
-				l_idx = int((j-i)/d_l[clvl])
-
-				# print('-------------------')
-				# print('clvl = %i' % clvl)
-				# print('i = %i' % i)
-				# print('l_idx = %i' % l_idx)
-				# print('xo = %i' % (l_idx*d_l[clvl]))
-				# print('xf = %i' % ((l_idx+1)*d_l[clvl]))
-
-
 				# Assign contribution to H
-				for m in range(l_idx*d_l[clvl], (l_idx+1)*d_l[clvl]):
+				for m in range(idx*d_l[finest-1], idx*d_l[finest-1] + d_l[clvl]):
 					H[m, clvl] = l_sum
 
 			# Determine if we need to look at a finer level
