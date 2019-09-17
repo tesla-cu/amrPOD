@@ -74,6 +74,7 @@ def Compute_POD(gen_grid, nx, ny, nz, finest, l_fracs, lc_fracs, nt, TC_CPU='TC'
         # 3D reshaping procedure, see text for details
         elif ndim == 3:
             grid_1D = grid
+            data_1D = data
             for c in c_l:
                 nxr = grid_1D.shape[0]
                 nyr = grid_1D.shape[1]
