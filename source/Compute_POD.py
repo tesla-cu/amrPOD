@@ -43,8 +43,10 @@ def Compute_POD(gen_grid, nx, ny, nz, finest, l_fracs, lc_fracs, nt, TC_CPU='TC'
             grid = GenGrid(nx, ny, nz, c_l, d_l, l_fracs, lc_fracs)
             data = grid 
         else:
-            print('need to write this code!!')
-            sys.exit()
+            grid = np.fromfile(amr_datadir + 'grid_level%05d.bin' % n).astype(int)
+            grid = np.reshape(grid, [nx, ny, nz])
+            data = np.fromfile(amr_datadir + 'density%05d.bin' % n)
+            data = np.reshape(data, [nx, ny, nz])
 
         # Perform reshaping procedure
         # 1D, no reshaping required
@@ -108,7 +110,7 @@ def Compute_POD(gen_grid, nx, ny, nz, finest, l_fracs, lc_fracs, nt, TC_CPU='TC'
 
     # Take average
     l_comp = l_comp/nt
-    # print("l_comp = ", l_comp)
+    print("l_comp = ", l_comp)
 
     # Compute lc_comp
     for l in levels:
@@ -116,7 +118,7 @@ def Compute_POD(gen_grid, nx, ny, nz, finest, l_fracs, lc_fracs, nt, TC_CPU='TC'
             if np.all(X_grid[i,:] == l):
                 lc_comp[l] += 1
     lc_comp = lc_comp/nspat
-    # print("lc_comp = ", lc_comp)
+    print("lc_comp = ", lc_comp)
 
     # ---------- Calculate POD with matrix operations
     X_tp        = np.transpose(X)
@@ -133,7 +135,7 @@ def Compute_POD(gen_grid, nx, ny, nz, finest, l_fracs, lc_fracs, nt, TC_CPU='TC'
 
         R_imp,  R_unalt  = compute_R_TC(X_grid, d_l, nt, nspat)
         P1_imp, P1_unalt = compute_Phi_TC(X_grid, 1, d_l, nt, nspat, finest)
-        P2_imp, P2_unalt = compute_Phi_TC(X_grid, 5, d_l, nt, nspat, finest)
+        P2_imp, P2_unalt = compute_Phi_TC(X_grid, 2, d_l, nt, nspat, finest)
         A_imp,  A_unalt  = compute_A_TC(X_grid, d_l, nt, nspat, finest)
 
         return R_imp, R_unalt, P1_imp, P1_unalt, P2_imp, P2_unalt, A_imp, A_unalt

@@ -22,16 +22,17 @@ if __name__ == '__main__':
     print('starting script to perform POD on AMR grids ...')
 
     # ---------- User defined inputs -------------------------------- 
-    gen_grid    = True  # are we generating synthetic data?
-    compute_tc  = True  # are we computing the time complexity?
+    gen_grid    = False  # are we generating synthetic data?
+    compute_tc  = False  # are we computing the time complexity?
     compute_cpu = True # are we computing the cpu time?
-    nx          = 128    # x spatial points                  
-    ny          = 128    # y spatial points
+    nx          = 512    # x spatial points                  
+    ny          = 512    # y spatial points
     nz          = 1     # z spatial points
-    finest      = 4     # finest level of AMR in the domain
+    finest      = 3     # finest level of AMR in the domain
     nsample     = 1     # number of samples for each parameter set
-    nt_arr      = np.arange(5, 16, 5)     # spanning nt
-    l1_arr      = np.arange(0.0625, 3*0.0625, .0625) # spanning l1
+    # nt_arr      = np.arange(101, 102, 5)     # spanning nt
+    nt_arr      = np.arange(5, 6, 5)     # spanning nt
+    l1_arr      = np.arange(4*0.0625, 7*0.0625, .25) # spanning l1
     lcs         = np.zeros((finest+1)) # fraction of grid that stays constant in time
     # lc_fracs     = np.array([1/16, 0/16, 0/16])
 
@@ -52,8 +53,8 @@ if __name__ == '__main__':
     basedir = '/Users/mikemeehan/Research/Papers/2019_POD_AMR/'
 
     # Directory where AMR data is stored
-    amr_datadir = '/Users/mikemeehan/Research/InternalResearchPapers/AMR_POD/\
-        data/slice/x0.000-0.000_y-0.500-0.500_z0.000-1.000_t40.0000-40.2000/'
+    amr_datadir = '/Users/mikemeehan/Research/InternalResearchPapers/AMR_POD/data/' + \
+        'slice/x0.000-0.000_y-1.000-1.000_z0.000-2.000_t40.0000-42.0000/'
 
     # Directory where we was to store data on speed up
     datadir = basedir + 'data/'
@@ -143,7 +144,9 @@ if __name__ == '__main__':
 
             # Since we have l in our vars, we need to ls
             # ls = np.array([1.0-l1, l1])
-            ls = np.array([1.0-l1-0.125-0.0625, l1, 0.0625, 0.0625, 0.0625])
+            # ls = np.array([1.0-3*l1, l1, l1, l1/2, l1/2])
+            ls = np.array([1.0-3*l1, l1, l1, l1])
+            # ls = np.array([1.0-l1-0.125-0.0625, l1, 0.0625, 0.0625, 0.0625])
             # l_fracs       = l_frac_data[irc_arr,:] 
 
             # ========== Compute time complexity
