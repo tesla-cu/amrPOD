@@ -177,8 +177,9 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest)
 				# Determine if the lvl is the coarsest, if so, 
 				# add this cell to G and add another value to nl
 				if lvl == 0:
+					G_mat[0,0,nl[0,0]] = n
 					nl[0,0] += 1
-					G_mat[0,0,nl[0,0]-1] = n
+					
 
 				else:
 					# Check if the finest is greater than 1. If it is,
@@ -188,8 +189,9 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest)
 					# If not, this cell must be a level one so we 
 					# add it to the counts
 					else:
+						G_mat[1,0,nl[1,0]] = n
 						nl[1,0] += 1
-						G_mat[1,0,nl[1,0]-1] = n
+						
 
 			# Compute values of Phi for the elements contained in 
 			# coarse cell
@@ -340,8 +342,8 @@ def find_lvl_indices(X_grid, i, idx, n, clvl, finest, d_l, G_mat, nl):
 				nl[clvl, idx] += 1
 			# If not current level, it must be the finest. Tabulate.
 			else:
+				G_mat[finest, idx, nl[finest, idx]] = n
 				nl[finest, idx] += 1
-				G_mat[finest, idx, nl[finest, idx]-1] = n
 
 			# Move index forward for number of repeats of finest, 
 			# which is always 1
