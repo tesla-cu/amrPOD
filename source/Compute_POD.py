@@ -32,7 +32,12 @@ def Compute_POD(gen_grid, nx, ny, nz, finest, l_fracs, lc_fracs, nt, TC_CPU='TC'
         c_l[i]    = 2**(finest-i)
         d_l[i]    = (2**ndim)**(finest-i)
 
-    # print('Computing for nt = %i, l_0=%0.8f, l_1 = %0.8f, l_2 = %0.8f' % (nt, l_fracs[0],l_fracs[1], l_fracs[2]))
+    # ---------- Define operation weighting for counting 
+    wt_art    = 1       # Arithmetic
+    wt_acc    = 1       # Memory accessing
+    wt_asn    = 1       # Variable assignment
+    wt_log    = 1       # Logical test
+    wt_fun    = 1       # Function call
 
     # ---------- Load or generate data
     X      = np.zeros((nspat,nt))
@@ -43,10 +48,8 @@ def Compute_POD(gen_grid, nx, ny, nz, finest, l_fracs, lc_fracs, nt, TC_CPU='TC'
             grid = GenGrid(nx, ny, nz, c_l, d_l, l_fracs, lc_fracs)
             data = grid 
         else:
-            grid = np.fromfile(amr_datadir + 'grid_level%05d.bin' % n).astype(int)
-            grid = np.reshape(grid, [nx, ny, nz])
-            data = np.fromfile(amr_datadir + 'density%05d.bin' % n)
-            data = np.reshape(data, [nx, ny, nz])
+            print('need to write this code!!')
+            sys.exit()
 
         # Perform reshaping procedure
         # 1D, no reshaping required
@@ -74,7 +77,6 @@ def Compute_POD(gen_grid, nx, ny, nz, finest, l_fracs, lc_fracs, nt, TC_CPU='TC'
         # 3D reshaping procedure, see text for details
         elif ndim == 3:
             grid_1D = grid
-            data_1D = data
             for c in c_l:
                 nxr = grid_1D.shape[0]
                 nyr = grid_1D.shape[1]
@@ -111,7 +113,7 @@ def Compute_POD(gen_grid, nx, ny, nz, finest, l_fracs, lc_fracs, nt, TC_CPU='TC'
 
     # Take average
     l_comp = l_comp/nt
-    print("l_comp = ", l_comp)
+    # print("l_comp = ", l_comp)
 
     # Compute lc_comp
     for l in levels:
@@ -119,7 +121,7 @@ def Compute_POD(gen_grid, nx, ny, nz, finest, l_fracs, lc_fracs, nt, TC_CPU='TC'
             if np.all(X_grid[i,:] == l):
                 lc_comp[l] += 1
     lc_comp = lc_comp/nspat
-    print("lc_comp = ", lc_comp)
+    # print("lc_comp = ", lc_comp)
 
     # ---------- Calculate POD with matrix operations
     X_tp        = np.transpose(X)
@@ -134,10 +136,10 @@ def Compute_POD(gen_grid, nx, ny, nz, finest, l_fracs, lc_fracs, nt, TC_CPU='TC'
     # ---------- Compute time complexity of each operation
     if TC_CPU == 'TC':
 
-        R_imp,  R_unalt  = compute_R_TC(X_grid, d_l, nt, nspat)
-        P1_imp, P1_unalt = compute_Phi_TC(X_grid, 1, d_l, nt, nspat, finest)
-        P2_imp, P2_unalt = compute_Phi_TC(X_grid, 2, d_l, nt, nspat, finest)
-        A_imp,  A_unalt  = compute_A_TC(X_grid, d_l, nt, nspat, finest)
+        R_imp,  R_unalt  = compute_R_TC(X, X_grid, R, d_l, nt, nspat, wt_art, wt_acc, wt_asn, wt_log)
+        P1_imp, P1_unalt = compute_Phi_TC(X, X_grid, Psi, Lambda, 1, Phi, d_l, nt, nspat, finest, wt_art, wt_acc, wt_asn, wt_log, wt_fun)
+        P2_imp, P2_unalt = compute_Phi_TC(X, X_grid, Psi, Lambda, 2, Phi, d_l, nt, nspat, finest, wt_art, wt_acc, wt_asn, wt_log, wt_fun)
+        A_imp,  A_unalt  = compute_A_TC(X, X_grid, Phi, A, d_l, nt, nspat, finest, wt_art, wt_acc, wt_asn, wt_log)
 
         return R_imp, R_unalt, P1_imp, P1_unalt, P2_imp, P2_unalt, A_imp, A_unalt
 
