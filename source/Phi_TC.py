@@ -655,10 +655,8 @@ def compute_H(X, Psi, i, idx, n, nt, clvl, finest, d_l, G_mat, nl, H, im_art, im
 				# im_asn += wt_asn
 
 				# Assign contribution to H
-				im_art += 3*wt_art
-				im_acc += 2*wt_acc
-
-				# for m in range(l_idx*d_l[clvl], (l_idx+1)*d_l[clvl]):
+				im_art += 5*wt_art
+				im_acc += 3*wt_acc
 				for m in range(idx*d_l[finest-1], idx*d_l[finest-1] + d_l[clvl]):
 					im_art += wt_art
 					im_acc += wt_acc
