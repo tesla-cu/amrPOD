@@ -1,151 +1,205 @@
+# ================================================= #
+# Code:        Computing R in POD                   #
+# Authors:     Michael Meehan and Sam Simons-Wellin #
+# Institution: University of Colorado Boulder       #
+# Year:        2019                                 #
+# ================================================= #
+
 import numpy as np
-import time
 
-def compute_R_TC(X_grid, d_l, nt, nspat):
+# ================================================================= #
+# Function to compute the covariance R in POD using a standard 
+# matrix operation technique and the new algorithm leveraging AMR
+# repetitions
+#
+# Inputs:
+# - X      : snapshot matrix
+# - X_grid : companion matrix to snapshot matrix that stores grid 
+#            levels instead of solution values
+# - R      : covariance matrix computed using matrix operations 
+#            (this is used as a check we did the computation right)
+# - d_l    : number of repeated cells for a given level l (called 
+#            c_\ell^d in the paper)
+# - nt     : number of time steps
+# - nspat  : number of spatial locations
+#
+# Outputs:
+# - time_im : CPU time to compute R using implemented algorithm
+# - time_un : CPU time to compute R using unaltered algorithm
+# ================================================================= #
+def compute_R_TC(X, X_grid, R, d_l, nt, nspat, wt_art, wt_acc, wt_asn, wt_log):
 
+	# ========== Define Unaltered Op Counts ======================= #
+	un        = 0          # Total operation counts
+	un_art    = 0			# Arithmetic operations
+	un_acc    = 0			# Access operations
+	un_asn    = 0			# Assignment operations
+	
+	# ========== Define Implemented Op Counts ===================== #
+	im 	      = 0			# Total operation counts
+	im_art    = 0			# Arithmetic operations
+	im_acc    = 0			# Access operations
+	im_asn    = 0			# Assignment operations
+	im_log    = 0			# Logical operations
 
-	R_count_unalt        = 0
-	R_count_unalt_arith  = 0
-	R_count_unalt_access = 0
-	R_count_unalt_assign = 0
+	# ========== Unaltered Computation ============================ #
+	# Initialize R matrix for unaltered computation  
+	R_un = np.zeros((nt, nt))
+	un_asn += wt_asn
 
-	R_count_imp          = 0
-	R_count_imp_arith    = 0
-	R_count_imp_access   = 0
-	R_count_imp_assign   = 0
-	R_count_imp_logtest  = 0	
+	# Compute R matrix with unaltered algorithm
 
-#--------- Unaltered 
+	for m in range(nt):      # iterate over nt rows
+		un_art += wt_art
+		un_acc  += wt_acc
 
-	#R_unalt = np.zeros(nt, nt)
-	R_count_unalt_assign += 1
+		for n in range(m+1): # iterate up to and including diagnoal
+			un_art += wt_art
+			un_acc  += wt_acc
 
-	for i in range(nt):
-		R_count_unalt_arith  += 1
-		R_count_unalt_access += 1
+			# Initialize temporary variable to store sum of an 
+			# element of R
+			r_sum    = 0
+			un_asn += wt_asn
 
-		for j in range(i+1):
-			R_count_unalt_arith  += 1
-			R_count_unalt_access += 1
+			# Compute inner product
+			for i in range(nspat):
+				un_art += wt_art
+				un_acc  += wt_acc
 
-			#r_sum = 0
-			R_count_unalt_assign += 1
+				r_sum += X[i,m] * X[i,n]
+				un_acc  += 2*wt_acc
+				un_art  += 2*wt_art
+				un_asn  += wt_asn
 
-			for k in range(nspat):
-				R_count_unalt_arith  += 1
-				R_count_unalt_access += 1
+			# Using symmetry, assign values of element of R
+			R_un[m,n] = r_sum
+			un_acc += wt_acc
+			un_asn += wt_asn
 
-				#r_sum += X[k,i] * X[k,j]
-				R_count_unalt_arith  += 2
-				R_count_unalt_access += 2
-				R_count_unalt_assign += 1
+			R_un[n,m] = r_sum
+			un_acc += wt_acc
+			un_asn += wt_asn
 
-			#R_unalt[i,j] = r_sum
-			R_count_unalt_access += 1
-			R_count_unalt_assign += 1			
+	# ========== Implemented Computation ========================== #
 
-			#R_unalt[j,i] = r_sum
-			R_count_unalt_access += 1
-			R_count_unalt_assign += 1	
+	# Initialize R matrix for computation of implemented algorithm
+	R_im = np.zeros((nt, nt))
+	im_asn += wt_asn
 
-#--------- Implemented Computation
+	# Compute R matrix with implemented algorithm
+	for m in range(nt):      # iterate over nt rows
+		im_art += wt_art
+		im_acc += wt_acc
 
-	#R_imp = np.zeros(nt, nt)
-	R_count_imp_assign += 1
+		for n in range(m+1): # iterate up to and including diagnoal
+			im_art += wt_art
+			im_acc += wt_acc
 
-	for i in range(nt):
-		R_count_imp_arith  += 1
-		R_count_imp_access += 1
+			# Initialize temporary variable to store sum of an 
+			# element of R
+			r_sum  = 0
+			im_asn += wt_asn
 
-		for j in range(i+1):
-			R_count_imp_arith  += 1
-			R_count_imp_access += 1
+			# Initialize index of spatial location
+			i = 0
+			im_asn += wt_asn
 
-			R_count_imp_logtest += 1
-			if i == j:
+			# If this is a diagonal element, we know the grid level
+			# is the same between snapshots and we do not need to 
+			# check which grid level is the higher because they are
+			# the same
+			im_log += wt_log
+			if m == n:
+				# Compute inner product by weighting and skipping 
+				# cells that are repeated
+				for ii in range(nspat): # dummy iteration
+					im_art += wt_art
+					im_acc += wt_acc
 
-				#r_sum = 0
-				R_count_imp_assign += 1
+					im_log += wt_log
+					if i < nspat:
 
-				k = 0
-				R_count_imp_assign += 1
+						d_val  = d_l[X_grid[i,m]]     # # of repeats
+						im_acc += 2*wt_acc
+						im_asn += wt_asn
 
-				for n in range(nspat):
-					R_count_imp_arith  += 1
-					R_count_imp_access += 1
+						r_sum  += d_val*X[i,n]*X[i,m] # weight computation
+						im_acc += 2*wt_acc
+						im_asn += wt_asn
+						im_art += 3*wt_art
 
-					R_count_imp_logtest += 1
-					if k < nspat:
-
-						c_val = d_l[X_grid[k,i]]
-						R_count_imp_access += 2
-						R_count_imp_assign += 1
-
-						#r_sum += c_val * X[k,j] * X[k,i]
-						R_count_imp_access += 2
-						R_count_imp_arith += 3
-						R_count_imp_assign += 1
-
-						k += c_val
-						R_count_imp_assign += 1
-						R_count_imp_arith += 1
+						i      += d_val                   # skip repeats
+						im_asn += wt_asn
+						im_art += wt_art
 
 					else:
 						break
-				#R_imp[i,j] = r_sum
-				R_count_imp_assign += 1
 
-				#R_imp[j,i] = r_sum
-				R_count_imp_assign += 1
-
+			# Off-diagonal element
 			else:
-				#r_sum = 0
-				R_count_imp_assign += 1
+				# Compute inner product by weighting and skipping 
+				# cells that are repeated
 
-				k = 0
-				R_count_imp_assign += 1
+				for ii in range(nspat): # dummy iteration
+					im_art += wt_art
+					im_acc += wt_acc
+					
+					im_log += wt_log
+					if i < nspat:
+						
+						# Determine which grid level is higher and 
+						# use this as weight and # of repeats
+						im_log += wt_log
+						im_acc += wt_acc
+						if X_grid[i,m] > X_grid[i,n]:
 
-				for n in range(nspat):
-					R_count_imp_arith += 1
-					R_count_imp_access += 1
-
-					R_count_imp_logtest += 1
-					if k < nspat:
-
-						R_count_imp_access += 2
-						R_count_imp_logtest += 1
-						if X_grid[k,i] > X_grid[k,j]:
-
-							c_min = d_l[X_grid[k,i]]
-							R_count_imp_access += 2 
-							R_count_imp_assign += 1
+							d_val  = d_l[X_grid[i,m]]
+							im_acc += 2*wt_acc
+							im_asn += wt_asn
 
 						else:
-							c_min = d_l[X_grid[k,j]]
-							R_count_imp_access += 2
-							R_count_imp_assign += 1
+							d_val  = d_l[X_grid[i,n]]
+							im_acc += 2*wt_acc
+							im_asn += wt_asn
 
-						#r_sum += c_min * X_grid[k, j] * X[k,i]
-						R_count_imp_arith += 3
-						R_count_imp_access +=2
-						R_count_imp_assign += 1
+						r_sum  += d_val*X_grid[i,n]*X[i,m] # weight computation
+						im_acc += 2*wt_acc
+						im_art += 3*wt_art
+						im_asn += wt_asn
 
-						k += c_min
-						R_count_imp_arith += 1
-						R_count_imp_assign += 1
+						i      += d_val                        # skip repeats
+						im_art += wt_art
+						im_asn += wt_asn
 
 					else:
 						break
-				#R_imp[i,j] = r_sum
-				R_count_imp_assign += 1
-				R_count_imp_access += 1
 
-				#R_imp[j,i] = r_sum
-				R_count_imp_assign += 1
-				R_count_imp_access += 1
+			# Using symmetry, assign values of element of R
+			R_im[m,n] = r_sum
+			im_acc    += wt_acc
+			im_asn    += wt_asn
 
+			R_im[n,m] = r_sum
+			im_acc    += wt_acc
+			im_asn    += wt_asn
 
-	R_count_unalt = R_count_unalt_access + R_count_unalt_assign + R_count_unalt_arith
-	R_count_imp   = R_count_imp_access + R_count_imp_assign + R_count_imp_arith + R_count_imp_logtest
+	# ========== Check Correctness of Matrices ==================== #
 
-	return R_count_imp, R_count_unalt
+	if np.max(abs(np.subtract(R_im, R))) < 1e-8:
+		print('The implemented R is correct')
+	else:
+		print('The implemented R is incorrect')
+
+	if np.max(abs(np.subtract(R_un, R))) < 1e-8:
+		print('The unaltered R is correct')
+	else:
+		print('The unaltered R is incorrect')
+
+	# ========== Sum operations from im and un =================== #
+
+	un = un_asn + un_acc + un_art
+	im = im_asn + im_acc + im_art + im_log
+
+	# Return op counts of implemented and unaltered algorithm
+	return im, un

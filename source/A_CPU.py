@@ -124,9 +124,6 @@ def compute_A_CPU(X, X_grid, Phi, A, d_l, nt, nspat, finest):
 
 	# ========== Check Correctness of Matrices ==================== #
 
-	# print(np.max(abs(np.subtract(A_im, A))))
-	# print(np.max(abs(np.subtract(A_un, A))))
-
 	if np.max(abs(np.subtract(A_im, A))) < 1e-8:
 		print('The implemented A is correct')
 	else:
