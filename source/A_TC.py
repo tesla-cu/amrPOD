@@ -1,188 +1,208 @@
+# ================================================= #
+# Code:        Computing A in POD                   #
+# Authors:     Michael Meehan and Sam Simons-Wellin #
+# Institution: University of Colorado Boulder       #
+# Year:        2019                                 #
+# ================================================= #
+
 import numpy as np
 
-def compute_A_TC(X_grid, d_l, nt, nspat, finest):
-
-        A_count_unalt        = 0
-        A_count_unalt_arith  = 0
-        A_count_unalt_access = 0
-        A_count_unalt_assign = 0
-
-        A_count_imp          = 0
-        A_count_imp_arith    = 0
-        A_count_imp_access   = 0
-        A_count_imp_assign   = 0
-        A_count_imp_logtest  = 0        
-
-        #--------- Unaltered 
-
-
-        #A_unalt = np.zeros((nt, nt))
-        A_count_unalt_assign += 1
-
-        for i in range(nt):
-                A_count_unalt_arith  += 1
-                A_count_unalt_access += 1
-
-                for j in range(nt):
-                        A_count_unalt_arith  += 1
-                        A_count_unalt_access += 1
-
-                        #a_sum = 0
-                        A_count_unalt_assign += 1
-
-                        for k in range(nspat):
-                                A_count_unalt_arith  += 1
-                                A_count_unalt_access += 1
-
-                                #a_sum += X[k,i] * Phi[k,j]
-                                A_count_unalt_arith  += 2
-                                A_count_unalt_access += 2
-                                A_count_unalt_assign += 1
-
-                        #A_unalt[i,j] = a_sum
-                        A_count_unalt_access += 1
-                        A_count_unalt_assign += 1
+# ================================================================= #
+# Function to compute the temporal coefficients A in POD using a 
+# standard matrix operation technique and the new algorithm 
+# leveraging AMR repetitions
+#
+# Inputs:
+# - X      : snapshot matrix
+# - X_grid : companion matrix to snapshot matrix that stores grid 
+#            levels instead of solution values
+# - Phi    : spatial mode matrix computed using matrix operations 
+# - A      : temporal coefficent matrix computed using matrix 
+#            operations (this is used as a check we did the 
+#            computation right)
+# - d_l    : number of repeated cells for a given level l (called 
+#            c_\ell^d in the paper)
+# - nt     : number of time steps
+# - nspat  : number of spatial locations
+# - finest : finest AMR grid level
+#
+# Outputs:
+# - time_im : CPU time to compute A using implemented algorithm
+# - time_un : CPU time to compute A using unaltered algorithm
+# ================================================================= #
+def compute_A_TC(X, X_grid, Phi, A, d_l, nt, nspat, finest, wt_art, wt_acc, wt_asn, wt_log):
 
 
-#--------- Implemented
-        jloop_count     = 0
-        if_X_grid_count = 0
-        Precomp_count   = 0
-        #A_imp = np.zeros((nt,nt))
-        A_count_imp_assign += 1
-        G = np.zeros((nspat), dtype=int)
-        A_count_imp_assign += 1
-
-        i     = 0
-        A_count_imp_assign += 1
-
-        for n in range(nspat):
-                A_count_imp_arith  += 1
-                A_count_imp_access += 1
-
-                A_count_imp_logtest +=1
-                if i < nspat:
-
-                        X_grid_max = X_grid[i,0]
-                        A_count_imp_access += 1
-                        A_count_imp_assign += 1
-
-                        A_count_imp_logtest +=1
-                        if X_grid_max < finest:
-
-                                for j in range(1,nt):
-                                        jloop_count += 1
-                                        A_count_imp_arith  += 1
-                                        A_count_imp_access += 1
-
-                                        A_count_imp_logtest  += 1
-                                        A_count_imp_access   += 1       
-                                        if X_grid[i,j] > X_grid_max:
-                                                if_X_grid_count += 1
-
-                                                X_grid_max = X_grid[i,j]
-                                                A_count_imp_access += 1
-                                                A_count_imp_assign += 1
-
-                                                A_count_imp_logtest +=1
-                                                if X_grid_max == finest:
-
-                                                        break
-
-                        G[i]  = d_l[X_grid_max]
-                        A_count_imp_access += 2
-                        A_count_imp_assign += 1
-
-                        i    += G[i]
-                        A_count_imp_access += 1
-                        A_count_imp_assign += 1
-                        A_count_imp_arith  += 1
-                else:
-                        break
-
-        Precomp_count += A_count_imp_access + A_count_imp_arith + A_count_imp_assign + A_count_imp_logtest
-        # print('Precomp ops = ', Precomp_count)
+	# ========== Define Unaltered Op Counts ======================= #
+	un        = 0          # Total operation counts
+	un_art    = 0			# Arithmetic operations
+	un_acc    = 0			# Access operations
+	un_asn    = 0			# Assignment operations
+	
+	# ========== Define Implemented Op Counts ===================== #
+	im 	      = 0			# Total operation counts
+	im_art    = 0			# Arithmetic operations
+	im_acc    = 0			# Access operations
+	im_asn    = 0			# Assignment operations
+	im_log    = 0			# Logical operations
 
 
+	# ========== Unaltered Computation ============================ #
 
-        # for n in range(nspat):
-        #       A_count_imp_arith  += 1
-        #       A_count_imp_access += 1
+	# Initialize A matrix for unaltered computation
+	A_un = np.zeros((nt, nt))
+	un_asn += wt_asn
 
-        #       A_count_imp_logtest +=1
-        #       if i < nspat:
+	# Compute A matrix with unaltered algorithm
+	for m in range(nt):     # iterate over nt rows
+		un_art += wt_art
+		un_acc += wt_acc
 
-        #               X_grid_max = X_grid[i,0]
-        #               A_count_imp_access += 1
-        #               A_count_imp_assign += 1
+		for n in range(nt): # iterate over nt columns
+			un_art += wt_art
+			un_acc += wt_acc
 
-        #               for j in range(1,nt):
-        #                       A_count_imp_arith  += 1
-        #                       A_count_imp_access += 1
+			# Initialize temporary variable to store sum of an 
+			# element of A
+			a_sum  = 0
+			un_asn += wt_asn
 
-        #                       A_count_imp_logtest  += 1
-        #                       A_count_imp_access += 1 
-        #                       if X_grid[i,j] > X_grid_max:                            
+			# Compute inner product
+			for i in range(nspat):
+				un_art += wt_art
+				un_acc += wt_acc
 
-        #                               X_grid_max = X_grid[i,j]
-        #                               A_count_imp_access += 1
-        #                               A_count_imp_assign += 1
+				a_sum  += X[i,m] * Phi[i,n]
+				un_acc += 2*wt_acc
+				un_art += 2*wt_art
+				un_asn += wt_asn
 
-        #               G[i]  = d_l[X_grid_max]
-        #               A_count_imp_access += 2
-        #               A_count_imp_assign += 1
+			# Assign value of element of A
+			A_un[m,n] = a_sum
+			un_acc    += wt_acc
+			un_asn    += wt_asn
 
-        #               i    += G[i]
-        #               A_count_imp_access += 1
-        #               A_count_imp_assign += 1
-        #               A_count_imp_arith  += 1
+	# ========== Implemented Computation ========================== #
 
-        #       else:
-        #               break
+	# Initialize R matrix for computation of implemented algorithm
+	A_im   = np.zeros((nt, nt))
+	im_asn += wt_asn
 
-        for i in range(nt):
-                A_count_imp_arith  += 1
-                A_count_imp_access += 1
+	# Initialize matrix to store maximum grid level
+	G      = np.zeros((nspat), dtype=int)
+	im_asn += wt_asn	
 
-                for j in range(nt):
-                        A_count_imp_arith  += 1
-                        A_count_imp_access += 1
+	# Initialize index of spatial location
+	i      = 0
+	im_asn += wt_asn
 
-                        #a_sum = 0
-                        A_count_imp_assign += 1
+	# Find the finest cell for all spatial locations
+	for ii in range(nspat): # dummy loop
+		im_art += wt_art
+		im_acc += wt_acc
 
-                        k     = 0
-                        A_count_imp_assign += 1
+		im_log += wt_log
+		if i < nspat:       # exit loop if we are at the end
 
-                        for n in range(nspat):
-                                A_count_imp_arith  += 1
-                                A_count_imp_access += 1
+			# Initialize max grid level
+			X_grid_max = X_grid[i,0]
+			im_acc     += wt_acc
+			im_asn     += wt_asn
 
-                                A_count_imp_logtest += 1
-                                if k < nspat:
+			# Find the max grid level for a spatial location
+			for m in range(1,nt):
+				im_art += wt_art
+				im_acc += wt_acc
 
-                                        #a_sum += G[k] * X[k,i] * Phi[k,j]
-                                        A_count_imp_arith  += 3
-                                        A_count_imp_access += 3
-                                        A_count_imp_assign += 1
+				# Check if current cell is bigger than current max
+				im_log += wt_log
+				im_acc += wt_acc
+				if X_grid[i,m] > X_grid_max:
 
-                                        k += G[k]
-                                        A_count_imp_access += 1
-                                        A_count_imp_arith  += 1
-                                        A_count_imp_assign += 1
+					X_grid_max = X_grid[i,m]
+					im_acc     += wt_acc
+					im_asn     += wt_asn
 
+					# If this is the finest, no point in continuing
+					# looking for finer cells
+					im_log += wt_log
+					if X_grid_max == finest:
+							break
 
+			G[i]   =  d_l[X_grid_max] # get # of repeats
+			im_acc += 2*wt_acc
+			im_asn += wt_asn
 
-                                else:
-                                        break
-                        #A_imp[i,j] = a_sum
-                        A_count_imp_access += 1
-                        A_count_imp_assign += 1
+			i      += G[i]            # skip cells that are repeated
+			im_art += wt_art
+			im_acc += wt_acc
+			im_asn += wt_asn
 
-        A_count_unalt = A_count_unalt_access + A_count_unalt_assign + A_count_unalt_arith
-        A_count_imp   = A_count_imp_access + A_count_imp_assign + A_count_imp_arith + A_count_imp_logtest
+		else:
+			break
 
-        # print('jloop_count = ', jloop_count)
-        # print('if_X_grid_count = ', if_X_grid_count)
+	# Compute elements of A
+	for m in range(nt):     # iterate over rows
+		im_art += wt_art
+		im_acc += wt_acc
 
-        return A_count_imp, A_count_unalt 
+		for n in range(nt): # iterate over columns
+			im_art += wt_art
+			im_acc += wt_acc
+
+			# Initialize temporary variable to store sum of an 
+			# element of A
+			a_sum  = 0
+			im_asn += wt_asn
+
+			# Initialize index of spatial location
+			i      = 0
+			im_asn += wt_asn
+
+			# Compute value of one element in A
+			for ii in range(nspat): # dummy loop
+				im_art += wt_art
+				im_acc += wt_acc
+
+				im_log += wt_log
+				if i < nspat:       # exit loop if at end
+
+					a_sum  += G[i]*X[i,m]*Phi[i,n] # weight computation
+					im_acc += 3*wt_acc
+					im_art += 3*wt_art
+					im_asn += wt_asn
+
+					i      += G[i]                     # skip repeats
+					im_acc += wt_acc
+					im_asn += wt_asn
+					im_art += wt_art
+
+				else:
+					break
+
+			# Assign values of element of R
+			A_im[m,n] = a_sum
+			im_acc    += wt_acc
+			im_asn    += wt_asn
+
+	# ========== Check Correctness of Matrices ==================== #
+
+	if np.max(abs(np.subtract(A_im, A))) < 1e-8:
+		print('The implemented A is correct')
+	else:
+		print('The implemented A is incorrect')
+
+	if np.max(abs(np.subtract(A_un, A))) < 1e-8:
+		print('The unaltered A is correct')
+	else:
+		print('The unaltered A is incorrect')
+
+	# ========== Sum operations from im and un =================== #
+
+	un = un_asn + un_acc + un_art
+	im = im_asn + im_acc + im_art + im_log
+
+	# Return op counts of implemented and unaltered algorithm
+	return im, un
+
+	
