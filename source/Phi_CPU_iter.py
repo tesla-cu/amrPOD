@@ -188,9 +188,31 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest)
 
 				else:
 					# Check if the finest is greater than 1. If it is,
-					# we will need to perform recursion
+					# we will need to look at higher levels
 					if finest > 1:
-						G_mat, nl = find_lvl_indices(X_grid, i, 0, n, 1, finest, d_l, G_mat, nl)
+						idx = 0
+						j = i
+						for jj in range(d_1):
+							if idx < d_1:
+								lvl = X_grid[j,n]
+								if lvl == finest:
+									G_mat[finest, idx, nl[finest, idx]] = n
+									nl[finest, idx] += 1
+									idx += 1
+									j += d_l[finest-1]
+								else:
+									for l in range(1,finest): # note not looking at highest level
+										if lvl == l:
+											G_mat[l, idx, nl[l, idx]] = n
+											nl[l, idx] += 1
+											idx += d_l[l+1]
+											j += d_l[l]
+											break
+
+
+							else:
+								break
+
 					# If not, this cell must be a level one so we 
 					# add it to the counts
 					else:
@@ -223,10 +245,87 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest)
 
 				# Check if we have any cells that aren't l=0
 				if nl[0,0] < nt:
-					# Check if the finest is greater than 1. If it is,
-					# we will need to perform recursion
+
+
+					if finest > 2:
+
+						for l in range(1,finest-1): # note not looking at highest 2 levels
+							idx = 0
+
+							for j in range(i, i+d_0, d_l[l]):
+
+								if nl[l, idx] > 0:
+
+									# Initialize temporary variable to store sum of  
+									# clvl contributions to an element of Phi
+									l_sum = 0
+
+									# Compute contribution of current level
+									for m in range(nl[l, idx]):
+										k = G_mat[l, idx, m]
+										l_sum += X[j,k] * Psi[k,n]
+
+									# Temporary index needed for assigning 
+									# contribution to correct cells in H
+									# l_idx = int((j-i)/d_l[clvl])
+
+									# Assign contribution to H
+									for m in range(idx*d_l[finest-1], idx*d_l[finest-1] + d_l[l]):
+										H[m, l] = l_sum
+
+								idx += d_l[l + 1]
+
+
+					# Check if the finest is greater than 1.
 					if finest > 1:
-						H = compute_H(X_grid, Psi, i, 0, n, nt, 1, finest, d_l, G_mat, nl, H)
+
+						idx = 0
+
+						# Compute finest and finest-1 level contribution
+						for j in range(i, i + d_0, d_l[finest-1]):
+
+							# Check if we have any cells at the finest-1 level
+							if nl[finest-1, idx] > 0:
+
+								clvl = finest-1
+
+								# Initialize temporary variable to store sum of  
+								# clvl contributions to an element of Phi
+								l_sum = 0
+
+								# Compute contribution of current level
+								for m in range(nl[clvl, idx]):
+									k = G_mat[clvl, idx, m]
+									l_sum += X[j,k] * Psi[k,n]
+
+								# Assign contribution to H
+								for m in range((idx)*d_l[clvl], (idx+1)*d_l[clvl]):
+									H[m, clvl] = l_sum
+
+							# Compute finest level contribution
+							if nl[finest, idx] > 0:
+
+								# Compute contribution of finest level
+								for k in range(j, j+d_l[finest-1]):
+
+									# Initialize temporary variable to store sum of  
+									# clvl contributions to an element of Phi
+									l_sum = 0
+
+									# Compute contribution of current level
+									for m in range(nl[finest, idx]):
+										p = G_mat[finest, idx, m]
+										l_sum += X[k,p] * Psi[p,n]
+
+									# Assign contribution to H
+									H[k-j+d_l[finest-1] * (idx), finest] = l_sum
+
+							idx += 1
+
+
+
+						# H = compute_H(X_grid, Psi, i, 0, n, nt, 1, finest, d_l, G_mat, nl, H)
+
 					# If not, we know the last cells must be l=1
 					else:
 						# Compute contributions of l=1 cells
@@ -278,193 +377,6 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest)
 
 
 
-# ================================================================= #
-# Function used by compute_Phi_CPU to tabulate all cells according 
-# to grid level. This is a recursive algorithm that determines the
-# exact location to find these cells without looking in unncessary
-# locations.
-#
-# Inputs:
-# - X_grid : companion matrix to snapshot matrix that stores grid 
-#            levels instead of solution values
-# - i      : the global index in X that we are looking at
-# - idx    : index of the cell within a given coarse cell
-# - n      : snapshot or column of X we are considering
-# - clvl   : current level that we consider the coarsest cell
-# - finest : finest AMR grid level
-# - d_l    : number of repeated cells for a given level l (called 
-#            c_\ell^d in the paper)
-# - G_mat  : matrix to store locations of each level
-# - nl     : vector to store number of cells for each level
-#
-# Outputs:
-# - G_mat  : (as above) but updated with clvl locations
-# - nl     : (as above) but updated with number of cells at clvl
-# ================================================================= #
-def find_lvl_indices(X_grid, i, idx, n, clvl, finest, d_l, G_mat, nl):
-
-	# If this current level is 2 or less more than the finest, we 
-	# can skip cells  
-	if clvl < finest-1:
-
-		# Iterate on a cell with repeats corresponding to clvl
-		for j in range(i, i+d_l[clvl-1]-1, d_l[clvl]):
-			
-			# Get level of that grid cell
-			lvl = X_grid[j,n]
-
-			# If that grid level is the current level, tabulate its
-			# location and add to nl
-			if lvl == clvl:
-				G_mat[clvl, idx, nl[clvl, idx]] = n
-				nl[clvl, idx] += 1
-
-			# If not, we do recursion to look in the appropriate cells
-			else:
-				G_mat, nl = find_lvl_indices(X_grid, j, idx, n, clvl+1, finest, d_l, G_mat, nl)
-
-			# Move index forward for idx within one finer cell
-			idx += d_l[clvl+1]
-
-	# If the clvl is the finest or one coarser, we know exactly 
-	# where these cells are located
-	else:
-
-		# Iterate on a cell with repeats corresponding to clvl
-		for j in range(i, i+d_l[clvl-1]-1, d_l[clvl]):
-
-			# Get level of that grid cell
-			lvl = X_grid[j,n]
-
-			# If that grid level is the current level, tabulate its
-			# location and add to nl
-			if lvl == clvl:
-				G_mat[clvl, idx, nl[clvl, idx]] = n
-				nl[clvl, idx] += 1
-			# If not current level, it must be the finest. Tabulate.
-			else:
-				G_mat[finest, idx, nl[finest, idx]] = n
-				nl[finest, idx] += 1
-
-			# Move index forward for number of repeats of finest, 
-			# which is always 1
-			idx += 1
-
-	# Return updated G_mat and nl
-	return G_mat, nl
-
-# ================================================================= #
-# Function used by compute_Phi_CPU to tabulate all cells according 
-# to grid level. This is a recursive algorithm that determines the
-# exact location to find these cells without looking in unncessary
-# locations.
-#
-# Inputs:
-# - X      : snapshot matrix
-# - Psi    : matrix containing eigenvectors of R
-# - i      : the global index in X that we are looking at
-# - idx    : index of the cell within a given coarse cell
-# - n      : snapshot or column of X we are considering
-# - clvl   : current level that we consider the coarsest cell
-# - finest : finest AMR grid level
-# - d_l    : number of repeated cells for a given level l (called 
-#            c_\ell^d in the paper)
-# - G_mat  : matrix to store locations of each level
-# - nl     : vector to store number of cells for each level
-# - H      : matrix storing contributions to an element of Phi for
-#            each level
-# 
-# Outputs:
-# - H      : (as above) but updated with clvl contributions to H
-# ================================================================= #
-def compute_H(X, Psi, i, idx, n, nt, clvl, finest, d_l, G_mat, nl, H):
-	
-	# If this current level is 2 or less more than the finest, we 
-	# can skip cells  
-	if clvl < finest-1:
-
-		# Iterate on a cell with repeats corresponding to clvl
-		for j in range(i, i+d_l[clvl-1]-1, d_l[clvl]):
-
-			# Check if we have any cells at the current level
-			if nl[clvl, idx] > 0:
-
-				# Initialize temporary variable to store sum of  
-				# clvl contributions to an element of Phi
-				l_sum = 0
-
-				# Compute contribution of current level
-				for m in range(nl[clvl, idx]):
-					k = G_mat[clvl, idx, m]
-					l_sum += X[j,k] * Psi[k,n]
-
-				# Temporary index needed for assigning 
-				# contribution to correct cells in H
-				# l_idx = int((j-i)/d_l[clvl])
-
-				# Assign contribution to H
-				for m in range(idx*d_l[finest-1], idx*d_l[finest-1] + d_l[clvl]):
-					H[m, clvl] = l_sum
-
-			# Determine if we need to look at a finer level
-			nccells = 0
-			for l in range(clvl+1):
-				nccells += nl[l, idx]
-
-			# If this is true, we need to check contributions of 
-			# finer cells
-			if nccells < nt:
-				H = compute_H(X, Psi, j, idx, n, nt, clvl+1, finest, d_l, G_mat, nl, H)
-
-			# Move index forward for idx within one finer cell
-			idx += d_l[clvl + 1]
-	
-	# If this current level is the finest or one coarse, we know 
-	# where the rest of the cells reside
-	else:
-
-		# Iterate on a cell with repeats corresponding to clvl
-		for j in range(i, i+d_l[clvl-1]-1, d_l[clvl]):
-
-			# Check if we have any cells at the current level
-			if nl[clvl, idx] > 0:
-
-				# Initialize temporary variable to store sum of  
-				# clvl contributions to an element of Phi
-				l_sum = 0
-
-				# Compute contribution of current level
-				for m in range(nl[clvl, idx]):
-					k = G_mat[clvl, idx, m]
-					l_sum += X[j,k] * Psi[k,n]
-
-				# Assign contribution to H
-				for m in range((idx)*d_l[clvl], (idx+1)*d_l[clvl]):
-					H[m, clvl] = l_sum
-
-			# Check if we have any cells at the finest level
-			if nl[finest, idx] > 0:
-
-				# Compute contribution of current level
-				for k in range(j, j+d_l[clvl]):
-
-					# Initialize temporary variable to store sum of  
-					# clvl contributions to an element of Phi
-					l_sum = 0
-
-					# Compute contribution of current level
-					for m in range(nl[finest, idx]):
-						p = G_mat[finest, idx, m]
-						l_sum += X[k,p] * Psi[p,n]
-
-					# Assign contribution to H
-					H[k-j+d_l[finest-1] * (idx), finest] = l_sum
-
-			# Move index forward for number of repeats of finest, 
-			# which is always 1
-			idx += 1
-
-	return H
 
 
 

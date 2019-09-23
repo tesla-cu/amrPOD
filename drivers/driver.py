@@ -26,7 +26,7 @@ if __name__ == '__main__':
     compute_tc  = False  # are we computing the time complexity?
     compute_cpu = True # are we computing the cpu time?
     nx          = 32    # x spatial points                  
-    ny          = 32    # y spatial points
+    ny          = 1    # y spatial points
     nz          = 1     # z spatial points
     finest      = 4     # finest level of AMR in the domain
     nsample     = 1     # number of samples for each parameter set
@@ -147,6 +147,9 @@ if __name__ == '__main__':
 
             ls = np.array([0.5, 0.25, 0.125, 0.0625, 0.0625])
             # ls = np.array([0.5, 0.25, 0.125, 0.125])
+            # ls = np.array([0.5, 0.25, 0.25])
+            # ls = np.array([0.5, 0.5])
+
 
             # ls = np.array([1.0-l1-0.125-0.0625, l1, 0.0625, 0.0625, 0.0625])
             # l_fracs       = l_frac_data[irc_arr,:] 

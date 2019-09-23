@@ -8,7 +8,8 @@ from GenGrid import GenGrid
 from R_CPU   import   compute_R_CPU
 from R_TC    import   compute_R_TC
 
-from Phi_CPU import   compute_Phi_CPU
+# from Phi_CPU import   compute_Phi_CPU
+from Phi_CPU_iter import   compute_Phi_CPU
 from Phi_TC  import   compute_Phi_TC
 
 from A_CPU   import   compute_A_CPU
@@ -48,8 +49,10 @@ def Compute_POD(gen_grid, nx, ny, nz, finest, l_fracs, lc_fracs, nt, TC_CPU='TC'
             grid = GenGrid(nx, ny, nz, c_l, d_l, l_fracs, lc_fracs)
             data = grid 
         else:
-            print('need to write this code!!')
-            sys.exit()
+            grid = np.fromfile(amr_datadir + 'grid_level%05d.bin' % n).astype(int)
+            grid = np.reshape(grid, [nx, ny, nz])
+            data = np.fromfile(amr_datadir + 'density%05d.bin' % n)
+            data = np.reshape(data, [nx, ny, nz])
 
         # Perform reshaping procedure
         # 1D, no reshaping required
@@ -131,6 +134,8 @@ def Compute_POD(gen_grid, nx, ny, nz, finest, l_fracs, lc_fracs, nt, TC_CPU='TC'
     Phi         = np.matmul(Phi, np.diag(1/np.sqrt(Lambda)))
     A           = np.matmul(X_tp, Phi)
     Lambda      = np.diag(Lambda) # make this a matrix
+    print(X_grid)
+    # print(Phi)
 
 
     # ---------- Compute time complexity of each operation
