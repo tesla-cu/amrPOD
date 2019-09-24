@@ -30,91 +30,85 @@ import numpy as np
 # - time_im : CPU time to compute A using implemented algorithm
 # - time_un : CPU time to compute A using unaltered algorithm
 # ================================================================= #
-def compute_A_TC(X, X_grid, Phi, A, d_l, nt, nspat, finest, wt_art, wt_acc, wt_asn, wt_log):
+def compute_A_TC(X, X_grid, Phi, A, d_l, nt, nspat, finest, wt_art, wt_acc, wt_asn, wt_log, wt_fun):
 
+	# ========== Initialize Operation Counts ====================== #
 
-	# ========== Define Unaltered Op Counts ======================= #
-	un        = 0          # Total operation counts
-	un_art    = 0			# Arithmetic operations
-	un_acc    = 0			# Access operations
-	un_asn    = 0			# Assignment operations
+	# Unaltered Algorithm
+	un     = 0 # Total operation counts
+	un_art = 0 # Arithmetic operations
+	un_acc = 0 # Access operations
+	un_asn = 0 # Assignment operations
+	un_fun = 0 # Function call
 	
-	# ========== Define Implemented Op Counts ===================== #
-	im 	      = 0			# Total operation counts
-	im_art    = 0			# Arithmetic operations
-	im_acc    = 0			# Access operations
-	im_asn    = 0			# Assignment operations
-	im_log    = 0			# Logical operations
+	# Implemented Algorithm
+	im 	   = 0 # Total operation counts
+	im_art = 0 # Arithmetic operations
+	im_acc = 0 # Access operations
+	im_asn = 0 # Assignment operations
+	im_log = 0 # Logical operations
+	im_fun = 0 # Function call
 
 
 	# ========== Unaltered Computation ============================ #
 
-	# Initialize A matrix for unaltered computation
 	A_un = np.zeros((nt, nt))
 	un_asn += wt_asn
+	un_fun += wt_fun
 
-	# Compute A matrix with unaltered algorithm
-	for m in range(nt):     # iterate over nt rows
+	for m in range(nt):
 		un_art += wt_art
-		un_acc += wt_acc
+		un_asn += wt_asn
 
-		for n in range(nt): # iterate over nt columns
+		for n in range(nt):
 			un_art += wt_art
-			un_acc += wt_acc
+			un_asn += wt_asn
 
-			# Initialize temporary variable to store sum of an 
-			# element of A
 			a_sum  = 0
 			un_asn += wt_asn
 
-			# Compute inner product
 			for i in range(nspat):
 				un_art += wt_art
-				un_acc += wt_acc
+				un_asn += wt_asn
 
 				a_sum  += X[i,m] * Phi[i,n]
 				un_acc += 2*wt_acc
 				un_art += 2*wt_art
 				un_asn += wt_asn
 
-			# Assign value of element of A
 			A_un[m,n] = a_sum
 			un_acc    += wt_acc
 			un_asn    += wt_asn
 
 	# ========== Implemented Computation ========================== #
 
-	# Initialize R matrix for computation of implemented algorithm
-	A_im   = np.zeros((nt, nt))
+	A_im   =  np.zeros((nt, nt))
+	im_asn += wt_asn
+	im_fun += wt_fun
+
+	G      =  np.zeros((nspat), dtype=int)
+	im_asn += wt_asn
+	im_fun += wt_fun
+
+	i       = 0
 	im_asn += wt_asn
 
-	# Initialize matrix to store maximum grid level
-	G      = np.zeros((nspat), dtype=int)
-	im_asn += wt_asn	
-
-	# Initialize index of spatial location
-	i      = 0
-	im_asn += wt_asn
-
-	# Find the finest cell for all spatial locations
-	for ii in range(nspat): # dummy loop
+	for ii in range(nspat):
 		im_art += wt_art
-		im_acc += wt_acc
+		im_asn += wt_asn
 
 		im_log += wt_log
-		if i < nspat:       # exit loop if we are at the end
+		if i < nspat:
 
-			# Initialize max grid level
 			X_grid_max = X_grid[i,0]
 			im_acc     += wt_acc
 			im_asn     += wt_asn
 
-			# Find the max grid level for a spatial location
+			im_fun += wt_fun
 			for m in range(1,nt):
 				im_art += wt_art
-				im_acc += wt_acc
+				im_asn += wt_asn
 
-				# Check if current cell is bigger than current max
 				im_log += wt_log
 				im_acc += wt_acc
 				if X_grid[i,m] > X_grid_max:
@@ -123,17 +117,15 @@ def compute_A_TC(X, X_grid, Phi, A, d_l, nt, nspat, finest, wt_art, wt_acc, wt_a
 					im_acc     += wt_acc
 					im_asn     += wt_asn
 
-					# If this is the finest, no point in continuing
-					# looking for finer cells
 					im_log += wt_log
 					if X_grid_max == finest:
 							break
 
-			G[i]   =  d_l[X_grid_max] # get # of repeats
+			G[i]   =  d_l[X_grid_max]
 			im_acc += 2*wt_acc
 			im_asn += wt_asn
 
-			i      += G[i]            # skip cells that are repeated
+			i      += G[i]
 			im_art += wt_art
 			im_acc += wt_acc
 			im_asn += wt_asn
@@ -141,38 +133,32 @@ def compute_A_TC(X, X_grid, Phi, A, d_l, nt, nspat, finest, wt_art, wt_acc, wt_a
 		else:
 			break
 
-	# Compute elements of A
-	for m in range(nt):     # iterate over rows
+	for m in range(nt):
 		im_art += wt_art
-		im_acc += wt_acc
+		im_asn += wt_asn
 
-		for n in range(nt): # iterate over columns
+		for n in range(nt): 
 			im_art += wt_art
-			im_acc += wt_acc
+			im_asn += wt_asn
 
-			# Initialize temporary variable to store sum of an 
-			# element of A
 			a_sum  = 0
 			im_asn += wt_asn
 
-			# Initialize index of spatial location
 			i      = 0
 			im_asn += wt_asn
 
-			# Compute value of one element in A
-			for ii in range(nspat): # dummy loop
+			for ii in range(nspat):
 				im_art += wt_art
-				im_acc += wt_acc
+				im_asn += wt_asn
 
 				im_log += wt_log
-				if i < nspat:       # exit loop if at end
-
-					a_sum  += G[i]*X[i,m]*Phi[i,n] # weight computation
+				if i < nspat:
+					a_sum  += G[i]*X[i,m]*Phi[i,n]
 					im_acc += 3*wt_acc
 					im_art += 3*wt_art
 					im_asn += wt_asn
 
-					i      += G[i]                     # skip repeats
+					i      += G[i]
 					im_acc += wt_acc
 					im_asn += wt_asn
 					im_art += wt_art
@@ -180,7 +166,6 @@ def compute_A_TC(X, X_grid, Phi, A, d_l, nt, nspat, finest, wt_art, wt_acc, wt_a
 				else:
 					break
 
-			# Assign values of element of R
 			A_im[m,n] = a_sum
 			im_acc    += wt_acc
 			im_asn    += wt_asn
@@ -199,8 +184,8 @@ def compute_A_TC(X, X_grid, Phi, A, d_l, nt, nspat, finest, wt_art, wt_acc, wt_a
 
 	# ========== Sum operations from im and un =================== #
 
-	un = un_asn + un_acc + un_art
-	im = im_asn + im_acc + im_art + im_log
+	un = un_asn + un_acc + un_art + un_fun
+	im = im_asn + im_acc + im_art + im_fun + im_log
 
 	# Return op counts of implemented and unaltered algorithm
 	return im, un
