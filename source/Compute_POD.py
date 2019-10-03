@@ -5,15 +5,17 @@ import matplotlib.pyplot as plt
 
 from GenGrid import GenGrid
 
-from R_CPU   import   compute_R_CPU
-from R_TC    import   compute_R_TC
+from R_CPU   import compute_R_CPU
+from R_TC    import compute_R_TC
 
-# from Phi_CPU import   compute_Phi_CPU
-from Phi_CPU_iter import   compute_Phi_CPU
-from Phi_TC  import   compute_Phi_TC
+# from Phi_CPU import compute_Phi_CPU
+# from Phi_TC  import compute_Phi_TC
 
-from A_CPU   import   compute_A_CPU
-from A_TC    import   compute_A_TC
+from Phi_CPU_iter import compute_Phi_CPU
+from Phi_TC_iter  import compute_Phi_TC
+
+from A_CPU   import compute_A_CPU
+from A_TC    import compute_A_TC
 
 def Compute_POD(gen_grid, nx, ny, nz, finest, l_fracs, lc_fracs, nt, TC_CPU='TC', amr_datadir=None):
  
@@ -80,6 +82,7 @@ def Compute_POD(gen_grid, nx, ny, nz, finest, l_fracs, lc_fracs, nt, TC_CPU='TC'
         # 3D reshaping procedure, see text for details
         elif ndim == 3:
             grid_1D = grid
+            data_1D = data
             for c in c_l:
                 nxr = grid_1D.shape[0]
                 nyr = grid_1D.shape[1]
@@ -134,17 +137,21 @@ def Compute_POD(gen_grid, nx, ny, nz, finest, l_fracs, lc_fracs, nt, TC_CPU='TC'
     Phi         = np.matmul(Phi, np.diag(1/np.sqrt(Lambda)))
     A           = np.matmul(X_tp, Phi)
     Lambda      = np.diag(Lambda) # make this a matrix
-    print(X_grid)
-    # print(Phi)
-
 
     # ---------- Compute time complexity of each operation
     if TC_CPU == 'TC':
 
-        R_imp,  R_unalt  = compute_R_TC(X, X_grid, R, d_l, nt, nspat, wt_art, wt_acc, wt_asn, wt_log)
-        P1_imp, P1_unalt = compute_Phi_TC(X, X_grid, Psi, Lambda, 1, Phi, d_l, nt, nspat, finest, wt_art, wt_acc, wt_asn, wt_log, wt_fun)
-        P2_imp, P2_unalt = compute_Phi_TC(X, X_grid, Psi, Lambda, 2, Phi, d_l, nt, nspat, finest, wt_art, wt_acc, wt_asn, wt_log, wt_fun)
-        A_imp,  A_unalt  = compute_A_TC(X, X_grid, Phi, A, d_l, nt, nspat, finest, wt_art, wt_acc, wt_asn, wt_log)
+        R_imp,  R_unalt  = compute_R_TC(X, X_grid, R, d_l, nt, nspat, \
+            wt_art, wt_acc, wt_asn, wt_log, wt_fun)
+
+        P1_imp, P1_unalt = compute_Phi_TC(X, X_grid, Psi, Lambda, 1, Phi, d_l, nt, nspat, finest, \
+            wt_art, wt_acc, wt_asn, wt_log, wt_fun)
+
+        P2_imp, P2_unalt = compute_Phi_TC(X, X_grid, Psi, Lambda, 2, Phi, d_l, nt, nspat, finest, \
+            wt_art, wt_acc, wt_asn, wt_log, wt_fun)
+
+        A_imp,  A_unalt  = compute_A_TC(X, X_grid, Phi, A, d_l, nt, nspat, finest, \
+            wt_art, wt_acc, wt_asn, wt_log, wt_fun)
 
         return R_imp, R_unalt, P1_imp, P1_unalt, P2_imp, P2_unalt, A_imp, A_unalt
 

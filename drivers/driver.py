@@ -23,16 +23,16 @@ if __name__ == '__main__':
 
     # ---------- User defined inputs -------------------------------- 
     gen_grid    = True  # are we generating synthetic data?
-    compute_tc  = False  # are we computing the time complexity?
+    compute_tc  = True  # are we computing the time complexity?
     compute_cpu = True # are we computing the cpu time?
-    nx          = 32    # x spatial points                  
-    ny          = 1    # y spatial points
+    nx          = 64    # x spatial points                  
+    ny          = 64    # y spatial points
     nz          = 1     # z spatial points
-    finest      = 4     # finest level of AMR in the domain
-    nsample     = 1     # number of samples for each parameter set
+    finest      = 1     # finest level of AMR in the domain
+    nsample     = 8     # number of samples for each parameter set
     # nt_arr      = np.arange(101, 102, 5)     # spanning nt
-    nt_arr      = np.arange(5, 6, 5)     # spanning nt
-    l1_arr      = np.arange(4*0.0625, 7*0.0625, .25) # spanning l1
+    nt_arr      = np.arange(5, 51, 5)     # spanning nt
+    l1_arr      = np.arange(0.0, 13*0.0625, 0.0625) # spanning l1
     lcs         = np.zeros((finest+1)) # fraction of grid that stays constant in time
     # lc_fracs     = np.array([1/16, 0/16, 0/16])
 
@@ -128,8 +128,8 @@ if __name__ == '__main__':
     # TC_A_unalt_rms     = np.zeros((np.size(rc_arr), np.size(nt_arr)))
 
     # Start parallel processing
-    # nthread = mp.cpu_count()
-    nthread = 1
+    nthread = mp.cpu_count()
+    # nthread = 4
     print('starting pool with %i threads ...' % nthread)
     pool = mp.Pool(processes=nthread)
 
@@ -141,11 +141,11 @@ if __name__ == '__main__':
             print('nt = %i, l1 = %0.4f' % (nt, l1))
 
             # Since we have l in our vars, we need to ls
-            # ls = np.array([1.0-l1, l1])
+            ls = np.array([1.0-l1, l1])
             # ls = np.array([1.0-3*l1, l1, l1, l1/2, l1/2])
             # ls = np.array([1.0-3*l1, l1, l1, l1])
 
-            ls = np.array([0.5, 0.25, 0.125, 0.0625, 0.0625])
+            # ls = np.array([0.5, 0.25, 0.125, 0.0625, 0.0625])
             # ls = np.array([0.5, 0.25, 0.125, 0.125])
             # ls = np.array([0.5, 0.25, 0.25])
             # ls = np.array([0.5, 0.5])

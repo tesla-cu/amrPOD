@@ -185,31 +185,42 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest)
 					G_mat[0,0,nl[0,0]] = n
 					nl[0,0] += 1
 					
-
 				else:
 					# Check if the finest is greater than 1. If it is,
 					# we will need to look at higher levels
 					if finest > 1:
+						# Set local and global variables inside coarse cell
 						idx = 0
 						j = i
+
+						# Iterate over a coarse cell
 						for jj in range(d_1):
-							if idx < d_1:
+							if idx < d_1: # dummy loop
+
+								# Get level of this cell
 								lvl = X_grid[j,n]
+
+								# Check finest since finest must occur in blocks
+								# of d_l we don't look where all finest would be
 								if lvl == finest:
+									# Tabulate cell and skip corresponding number
 									G_mat[finest, idx, nl[finest, idx]] = n
 									nl[finest, idx] += 1
 									idx += 1
 									j += d_l[finest-1]
+
+								# If not the finest, we need to check each level 
+								# from 1 to f-1 iteratively
 								else:
 									for l in range(1,finest): # note not looking at highest level
+										# If the lvl is the current level, tabulate it and skip 
+										# and don't check higher levels
 										if lvl == l:
 											G_mat[l, idx, nl[l, idx]] = n
 											nl[l, idx] += 1
 											idx += d_l[l+1]
 											j += d_l[l]
 											break
-
-
 							else:
 								break
 
@@ -265,10 +276,6 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest)
 										k = G_mat[l, idx, m]
 										l_sum += X[j,k] * Psi[k,n]
 
-									# Temporary index needed for assigning 
-									# contribution to correct cells in H
-									# l_idx = int((j-i)/d_l[clvl])
-
 									# Assign contribution to H
 									for m in range(idx*d_l[finest-1], idx*d_l[finest-1] + d_l[l]):
 										H[m, l] = l_sum
@@ -299,7 +306,7 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest)
 									l_sum += X[j,k] * Psi[k,n]
 
 								# Assign contribution to H
-								for m in range((idx)*d_l[clvl], (idx+1)*d_l[clvl]):
+								for m in range(idx*d_l[clvl], (idx+1)*d_l[clvl]):
 									H[m, clvl] = l_sum
 
 							# Compute finest level contribution
@@ -318,13 +325,9 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest)
 										l_sum += X[k,p] * Psi[p,n]
 
 									# Assign contribution to H
-									H[k-j+d_l[finest-1] * (idx), finest] = l_sum
+									H[k-j+d_l[finest-1]*idx, finest] = l_sum
 
 							idx += 1
-
-
-
-						# H = compute_H(X_grid, Psi, i, 0, n, nt, 1, finest, d_l, G_mat, nl, H)
 
 					# If not, we know the last cells must be l=1
 					else:

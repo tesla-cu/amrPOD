@@ -8,8 +8,8 @@ def gen_fig(num, den, imgdir, figfile, xaxis, yaxis, xlabel, ylabel):
 	# num - numerator of images
 	# den - denomenator for normalization
 
-	# img = np.transpose(np.divide(num, den))
-	img = np.divide(num, den)
+	img = np.transpose(np.divide(num, den))
+	# img = np.divide(num, den)
 	Xaxis, Yaxis = np.meshgrid(xaxis, yaxis, copy=False, indexing='ij')
 	cont_levs = 100
 	xmin = np.min(xaxis)
@@ -21,13 +21,17 @@ def gen_fig(num, den, imgdir, figfile, xaxis, yaxis, xlabel, ylabel):
 	fig = plt.figure(clear=True)
 	ax = fig.add_subplot(1,1,1)
 
-	# plt.contourf(Xaxis, Yaxis, img, cont_levs, origin='lower')
-	im = ax.contourf(Xaxis, Yaxis, img, cont_levs, origin='lower', \
-		extent=[xmin,xmax,ymin,ymax], cmap='bwr')
-	# im = ax.imshow(img, aspect='auto', origin='lower', \
+	# im = ax.contourf(Xaxis, Yaxis, img, cont_levs, origin='lower', \
 	# 	extent=[xmin,xmax,ymin,ymax], cmap='bwr')
-	# im = ax.imshow(img, aspect='auto', origin='lower')
+	im = ax.imshow(img, aspect='auto', origin='lower', \
+		extent=[xmin,xmax,ymin,ymax], cmap='bwr')
 	cbar = ax.figure.colorbar(im, ax=ax)
+
+	ax.set_xticks(xaxis)
+	ax.set_yticks(yaxis)
+	ax.set_xlabel(xlabel)
+	ax.set_ylabel(ylabel)
+
 	# cbar = plt.colorbar()
 	# cbar.set_label('${T_{imp}}/{T_{unalt}}$')
 	# plt.xticks(xaxis)
@@ -47,10 +51,7 @@ def gen_fig(num, den, imgdir, figfile, xaxis, yaxis, xlabel, ylabel):
 	# ax.yaxis.set_major_locator(plt.NullLocator())
 	# ax.yaxis.set_major_formatter(plt.NullFormatter())
 
-	ax.set_xticks(xaxis)
-	ax.set_yticks(yaxis)
-	ax.set_xlabel(xlabel)
-	ax.set_ylabel(ylabel)
+	
 
 	# ax.set_yticks([0.5,1.5], minor=True)
 

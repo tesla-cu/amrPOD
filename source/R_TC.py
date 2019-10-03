@@ -29,6 +29,8 @@ import numpy as np
 # ================================================================= #
 def compute_R_TC(X, X_grid, R, d_l, nt, nspat, wt_art, wt_acc, wt_asn, wt_log, wt_fun):
 
+	# ========== Initialize Operation Counts ====================== #
+
 	# Unaltered Algorithm
 	un     = 0 # Total operation counts
 	un_art = 0 # Arithmetic operations
