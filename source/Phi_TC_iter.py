@@ -484,7 +484,7 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest, 
 									im_art += 2*wt_art
 
 
-								im_art += 2*wt_art
+								im_art += 3*wt_art
 								im_acc += 2*wt_acc
 								for m in range(idx*d_l[clvl], (idx+1)*d_l[clvl]):
 									im_art += wt_art
@@ -522,7 +522,7 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest, 
 
 									H[k-j+d_l[finest-1]*idx, finest] = l_sum
 									im_art += 4*wt_art
-									im_acc += wt_acc
+									im_acc += 2*wt_acc
 									im_asn += wt_asn
 
 							idx += 1
