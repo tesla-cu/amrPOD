@@ -170,7 +170,6 @@ def Compute_POD(gen_grid, nx, ny, nz, finest, l_fracs, lc_fracs, nt, TC_CPU='TC'
 		sys.exit()
 
 	# Reshape back to original shape
-	grid_rsh    = np.zeros((grid.shape))
 	c_l_inv     = np.zeros((nlev), dtype=int)
 	c_l_inv[-1] = nx
 	lev_for     = np.arange(nlev-1)
@@ -184,34 +183,35 @@ def Compute_POD(gen_grid, nx, ny, nz, finest, l_fracs, lc_fracs, nt, TC_CPU='TC'
 		# Perform reshaping procedure
 		# 1D, no reshaping required
 		if ndim == 1:
-			grid_1D = np.squeeze(grid_1D)
+			phi_1D = np.squeeze(Phi[:,n])
 
 		# 2D reshaping procedure, see text for details
 		elif ndim == 2:
-			grid_1D = np.squeeze(grid_1D)
+			phi_1D = np.squeeze(Phi[:,n])
 			for c in c_l_inv:
-				nxr = grid_1D.shape[0]
+				nxr = phi_1D.shape[0]
 				
-				grid_1D = np.reshape(  grid_1D, (nxr, -1, c))
-				grid_1D = np.transpose(grid_1D, ( 1,  0,  2))
-				grid_1D = np.reshape(  grid_1D, (-1, c))
-				grid_1D = np.transpose(grid_1D, ( 1,  0))
+				phi_1D = np.reshape(  phi_1D, (nxr, -1, c))
+				phi_1D = np.transpose(phi_1D, ( 1,  0,  2))
+				phi_1D = np.reshape(  phi_1D, (-1, c))
+				phi_1D = np.transpose(phi_1D, ( 1,  0))
 
 		# 3D reshaping procedure, see text for details
 		elif ndim == 3:
+			phi_1D = np.squeeze(Phi[:,n])
 			for c in c_l_inv:
-				nxr = grid_1D.shape[0]
-				nyr = grid_1D.shape[1]
+				nxr = phi_1D.shape[0]
+				nyr = phi_1D.shape[1]
 
-				grid_1D = np.reshape(  grid_1D, ( nxr, nyr,  -1,   c))
-				grid_1D = np.transpose(grid_1D, ( 0,  2,  1,   3))
-				grid_1D = np.reshape(  grid_1D, ( nxr, -1,  c,   c))
-				grid_1D = np.transpose(grid_1D, ( 1,  0,  2,   3))
-				grid_1D = np.reshape(  grid_1D, (-1,  c,  c))
-				grid_1D = np.transpose(grid_1D, ( 2,  1,  0))
+				phi_1D = np.reshape(  phi_1D, ( nxr, nyr,  -1,   c))
+				phi_1D = np.transpose(phi_1D, ( 0,  2,  1,   3))
+				phi_1D = np.reshape(  phi_1D, ( nxr, -1,  c,   c))
+				phi_1D = np.transpose(phi_1D, ( 1,  0,  2,   3))
+				phi_1D = np.reshape(  phi_1D, (-1,  c,  c))
+				phi_1D = np.transpose(phi_1D, ( 2,  1,  0))
 
 		# Assign new reshaped data to corresponding X matrix
-		grid_rsh[:,n] = grid_1D
+		Phi[:,n] = phi_1D
 
 
 
