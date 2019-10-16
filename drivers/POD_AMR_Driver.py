@@ -15,8 +15,8 @@ def parallel_run(args):
 if __name__ == '__main__':
 
         generate_data              = True
-        nx                         = 32                                                        
-        ny                         = 32
+        nx                         = 16                                                        
+        ny                         = 16
         nz                         = 1
         finest                     = 2
         nsample                    = 2
