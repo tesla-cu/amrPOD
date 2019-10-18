@@ -103,7 +103,7 @@ def compute_R_CPU(X, X_grid, R, d_l, nt, nspat):
 							d_val = d_l[X_grid[i,m]]
 						else:
 							d_val = d_l[X_grid[i,n]]
-						r_sum += d_val*X_grid[i,n]*X[i,m] # weight computation
+						r_sum += d_val*X[i,n]*X[i,m] # weight computation
 						i += d_val                        # skip repeats
 					else:
 						break
