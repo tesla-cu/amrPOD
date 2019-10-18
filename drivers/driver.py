@@ -22,17 +22,17 @@ if __name__ == '__main__':
     print('starting script to perform POD on AMR grids ...')
 
     # ---------- User defined inputs -------------------------------- 
-    gen_grid    = True  # are we generating synthetic data?
-    compute_tc  = True  # are we computing the time complexity?
+    gen_grid    = False  # are we generating synthetic data?
+    compute_tc  = False  # are we computing the time complexity?
     compute_cpu = True # are we computing the cpu time?
-    nx          = 64    # x spatial points                  
-    ny          = 64    # y spatial points
+    nx          = 512   # x spatial points                  
+    ny          = 512    # y spatial points
     nz          = 1     # z spatial points
-    finest      = 1     # finest level of AMR in the domain
-    nsample     = 8     # number of samples for each parameter set
+    finest      = 3     # finest level of AMR in the domain
+    nsample     = 1    # number of samples for each parameter set
     # nt_arr      = np.arange(101, 102, 5)     # spanning nt
-    nt_arr      = np.arange(5, 51, 5)     # spanning nt
-    l1_arr      = np.arange(0.0, 13*0.0625, 0.0625) # spanning l1
+    nt_arr      = np.arange(1, 10, 1)     # spanning nt
+    l1_arr      = np.arange(0.0, 1*0.0625, 0.0625) # spanning l1
     lcs         = np.zeros((finest+1)) # fraction of grid that stays constant in time
     # lc_fracs     = np.array([1/16, 0/16, 0/16])
 
@@ -47,12 +47,16 @@ if __name__ == '__main__':
     # l2_frac_arr  = np.zeros(np.size(rc_arr))
     # l_frac_data  = np.zeros((np.size(l1_frac_arr), nlev))
 
-    # Direction where /code/ lives
-    basedir = '/Users/mikemeehan/Research/Papers/2019_POD_AMR/'
+    # Direction where /code/ livesc
+    basedir = '/Users/samsimonswellin/desktop/'
+    # basedir = '/Users/mikemeehan/Research/Papers/2019_POD_AMR/'
 
     # Directory where AMR data is stored
-    amr_datadir = '/Users/mikemeehan/Research/InternalResearchPapers/AMR_POD/data/' + \
-        'slice/x0.000-0.000_y-1.000-1.000_z0.000-2.000_t40.0000-42.0000/'
+    amr_datadir = '/Users/samsimonswellin/desktop/' + \
+        'x0.000-0.000_y-1.000-1.000_z0.000-2.000_t40.0000-42.0000/'
+
+    # amr_datadir = '/Users/mikemeehan/Research/InternalResearchPapers/AMR_POD/data/' + \
+    #     'slice/x0.000-0.000_y-1.000-1.000_z0.000-2.000_t40.0000-42.0000/'
 
     # Directory where we was to store data on speed up
     datadir = basedir + 'data/'
@@ -283,7 +287,7 @@ if __name__ == '__main__':
     sim_info.write("x_end:    %i\n" % xvals[-1])
     sim_info.write("yval:     %s\n" % "l1")
     sim_info.write("y_0:      %i\n" % yvals[0])
-    sim_info.write("y_inc:    %i\n" % np.diff(yvals[0:2]))
+    # sim_info.write("y_inc:    %i\n" % np.diff(yvals[0:2]))
     sim_info.write("y_end:    %i\n" % yvals[-1])
     sim_info.close()
 
@@ -336,7 +340,7 @@ if __name__ == '__main__':
 
     
     # Plot these various quantities
-    plot_single(txtdir, imgdir, compute_tc, compute_cpu, xvals, yvals, 'nt', 'l1')
+    # plot_single(txtdir, imgdir, compute_tc, compute_cpu, xvals, yvals, 'nt', 'l1')
 
 
     # Code if we want to span rc
