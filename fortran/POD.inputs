@@ -1,0 +1,46 @@
+&POD_inputs
+
+  ! dim = 2
+
+  nx = 512
+  ny = 512
+  nz = 1
+
+  itime = 0, 100
+
+  ix = 1, 512
+  iy = 1, 512
+  iz = 1, 1
+
+  rm_mean = .TRUE.
+
+
+  ! file_fmt = '%s%05d.bin'
+  datadir = '/Users/mikemeehan/Research/InternalResearchPapers/AMR_POD/data/slice/x0.000-0.000_y-1.000-1.000_z0.000-2.000_t40.0000-42.0000/'
+  datatyp = 'float64'
+
+  PODdir = '/folder/'
+
+  ! for alg, 0=normal, 1=amr, 2=both (soon to be optimized)
+  Ralg = 2
+  Phialg = 2
+  Aalg = 2
+  ! algorithm = 2,2,2
+  ! algorithm = 'fast'
+
+  ! variables = 'x_velocity', 'y_velocity', 'z_velocity'
+  ! var_nam_len = 10, 10, 10, 0, 0, 0
+
+
+  variables = 'z_velocity'
+  var_nam_len = 10, 0, 0, 0, 0, 0
+
+
+/
+
+&AMR_POD_inputs
+  
+  finest = 1
+
+
+/
