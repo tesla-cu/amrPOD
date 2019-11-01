@@ -257,14 +257,17 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest)
 				# Check if we have any cells that aren't l=0
 				if nl[0,0] < nt:
 
-
+					# Check if the finest is greater than 2.
 					if finest > 2:
 
-						for l in range(1,finest-1): # note not looking at highest 2 levels
+						# Get contributions from l=1 up to l=finest-2
+						for l in range(1,finest-1): # 
 							idx = 0
 
+							# Iterate on cells that could have new contributions
 							for j in range(i, i+d_0, d_l[l]):
 
+								# Check if we have any cells
 								if nl[l, idx] > 0:
 
 									# Initialize temporary variable to store sum of  
@@ -283,7 +286,9 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest)
 								idx += d_l[l + 1]
 
 
-					# Check if the finest is greater than 1.
+					# Check if the finest is greater than 1. This is 
+					# where we get contributions from finest-1 and 
+					# finest
 					if finest > 1:
 
 						idx = 0
