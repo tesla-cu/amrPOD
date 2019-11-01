@@ -6,18 +6,11 @@ sys.path.insert(1, '../source/')
 from Compute_POD_check import Compute_POD_check
 
 
-
-# This function simply enables us to do a parallel run where we have
-# multiple arguments for the function
-def parallel_run(args):
-   return Compute_POD(*args)
-
-
 if __name__ == '__main__':
 
     print('starting script to perform POD on AMR grids ...')
 
-    # ---------- User defined inputs -------------------------------- 
+    # ---------- User defined inputs --------------------------------
     # gen_grid    = False  # are we generating synthetic data?
     # compute_tc  = True  # are we computing the time complexity?
     # compute_cpu = True # are we computing the cpu time?
@@ -26,11 +19,6 @@ if __name__ == '__main__':
     nz          = 1     # z spatial points
     finest      = 3     # finest level of AMR in the domain
     nt          = 10     # number of time steps
-    # lc_fracs     = np.array([1/16, 0/16, 0/16])
-
-    # Variables we will iterate through
-    # xvals = nt_arr # what will be plotted on the x-axis
-    # yvals = l1_arr # what will be plotted on the y-axis
 
     # Direction where /code/ lives
     # basedir = '/Users/samsimonswellin/desktop/'
@@ -52,20 +40,10 @@ if __name__ == '__main__':
     if not os.path.exists(studydir):
         os.mkdir(studydir)
 
-    # Directory that holds all txt files of POD variables
-    # txtdir = studydir + 'txt_files/'
-    # if not os.path.exists(txtdir):
-    #     os.mkdir(txtdir)
-
-    # Directory that holds all images generated from txt files
-    # imgdir = studydir + 'images/'
-    # if not os.path.exists(imgdir):
-    #     os.mkdir(imgdir)
-
-
+    # ---------- Compute POD ----------------------------------------
     R, Phi, A = Compute_POD_check(nx, ny, nz, finest, nt,  amr_datadir)
 
-    # ========== Save data
+    # ---------- Save data ------------------------------------------
     print('writing out text files ...')
     np.savetxt(studydir + "/R_py.txt",   R)
     np.savetxt(studydir + "/Phi_py.txt", Phi)

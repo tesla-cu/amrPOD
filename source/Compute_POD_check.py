@@ -18,30 +18,23 @@ from A_TC    import compute_A_TC
 
 def Compute_POD_check(nx, ny, nz, finest, nt, amr_datadir):
  
+ 	# ---------- Helpful quantities derived from user inputs --------
 	nspat = nx*ny*nz    
 	nlev  = finest + 1
-	c_l   = np.zeros((nlev), dtype=int)
-	d_l   = np.zeros((nlev), dtype=int)
-
-	# ---------- Helpful quantities derived from user inputs
-	ndim  = 0          # num dimensions
+	ndim  = 0            # num dimensions
 	if nx > 1: ndim += 1 
 	if ny > 1: ndim += 1 
 	if nz > 1: ndim += 1
 	levels = np.arange(0, nlev)
 	
+	# ---------- Arrays for repetition ------------------------------
+	c_l   = np.zeros((nlev), dtype=int)
+	d_l   = np.zeros((nlev), dtype=int)
 	for i in range(nlev):
 		c_l[i]    = 2**(finest-i)
 		d_l[i]    = (2**ndim)**(finest-i)
 
-	# ---------- Define operation weighting for counting 
-	wt_art    = 1       # Arithmetic
-	wt_acc    = 1       # Memory accessing
-	wt_asn    = 1       # Variable assignment
-	wt_log    = 1       # Logical test
-	wt_fun    = 1       # Function call
-
-	# ---------- Load or generate data
+	# ---------- Load or generate data ------------------------------
 	X      = np.zeros((nspat,nt))
 	X_grid = np.zeros((nspat,nt), dtype=int)
 	for n in range(nt):
@@ -101,7 +94,7 @@ def Compute_POD_check(nx, ny, nz, finest, nt, amr_datadir):
 		X[:,n]      = data_1D
 		X_grid[:,n] = grid_1D
 
-	# ---------- Compute grid information from X_grid
+	# ---------- Compute grid information from X_grid ---------------
 	l_comp  = np.zeros((nlev)) # computed level fractions
 	lc_comp = np.zeros((nlev)) # computed level constant fractions
 
@@ -120,34 +113,32 @@ def Compute_POD_check(nx, ny, nz, finest, nt, amr_datadir):
 	lc_comp = lc_comp/nspat
 	# print("lc_comp = ", lc_comp)
 
-	# ---------- Calculate POD with matrix operations
+	# ---------- Calculate POD with matrix operations ---------------
 	X_tp        = np.transpose(X)
 	R           = np.matmul(X_tp, X)
 	Lambda, Psi = LA.eig(R)
-
-	# Sort Eigenvalues and Eigenvectors
-	idx_eig     = np.argsort(Lambda)
+	idx_eig     = np.argsort(Lambda) # sort eigenvalues
 	Lambda      = Lambda[idx_eig]
 	Psi         = Psi[:,idx_eig]
 	Phi         = np.matmul(X,Psi)
 	Phi         = np.matmul(Phi, np.diag(1/np.sqrt(Lambda)))
-	# np.savetxt("/Users/samsimonswellin/desktop/Phi_PreRsh.txt",    Phi   )
 	A           = np.matmul(X_tp, Phi)
 	Lambda      = np.diag(Lambda) # make this a matrix
 
-	# ---------- Calculate POD with iterative operations
+	# ---------- Calculate POD with iterative operations ------------
 	R_imp,  R_unalt  = compute_R_CPU(X, X_grid, R, d_l, nt, nspat)
 	P1_imp, P1_unalt = compute_Phi_CPU(X, X_grid, Psi, Lambda, 1, Phi, d_l, nt, nspat, finest)
 	P2_imp, P2_unalt = compute_Phi_CPU(X, X_grid, Psi, Lambda, 2, Phi, d_l, nt, nspat, finest)
 	A_imp,  A_unalt  = compute_A_CPU(X, X_grid, Phi, A, d_l, nt, nspat, finest)
 
-	# ---------- Reshape back to original shape
+	# ---------- Reshape back to original shape ---------------------
 
 	# Create array that specifies a dimension of reshape
 	c_lr       = np.zeros((nlev), dtype=int) # c_l in reverse
 	c_lr[0:-1] = c_l[-2::-1] # reversed elements of c_l excluding last
 	c_lr[-1]   = nx          # last iteration must be nx
 
+	# Iterate through all snapshots
 	for n in range(nt):
 		
 		phi_1D = Phi[:,n]
@@ -169,7 +160,6 @@ def Compute_POD_check(nx, ny, nz, finest, nt, amr_datadir):
 
 		# 3D reshaping procedure, see text for details
 		elif ndim == 3:
-
 			for c in c_lr:
 				nxr = phi_1D.shape[0]
 				nyr = phi_1D.shape[1]
@@ -185,4 +175,3 @@ def Compute_POD_check(nx, ny, nz, finest, nt, amr_datadir):
 		Phi[:,n] = phi_1D
 
 	return R, Phi, A
-
