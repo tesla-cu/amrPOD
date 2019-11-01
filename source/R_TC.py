@@ -147,7 +147,7 @@ def compute_R_TC(X, X_grid, R, d_l, nt, nspat, wt_art, wt_acc, wt_asn, wt_log, w
 							im_acc += 2*wt_acc
 							im_asn += wt_asn
 
-						r_sum  += d_val*X_grid[i,n]*X[i,m]
+						r_sum  += d_val*X[i,n]*X[i,m]
 						im_acc += 2*wt_acc
 						im_art += 3*wt_art
 						im_asn += wt_asn
@@ -168,13 +168,13 @@ def compute_R_TC(X, X_grid, R, d_l, nt, nspat, wt_art, wt_acc, wt_asn, wt_log, w
 			im_asn    += wt_asn
 
 	# ========== Check Correctness of Matrices ==================== #
-
-	if np.max(abs(np.subtract(R_im, R))) < 1e-8:
+	
+	if np.max(abs(np.subtract(R_im, R))) < 1e-6:
 		print('The implemented R is correct')
 	else:
 		print('The implemented R is incorrect')
 
-	if np.max(abs(np.subtract(R_un, R))) < 1e-8:
+	if np.max(abs(np.subtract(R_un, R))) < 1e-6:
 		print('The unaltered R is correct')
 	else:
 		print('The unaltered R is incorrect')
