@@ -369,13 +369,19 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest)
 
 		# Compute total cpu time
 		time_im = time.time() - tic
+	
+	# ========== Check Correctness of Matrices ==================== #
+	
+	# Compute relative error for each cell
+	err_im = np.max(abs(np.subtract(Phi_im, Phi)) / abs(Phi))
+	err_un = np.max(abs(np.subtract(Phi_un, Phi)) / abs(Phi))
 
-	if np.max(abs(np.subtract(Phi_im, Phi))) < 1e-8:
+	if err_im < 1e-6:
 		print('The implemented Phi is correct')
 	else:
 		print('The implemented Phi is incorrect')
 
-	if np.max(abs(np.subtract(Phi_un, Phi))) < 1e-8:
+	if err_un < 1e-6:
 		print('The unaltered Phi is correct')
 	else:
 		print('The unaltered Phi is incorrect')
@@ -385,35 +391,4 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest)
 
 
 
-
-
-
-# Old method 1
-# if method == 1:
-
-# 	Phi_imp = np.zeros((nspat, nt))
-# 	G       = np.zeros((nspat), dtype=int)
-# 	i       = 0
-
-# 	for n in range(nspat):
-# 		if i < nspat:
-# 			X_grid_max = X_grid[i,0]
-# 			for j in range(1,nt):
-# 				if X_grid[i,j] > X_grid_max:
-# 					X_grid_max = X_grid[i,j]
-# 			G[i]  = d_l[X_grid_max]
-# 			i     += G[i]
-# 		else:
-# 			break
-
-# 	for i in range(nt):
-# 		j = 0
-# 		for n in range(nspat):
-# 			if j < nspat:
-# 				phi_sum = 0
-# 				for k in range(nt):
-# 					phi_sum += X[j,k] * Psi[k,i]
-# 				Phi_imp[j:j+G[j], i] = phi_sum / np.sqrt(Lambda[i,i])
-# 				j = j + G[j]
-	
 

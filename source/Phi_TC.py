@@ -386,12 +386,18 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest, 
 					im_asn += wt_asn
 					im_fun += wt_fun
 
-	if np.max(abs(np.subtract(Phi_im, Phi))) < 1e-8:
+	# ========== Check Correctness of Matrices ==================== #
+
+	# Compute relative error for each cell
+	err_im = np.max(abs(np.subtract(Phi_im, Phi)) / abs(Phi))
+	err_un = np.max(abs(np.subtract(Phi_un, Phi)) / abs(Phi))
+
+	if err_im < 1e-6:
 		print('The implemented Phi is correct')
 	else:
 		print('The implemented Phi is incorrect')
 
-	if np.max(abs(np.subtract(Phi_un, Phi))) < 1e-8:
+	if err_un < 1e-6:
 		print('The unaltered Phi is correct')
 	else:
 		print('The unaltered Phi is incorrect')

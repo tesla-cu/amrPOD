@@ -169,12 +169,16 @@ def compute_R_TC(X, X_grid, R, d_l, nt, nspat, wt_art, wt_acc, wt_asn, wt_log, w
 
 	# ========== Check Correctness of Matrices ==================== #
 	
-	if np.max(abs(np.subtract(R_im, R))) < 1e-6:
+	# Compute relative error for each cell
+	err_im = np.max(abs(np.subtract(R_im, R)) / abs(R))
+	err_un = np.max(abs(np.subtract(R_un, R)) / abs(R))
+
+	if err_im < 1e-6:
 		print('The implemented R is correct')
 	else:
 		print('The implemented R is incorrect')
 
-	if np.max(abs(np.subtract(R_un, R))) < 1e-6:
+	if err_un < 1e-6:
 		print('The unaltered R is correct')
 	else:
 		print('The unaltered R is incorrect')

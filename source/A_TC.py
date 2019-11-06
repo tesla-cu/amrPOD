@@ -172,12 +172,16 @@ def compute_A_TC(X, X_grid, Phi, A, d_l, nt, nspat, finest, wt_art, wt_acc, wt_a
 
 	# ========== Check Correctness of Matrices ==================== #
 
-	if np.max(abs(np.subtract(A_im, A))) < 1e-8:
+	# Compute relative error for each cell
+	err_im = np.max(abs(np.subtract(A_im, A)) / abs(A))
+	err_un = np.max(abs(np.subtract(A_un, A)) / abs(A))
+
+	if err_im < 1e-6:
 		print('The implemented A is correct')
 	else:
 		print('The implemented A is incorrect')
 
-	if np.max(abs(np.subtract(A_un, A))) < 1e-8:
+	if err_un < 1e-6:
 		print('The unaltered A is correct')
 	else:
 		print('The unaltered A is incorrect')

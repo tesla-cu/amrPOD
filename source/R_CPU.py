@@ -116,13 +116,17 @@ def compute_R_CPU(X, X_grid, R, d_l, nt, nspat):
 	time_im = time.time() - tic
 
 	# ========== Check Correctness of Matrices ==================== #
+	
+	# Compute relative error for each cell
+	err_im = np.max(abs(np.subtract(R_im, R)) / abs(R))
+	err_un = np.max(abs(np.subtract(R_un, R)) / abs(R))
 
-	if np.max(abs(np.subtract(R_im, R))) < 1e-6:
+	if err_im < 1e-6:
 		print('The implemented R is correct')
 	else:
 		print('The implemented R is incorrect')
 
-	if np.max(abs(np.subtract(R_un, R))) < 1e-6:
+	if err_un < 1e-6:
 		print('The unaltered R is correct')
 	else:
 		print('The unaltered R is incorrect')
