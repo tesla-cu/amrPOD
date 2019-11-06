@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from numpy import linalg as LA
 
 from GenGrid import GenGrid
+from Reshape_AMR import Reshape_AMR
 
 from R_CPU   import compute_R_CPU
 from R_TC    import compute_R_TC
@@ -48,61 +49,14 @@ def Compute_POD(gen_grid, nx, ny, nz, finest, l_fracs, lc_fracs, nt, TC_CPU='CPU
 
 		if gen_grid:
 			grid = GenGrid(nx, ny, nz, c_l, d_l, l_fracs, lc_fracs)
-			data = grid 
+			data = grid + 1.5
 		else:
 			grid = np.fromfile(amr_datadir + 'grid_level%05d.bin' % n).astype(int)
-			grid = np.reshape(grid, [nx, ny, nz])
 			data = np.fromfile(amr_datadir + 'density%05d.bin' % n)
-			data = np.reshape(data, [nx, ny, nz])
 
-		# Perform reshaping procedure
-		# 1D, no reshaping required
-		if ndim == 1:
-			grid_1D = np.squeeze(grid)
-			data_1D = np.squeeze(data)
-
-		# 2D reshaping procedure, see text for details
-		elif ndim == 2:
-			grid_1D = np.squeeze(grid)
-			data_1D = np.squeeze(data)
-			for c in c_l:
-				nxr = grid_1D.shape[0]
-
-				grid_1D = np.transpose(grid_1D, ( 1,  0))
-				grid_1D = np.reshape(  grid_1D, (-1,  c,  nxr))
-				grid_1D = np.transpose(grid_1D, ( 1,  0,  2))
-				grid_1D = np.reshape(  grid_1D, ( c, -1))
-
-				data_1D = np.transpose(data_1D, ( 1,  0))
-				data_1D = np.reshape(  data_1D, (-1,  c,  nxr))
-				data_1D = np.transpose(data_1D, ( 1,  0,  2))
-				data_1D = np.reshape(  data_1D, ( c, -1))
-
-		# 3D reshaping procedure, see text for details
-		elif ndim == 3:
-			grid_1D = grid
-			data_1D = data
-			for c in c_l:
-				nxr = grid_1D.shape[0]
-				nyr = grid_1D.shape[1]
-
-				grid_1D = np.transpose(grid_1D, ( 2,  1,  0))
-				grid_1D = np.reshape(  grid_1D, (-1,  c,  nyr, nxr))
-				grid_1D = np.transpose(grid_1D, ( 1,  0,  2,   3))
-				grid_1D = np.reshape(  grid_1D, ( c, -1,  c,   nxr))
-				grid_1D = np.transpose(grid_1D, ( 0,  2,  1,   3))
-				grid_1D = np.reshape(  grid_1D, ( c,  c, -1))
-
-				data_1D = np.transpose(data_1D, ( 2,  1,  0))
-				data_1D = np.reshape(  data_1D, (-1,  c,  nyr, nxr))
-				data_1D = np.transpose(data_1D, ( 1,  0,  2,   3))
-				data_1D = np.reshape(  data_1D, ( c, -1,  c,   nxr))
-				data_1D = np.transpose(data_1D, ( 0,  2,  1,   3))
-				data_1D = np.reshape(  data_1D, ( c,  c, -1))
-
-		# Assign new reshaped data to corresponding X matrix
-		X[:,n]      = data_1D
-		X_grid[:,n] = grid_1D
+		# Perform reshaping
+		X[:,n]      = Reshape_AMR(nx, ny, nz, finest, data, 'forward')
+		X_grid[:,n] = Reshape_AMR(nx, ny, nz, finest, grid, 'forward')
 
 	# ---------- Compute grid information from X_grid
 	l_comp  = np.zeros((nlev)) # computed level fractions

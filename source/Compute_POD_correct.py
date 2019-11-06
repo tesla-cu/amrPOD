@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt 
 from numpy import linalg as LA
 
-from GenGrid import GenGrid
+from GenGrid     import GenGrid
 from Reshape_AMR import Reshape_AMR
 
 from R_CPU   import compute_R_CPU
@@ -17,7 +17,7 @@ from Phi_TC_iter  import compute_Phi_TC
 from A_CPU   import compute_A_CPU
 from A_TC    import compute_A_TC
 
-def Compute_POD_check(nx, ny, nz, finest, nt, amr_datadir):
+def Compute_POD_correct(nx, ny, nz, finest, nt, ls, lcs):
  
  	# ---------- Helpful quantities derived from user inputs --------
 	nspat = nx*ny*nz    
@@ -35,18 +35,39 @@ def Compute_POD_check(nx, ny, nz, finest, nt, amr_datadir):
 		c_l[i]    = 2**(finest-i)
 		d_l[i]    = (2**ndim)**(finest-i)
 
-	# ---------- Load data ------------------------------------------
+	# ---------- Generate data --------------------------------------
 	X      = np.zeros((nspat,nt))
 	X_grid = np.zeros((nspat,nt), dtype=int)
 	for n in range(nt):
 
-		# Load data from file
-		grid = np.fromfile(amr_datadir + 'grid_level%05d.bin' % n).astype(int)
-		data = np.fromfile(amr_datadir + 'density%05d.bin' % n)
+		# Generate data
+		grid = GenGrid(nx, ny, nz, c_l, d_l, ls, lcs)
+		data = grid + 1.5 # force data to not align with grid 
 
-		# Perform reshaping
-		X[:,n]      = Reshape_AMR(nx, ny, nz, finest, data, 'forward')
-		X_grid[:,n] = Reshape_AMR(nx, ny, nz, finest, grid, 'forward')
+		# Reshape into 1D array
+		grid_1D = np.reshape(grid, (nspat))
+		data_1D = np.reshape(data, (nspat))
+
+		# Assign new data to corresponding X matrix
+		X_grid[:,n] = grid_1D
+		X[:,n]      = data_1D
+
+	# ---------- Calculate POD with non-reshaped data ---------------
+	X_tp        = np.transpose(X)
+	R_nr        = np.matmul(X_tp, X)
+	Lambda, Psi = LA.eig(R_nr)
+	idx_eig     = np.argsort(Lambda) # sort eigenvalues
+	Lambda      = Lambda[idx_eig]
+	Psi         = Psi[:,idx_eig]
+	Phi         = np.matmul(X,Psi)
+	Phi_nr      = np.matmul(Phi, np.diag(1/np.sqrt(Lambda)))
+	A_nr        = np.matmul(X_tp, Phi_nr)
+	Lambda      = np.diag(Lambda) # make this a matrix
+
+	# ---------- Perform reshaping ----------------------------------
+	for n in range(nt):
+		X[:,n]      = Reshape_AMR(nx, ny, nz, finest, X[:,n],      'forward')
+		X_grid[:,n] = Reshape_AMR(nx, ny, nz, finest, X_grid[:,n], 'forward')
 
 	# ---------- Compute grid information from X_grid ---------------
 	l_comp  = np.zeros((nlev)) # computed level fractions
@@ -67,7 +88,7 @@ def Compute_POD_check(nx, ny, nz, finest, nt, amr_datadir):
 	lc_comp = lc_comp/nspat
 	# print("lc_comp = ", lc_comp)
 
-	# ---------- Calculate POD with matrix operations ---------------
+	# ---------- Calculate POD with reshaped data -------------------
 	X_tp        = np.transpose(X)
 	R           = np.matmul(X_tp, X)
 	Lambda, Psi = LA.eig(R)
@@ -91,5 +112,14 @@ def Compute_POD_check(nx, ny, nz, finest, nt, amr_datadir):
 	for n in range(nt):
 		Phi[:,n] = Reshape_AMR(nx, ny, nz, finest, Phi[:,n], 'reverse')
 
-	# ---------- Return data ----------------------------------------
-	return R, Phi, A
+	# ---------- Compare reshaped and non-reshaped ------------------
+
+	# Compute relative error
+	R_err   = np.max( abs(R    -     R_nr)    /     R_nr)
+	Phi_err = np.max((abs(Phi) - abs(Phi_nr)) / abs(Phi_nr))
+	A_err   = np.max((abs(A)   - abs(A_nr))   / abs(A_nr)) 
+
+	# Output results
+	return R_err, Phi_err, A_err
+
+
