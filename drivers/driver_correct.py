@@ -27,7 +27,7 @@ if __name__ == '__main__':
     compute_cpu = False # are we computing the cpu time?
     nx          = 64   # x spatial points                  
     ny          = 64    # y spatial points
-    nz          = 32     # z spatial points
+    nz          = 128     # z spatial points
     finest      = 5     # finest level of AMR in the domain
     nsample     = 8    # number of samples for each parameter set
     # nt_arr      = np.arange(101, 102, 5)     # spanning nt
@@ -37,8 +37,8 @@ if __name__ == '__main__':
     # lc_fracs     = np.array([1/16, 0/16, 0/16])
 
     # Variables we will iterate through
-    xvals = nt_arr # what will be plotted on the x-axis
-    yvals = l1_arr # what will be plotted on the y-axis
+    # xvals = nt_arr # what will be plotted on the x-axis
+    # yvals = l1_arr # what will be plotted on the y-axis
 
     
     # lc_fracs     = np.array([1/16, 0/16, 0/16])
@@ -137,6 +137,8 @@ if __name__ == '__main__':
     print('starting pool with %i threads ...' % nthread)
     pool = mp.Pool(processes=nthread)
 
+    ls = np.array([1.0-l1, l1])
+
     for ixval, xval in enumerate(xvals):
         for iyval, yval in enumerate(yvals):
             nt = xval # less confusing
@@ -145,7 +147,7 @@ if __name__ == '__main__':
             print('nt = %i, l1 = %0.4f' % (nt, l1))
 
             # Since we have l in our vars, we need to ls
-            ls = np.array([1.0-l1, l1])
+            
             # ls = np.array([1.0-3*l1, l1, l1, l1/2, l1/2])
             # ls = np.array([1.0-3*l1, l1, l1, l1])
 
