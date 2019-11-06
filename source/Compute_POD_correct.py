@@ -8,11 +8,11 @@ from Reshape_AMR import Reshape_AMR
 from R_CPU   import compute_R_CPU
 from R_TC    import compute_R_TC
 
-# from Phi_CPU import compute_Phi_CPU
-# from Phi_TC  import compute_Phi_TC
+from Phi_CPU import compute_Phi_CPU
+from Phi_TC  import compute_Phi_TC
 
-from Phi_CPU_iter import compute_Phi_CPU
-from Phi_TC_iter  import compute_Phi_TC
+# from Phi_CPU_recur import compute_Phi_CPU
+# from Phi_TC_recur  import compute_Phi_TC
 
 from A_CPU   import compute_A_CPU
 from A_TC    import compute_A_TC

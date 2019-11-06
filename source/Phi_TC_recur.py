@@ -266,79 +266,14 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest, 
 					im_art  += wt_art
 					im_asn  += wt_asn
 
+
 				else:
 
 					im_log += wt_log
 					if finest > 1:
-
-						idx = 0
-						im_asn += wt_asn
-
-						j = i
-						im_asn += wt_asn
-
-						for jj in range(d_1):
-							im_art += wt_art
-							im_asn += wt_asn
-
-							im_log += wt_log
-							if idx < d_1:
-
-								lvl = X_grid[j,n]
-								im_acc += wt_acc
-								im_asn += wt_asn
-
-								im_log += wt_log
-								if lvl == finest:
-
-									G_mat[finest, idx, nl[finest, idx]] = n
-									im_acc += 2*wt_acc
-									im_asn += wt_asn
-
-									nl[finest, idx] += 1
-									im_acc += wt_acc
-									im_art += wt_art
-									im_asn += wt_asn
-
-									idx += 1
-									im_art += wt_art
-									im_asn += wt_asn
-
-									j += d_l[finest-1]
-									im_acc += wt_acc
-									im_art += 2*wt_art
-									im_asn += wt_asn
-
-								else:
-									for l in range(1,finest): 
-										im_art += wt_art
-										im_asn += wt_asn
-
-										im_log += wt_log
-										if lvl == l:
-
-											G_mat[l, idx, nl[l, idx]] = n
-											im_acc += 2*wt_acc
-											im_asn += wt_asn
-
-											nl[l, idx] += 1
-											im_acc += wt_acc
-											im_art += wt_art
-											im_asn += wt_asn
-
-											idx += d_l[l+1]
-											im_art += 2*wt_art
-											im_acc += wt_acc
-											im_asn += wt_asn
-
-											j += d_l[l]
-											im_acc += wt_acc
-											im_art += wt_art
-											im_asn += wt_asn
-
-											break
-							else:
-								break
+						G_mat, nl, im_art, im_acc, im_asn, im_log, im_fun = find_lvl_indices(X_grid, i, 0, n, 1, finest, d_l, G_mat, nl, im_art, im_acc, im_asn, im_log, im_fun, wt_art, wt_acc, wt_asn, wt_log, wt_fun)
+						im_fun    += wt_fun
+						im_asn    += 2*wt_asn
 
 					else:
 						G_mat[1,0,nl[1,0]] = n
@@ -393,141 +328,11 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest, 
 				if nl[0,0] < nt:
 
 					im_log += wt_log
-					if finest > 2:
-
-						im_art += wt_art
-						for l in range(1,finest-1): 
-							im_art += wt_art
-							im_asn += wt_asn
-
-							idx = 0
-							im_asn += wt_asn
-
-							im_art += wt_art
-							im_acc += wt_acc
-							for j in range(i, i+d_0, d_l[l]):
-								im_art += wt_art
-								im_asn += wt_asn
-
-								im_log += wt_log
-								im_acc += wt_acc
-								if nl[l, idx] > 0:
-
-									l_sum = 0
-									im_asn += wt_asn
-
-									im_acc += wt_acc
-									for m in range(nl[l, idx]):
-										im_art += wt_art
-										im_asn += wt_asn
-
-										k = G_mat[l, idx, m]
-										im_acc += wt_acc
-										im_asn += wt_asn
-
-										l_sum += X[j,k] * Psi[k,n]
-										im_acc += 2*wt_acc
-										im_art += 2*wt_art
-										im_asn += wt_asn
-
-									im_art += 5*wt_art
-									im_acc += 3*wt_acc
-									for m in range(idx*d_l[finest-1], idx*d_l[finest-1] + d_l[l]):
-										im_art += wt_art
-										im_asn += wt_asn
-
-										H[m, l] = l_sum
-										im_acc += wt_acc
-										im_asn += wt_asn
-
-								idx += d_l[l + 1]
-								im_acc += wt_acc
-								im_art += 2*wt_art
-								im_asn += wt_asn
-
-					im_log += wt_log
 					if finest > 1:
 
-						idx = 0
+						H, im_art, im_acc, im_asn, im_log, im_fun = compute_H(X_grid, Psi, i, 0, n, nt, 1, finest, d_l, G_mat, nl, H, im_art, im_acc, im_asn, im_log, im_fun, wt_art, wt_acc, wt_asn, wt_log, wt_fun)
+						im_fun += wt_fun
 						im_asn += wt_asn
-
-						im_art += 2*wt_art
-						im_acc += im_acc
-						for j in range(i, i + d_0, d_l[finest-1]):
-							im_art += wt_art
-							im_asn += wt_asn
-
-							im_acc += wt_acc
-							im_art += wt_art
-							im_log += wt_log
-							if nl[finest-1, idx] > 0:
-
-								clvl = finest-1
-								im_art += wt_art
-								im_asn += wt_asn
-
-								l_sum = 0
-								im_asn += wt_asn
-
-								im_acc += wt_acc
-								for m in range(nl[clvl, idx]):
-									im_art += wt_art
-									im_asn += wt_asn
-
-									k = G_mat[clvl, idx, m]
-									im_acc += wt_acc
-									im_asn += wt_asn
-
-									l_sum += X[j,k] * Psi[k,n]
-									im_acc += 2*wt_acc
-									im_asn += wt_asn
-									im_art += 2*wt_art
-
-
-								im_art += 3*wt_art
-								im_acc += 2*wt_acc
-								for m in range(idx*d_l[clvl], (idx+1)*d_l[clvl]):
-									im_art += wt_art
-									im_asn += wt_asn
-
-									H[m, clvl] = l_sum
-									im_acc += wt_acc
-									im_asn += wt_asn
-
-							im_log += wt_log
-							im_acc += wt_acc
-							if nl[finest, idx] > 0:
-
-								im_acc += wt_acc
-								im_art += 2*im_art
-								for k in range(j, j+d_l[finest-1]):
-									im_art += wt_art
-									im_asn += wt_asn
-
-									l_sum = 0
-									im_asn += wt_asn
-
-									im_acc += wt_acc
-									for m in range(nl[finest, idx]):
-										im_art += wt_art
-										im_asn += wt_asn
-
-										p = G_mat[finest, idx, m]
-										im_acc += wt_acc
-
-										l_sum += X[k,p] * Psi[p,n]
-										im_acc += 2*wt_acc
-										im_asn += wt_asn
-										im_art += 2*wt_art
-
-									H[k-j+d_l[finest-1]*idx, finest] = l_sum
-									im_art += 4*wt_art
-									im_acc += 2*wt_acc
-									im_asn += wt_asn
-
-							idx += 1
-							im_art += wt_art
-							im_asn += wt_asn
 
 					else:
 
@@ -603,3 +408,275 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest, 
 	im = un_art + im_acc + im_asn + im_fun + im_log
 
 	return im, un 
+
+
+# ================================================================= #
+# Function used by compute_Phi_CPU to tabulate all cells according 
+# to grid level. This is a recursive algorithm that determines the
+# exact location to find these cells without looking in unncessary
+# locations.
+#
+# Inputs:
+# - X_grid : companion matrix to snapshot matrix that stores grid 
+#            levels instead of solution values
+# - i      : the global index in X that we are looking at
+# - idx    : index of the cell within a given coarse cell
+# - n      : snapshot or column of X we are considering
+# - clvl   : current level that we consider the coarsest cell
+# - finest : finest AMR grid level
+# - d_l    : number of repeated cells for a given level l (called 
+#            c_\ell^d in the paper)
+# - G_mat  : matrix to store locations of each level
+# - nl     : vector to store number of cells for each level
+#
+# Outputs:
+# - G_mat  : (as above) but updated with clvl locations
+# - nl     : (as above) but updated with number of cells at clvl
+# ================================================================= #
+def find_lvl_indices(X_grid, i, idx, n, clvl, finest, d_l, G_mat, nl, im_art, im_acc, im_asn, im_log, im_fun, wt_art, wt_acc, wt_asn, wt_log, wt_fun):
+
+	im_art += wt_art
+	im_log += wt_log
+	if clvl < finest-1:
+
+		im_art += 3*wt_art
+		im_acc += 2*wt_acc
+		for j in range(i, i+d_l[clvl-1]-1, d_l[clvl]):
+			im_art += wt_art
+			im_asn += wt_asn
+			
+			lvl    = X_grid[j,n]
+			im_acc += wt_acc
+			im_asn += wt_asn
+
+			im_log += wt_log
+			if lvl == clvl:
+
+				G_mat[clvl, idx, nl[clvl, idx]] = n
+				im_acc += 2*wt_acc
+				im_asn += wt_asn
+
+				nl[clvl, idx] += 1
+				im_acc += wt_acc
+				im_art += wt_art
+				im_asn += wt_asn
+
+			else:
+				G_mat, nl, im_art, im_acc, im_asn, im_log, im_fun = find_lvl_indices(X_grid, j, idx, n, clvl+1, finest, d_l, G_mat, nl, im_art, im_acc, im_asn, im_log, im_fun, wt_art, wt_acc, wt_asn, wt_log, wt_fun)
+				im_fun    += wt_fun
+				im_asn    += 2*wt_asn
+
+			idx    += d_l[clvl+1]
+			im_art += 2*wt_art
+			im_acc += wt_acc
+			im_asn += wt_asn
+
+	else:
+
+		im_art += 3*wt_art
+		im_acc += 2*wt_acc
+		for j in range(i, i+d_l[clvl-1]-1, d_l[clvl]):
+			im_art += wt_art
+			im_asn += wt_asn
+
+			lvl    = X_grid[j,n]
+			im_acc += wt_acc
+			im_asn += wt_asn 
+
+			im_log += wt_log
+			if lvl == clvl:
+
+				G_mat[clvl, idx, nl[clvl, idx]] = n
+				im_acc += 2*wt_acc
+				im_asn += wt_asn
+
+				nl[clvl, idx] += 1
+				im_acc += wt_acc
+				im_art += wt_art
+				im_asn += wt_asn
+
+			else:
+				G_mat[finest, idx, nl[finest, idx]] = n
+				im_acc += 2*wt_acc
+				im_asn += wt_asn
+
+				nl[finest, idx] += 1
+				im_acc += wt_acc
+				im_art += wt_art
+				im_asn += wt_asn
+
+			idx    += 1
+			im_art += wt_art
+			im_asn += wt_asn
+
+	return G_mat, nl, im_art, im_acc, im_asn, im_log, im_fun
+
+# ================================================================= #
+# Function used by compute_Phi_CPU to tabulate all cells according 
+# to grid level. This is a recursive algorithm that determines the
+# exact location to find these cells without looking in unncessary
+# locations.
+#
+# Inputs:
+# - X      : snapshot matrix
+# - Psi    : matrix containing eigenvectors of R
+# - i      : the global index in X that we are looking at
+# - idx    : index of the cell within a given coarse cell
+# - n      : snapshot or column of X we are considering
+# - clvl   : current level that we consider the coarsest cell
+# - finest : finest AMR grid level
+# - d_l    : number of repeated cells for a given level l (called 
+#            c_\ell^d in the paper)
+# - G_mat  : matrix to store locations of each level
+# - nl     : vector to store number of cells for each level
+# - H      : matrix storing contributions to an element of Phi for
+#            each level
+# 
+# Outputs:
+# - H      : (as above) but updated with clvl contributions to H
+# ================================================================= #
+def compute_H(X, Psi, i, idx, n, nt, clvl, finest, d_l, G_mat, nl, H, im_art, im_acc, im_asn, im_log, im_fun, wt_art, wt_acc, wt_asn, wt_log, wt_fun):
+	
+	im_log += wt_log
+	im_art += wt_art
+	if clvl < finest-1:
+
+		im_art += 3*wt_art
+		im_acc += 2*wt_acc
+		for j in range(i, i+d_l[clvl-1]-1, d_l[clvl]):
+			im_art += wt_art
+			im_asn += wt_asn
+
+			im_log += wt_log
+			im_acc += wt_acc
+			if nl[clvl, idx] > 0:
+
+				l_sum  = 0
+				im_asn += wt_asn
+
+				im_acc += wt_acc
+				for m in range(nl[clvl, idx]):
+					im_art += wt_art
+					im_asn += wt_asn
+
+					k = G_mat[clvl, idx, m]
+					im_acc += wt_acc
+					im_asn += wt_asn
+
+					l_sum  += X[j,k] * Psi[k,n]
+					im_art += 2*wt_art
+					im_acc += 2*wt_acc
+					im_asn += wt_asn
+
+				im_art += 5*wt_art
+				im_acc += 3*wt_acc
+				for m in range(idx*d_l[finest-1], idx*d_l[finest-1] + d_l[clvl]):
+					im_art += wt_art
+					im_asn += wt_asn
+
+					H[m, clvl] = l_sum
+					im_acc     += wt_acc
+					im_asn     += wt_asn
+
+			nccells = 0
+			im_asn  += wt_asn
+
+			im_art  += wt_art
+			for l in range(clvl+1):
+				im_art += wt_art
+				im_asn += wt_asn
+
+				nccells += nl[l, idx]
+				im_acc  += wt_acc
+				im_art  += wt_art
+				im_asn  += wt_asn
+
+			im_log += wt_log
+			if nccells < nt:
+
+				H, im_art, im_acc, im_asn, im_log, im_fun = compute_H(X, Psi, j, idx, n, nt, clvl+1, finest, d_l, G_mat, nl, H, im_art, im_acc, im_asn, im_log, im_fun, wt_art, wt_acc, wt_asn, wt_log, wt_fun)
+				im_fun += wt_fun
+				im_asn += wt_asn
+
+			idx    += d_l[clvl + 1]
+			im_acc += wt_acc
+			im_art += 2*wt_art
+			im_asn += wt_asn
+
+	else:
+
+		im_art += 3*wt_art
+		im_acc += 2*wt_acc
+		for j in range(i, i+d_l[clvl-1]-1, d_l[clvl]):
+			im_art += wt_art
+			im_asn += wt_asn
+
+			im_log += wt_log
+			im_acc += wt_acc
+			if nl[clvl, idx] > 0:
+
+				l_sum  = 0
+				im_asn += wt_asn
+
+				im_acc += wt_acc
+				for m in range(nl[clvl, idx]):
+					im_art += wt_art
+					im_asn += wt_asn
+
+					k = G_mat[clvl, idx, m]
+					im_acc += wt_acc
+					im_asn += wt_asn
+
+					l_sum  += X[j,k] * Psi[k,n]
+					im_acc += 2*wt_acc
+					im_art += 2*wt_art
+					im_asn += wt_asn
+
+				im_acc += 2*wt_acc
+				im_art += 3*wt_art
+				for m in range((idx)*d_l[clvl], (idx+1)*d_l[clvl]):
+					im_art += wt_art
+					im_asn += wt_asn
+
+					H[m, clvl] = l_sum
+					im_acc += wt_acc
+					im_asn += wt_asn
+
+			im_log += wt_log
+			im_acc += wt_acc
+			if nl[finest, idx] > 0:
+
+				im_art += wt_art
+				im_acc += wt_acc
+				for k in range(j, j+d_l[clvl]):
+					im_art += wt_art
+					im_asn += wt_asn
+
+					l_sum  = 0
+					im_asn += wt_asn
+
+					im_acc += wt_acc
+					for m in range(nl[finest, idx]):
+						im_art += wt_art
+						im_asn += wt_asn
+
+						p = G_mat[finest, idx, m]
+						im_acc += wt_acc
+						im_asn += wt_asn
+
+						l_sum  += X[k,p] * Psi[p,n]
+						im_art += 2*wt_art
+						im_acc += 2*wt_acc
+						im_asn += wt_asn
+
+					H[k-j+(d_l[finest-1]*idx), finest] = l_sum
+					im_acc += 2*wt_acc
+					im_art += 4*wt_art
+					im_asn += wt_asn
+
+			idx    += 1
+			im_art += wt_art
+			im_asn += wt_asn
+
+	return H, im_art, im_acc, im_asn, im_log, im_fun
+
