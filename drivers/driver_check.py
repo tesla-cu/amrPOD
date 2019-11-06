@@ -11,14 +11,11 @@ if __name__ == '__main__':
     print('starting script to perform POD on AMR grids ...')
 
     # ---------- User defined inputs --------------------------------
-    # gen_grid    = False  # are we generating synthetic data?
-    # compute_tc  = True  # are we computing the time complexity?
-    # compute_cpu = True # are we computing the cpu time?
-    nx          = 512   # x spatial points                  
-    ny          = 512    # y spatial points
-    nz          = 1     # z spatial points
-    finest      = 3     # finest level of AMR in the domain
-    nt          = 10     # number of time steps
+    nx     = 512   # x spatial points                  
+    ny     = 512   # y spatial points
+    nz     = 1     # z spatial points
+    finest = 3     # finest level of AMR in the domain
+    nt     = 10    # number of time steps
 
     # Direction where /code/ lives
     # basedir = '/Users/samsimonswellin/desktop/'
@@ -41,7 +38,7 @@ if __name__ == '__main__':
         os.mkdir(studydir)
 
     # ---------- Compute POD ----------------------------------------
-    R, Phi, A = Compute_POD_check(nx, ny, nz, finest, nt,  amr_datadir)
+    R, Phi, A = Compute_POD_check(nx, ny, nz, finest, nt, amr_datadir)
 
     # ---------- Save data ------------------------------------------
     print('writing out text files ...')
