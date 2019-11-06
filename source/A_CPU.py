@@ -36,7 +36,7 @@ def compute_A_CPU(X, X_grid, Phi, A, d_l, nt, nspat, finest):
 	# ========== Unaltered Computation ============================ #
 
 	# Initialize timer
-	tic     = time.time()
+	tic = time.time()
 
 	# Initialize A matrix for unaltered computation
 	A_un = np.zeros((nt, nt))
@@ -62,16 +62,16 @@ def compute_A_CPU(X, X_grid, Phi, A, d_l, nt, nspat, finest):
 	# ========== Implemented Computation ========================== #
 
 	# Initialize timer
-	tic   = time.time()
+	tic = time.time()
 
 	# Initialize R matrix for computation of implemented algorithm
 	A_im = np.zeros((nt, nt))
 
 	# Initialize matrix to store maximum grid level
-	G     = np.zeros((nspat), dtype=int)	
+	G = np.zeros((nspat), dtype=int)	
 
 	# Initialize index of spatial location
-	i     = 0
+	i = 0
 
 	# Find the finest cell for all spatial locations
 	for ii in range(nspat): # dummy loop

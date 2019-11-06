@@ -25,10 +25,15 @@ import numpy as np
 # - nt     : number of time steps
 # - nspat  : number of spatial locations
 # - finest : finest AMR grid level
+# - wt_art : weighting of arithmetic operations
+# - wt_acc : weighting of accessing operations
+# - wt_asn : weighting of assignment operations
+# - wt_log : weighting of logical operations
+# - wt_fun : weighting of function calls
 #
 # Outputs:
-# - time_im : CPU time to compute A using implemented algorithm
-# - time_un : CPU time to compute A using unaltered algorithm
+# - im : num of operations to compute A using implemented algorithm
+# - un : num of operations to compute A using unaltered algorithm
 # ================================================================= #
 def compute_A_TC(X, X_grid, Phi, A, d_l, nt, nspat, finest, wt_art, wt_acc, wt_asn, wt_log, wt_fun):
 
@@ -104,7 +109,6 @@ def compute_A_TC(X, X_grid, Phi, A, d_l, nt, nspat, finest, wt_art, wt_acc, wt_a
 			im_acc     += wt_acc
 			im_asn     += wt_asn
 
-			im_fun += wt_fun
 			for m in range(1,nt):
 				im_art += wt_art
 				im_asn += wt_asn
@@ -119,7 +123,7 @@ def compute_A_TC(X, X_grid, Phi, A, d_l, nt, nspat, finest, wt_art, wt_acc, wt_a
 
 					im_log += wt_log
 					if X_grid_max == finest:
-							break
+						break
 
 			G[i]   =  d_l[X_grid_max]
 			im_acc += 2*wt_acc

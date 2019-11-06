@@ -22,10 +22,15 @@ import numpy as np
 #            c_\ell^d in the paper)
 # - nt     : number of time steps
 # - nspat  : number of spatial locations
+# - wt_art : weighting of arithmetic operations
+# - wt_acc : weighting of accessing operations
+# - wt_asn : weighting of assignment operations
+# - wt_log : weighting of logical operations
+# - wt_fun : weighting of function calls
 #
 # Outputs:
-# - time_im : CPU time to compute R using implemented algorithm
-# - time_un : CPU time to compute R using unaltered algorithm
+# - im : num of operations to compute R using implemented algorithm
+# - un : num of operations to compute R using unaltered algorithm
 # ================================================================= #
 def compute_R_TC(X, X_grid, R, d_l, nt, nspat, wt_art, wt_acc, wt_asn, wt_log, wt_fun):
 
@@ -58,9 +63,9 @@ def compute_R_TC(X, X_grid, R, d_l, nt, nspat, wt_art, wt_acc, wt_asn, wt_log, w
 
 		for n in range(m+1):
 			un_art += wt_art
-			un_asn  += wt_asn
+			un_asn += wt_asn
 
-			r_sum    = 0
+			r_sum = 0
 			un_asn += wt_asn
 
 			for i in range(nspat):

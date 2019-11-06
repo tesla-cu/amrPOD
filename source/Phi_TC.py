@@ -10,7 +10,7 @@ import numpy as np
 # ================================================================= #
 # Function to compute the POD spatial modes in using a standard 
 # matrix operation technique and the new algorithm leveraging AMR
-# repetitions
+# repetitions that iteratively finds unique cells.
 #
 # Inputs:
 # - X      : snapshot matrix
@@ -27,10 +27,15 @@ import numpy as np
 # - nt     : number of time steps
 # - nspat  : number of spatial locations
 # - finest : finest AMR grid level
+# - wt_art : weighting of arithmetic operations
+# - wt_acc : weighting of accessing operations
+# - wt_asn : weighting of assignment operations
+# - wt_log : weighting of logical operations
+# - wt_fun : weighting of function calls
 #
 # Outputs:
-# - time_im : CPU time to compute Phi using implemented algorithm
-# - time_un : CPU time to compute Phi using unaltered algorithm
+# - im : num operations to compute Phi using implemented algorithm
+# - un : num operations to compute Phi using unaltered algorithm
 # ================================================================= #
 def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest, wt_art, wt_acc, wt_asn, wt_log, wt_fun):
 
@@ -462,7 +467,7 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest, 
 							im_log += wt_log
 							if nl[finest-1, idx] > 0:
 
-								clvl = finest-1
+								l = finest-1
 								im_art += wt_art
 								im_asn += wt_asn
 
@@ -470,11 +475,11 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest, 
 								im_asn += wt_asn
 
 								im_acc += wt_acc
-								for m in range(nl[clvl, idx]):
+								for m in range(nl[l, idx]):
 									im_art += wt_art
 									im_asn += wt_asn
 
-									k = G_mat[clvl, idx, m]
+									k = G_mat[l, idx, m]
 									im_acc += wt_acc
 									im_asn += wt_asn
 
@@ -486,11 +491,11 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest, 
 
 								im_art += 3*wt_art
 								im_acc += 2*wt_acc
-								for m in range(idx*d_l[clvl], (idx+1)*d_l[clvl]):
+								for m in range(idx*d_l[l], (idx+1)*d_l[l]):
 									im_art += wt_art
 									im_asn += wt_asn
 
-									H[m, clvl] = l_sum
+									H[m, l] = l_sum
 									im_acc += wt_acc
 									im_asn += wt_asn
 
@@ -565,8 +570,7 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest, 
 					H_sum  = 0
 					im_asn += wt_asn
 
-					im_art += wt_art
-					for l in range(finest+1):
+					for l in range(nlev):
 						im_art += wt_art
 						im_asn += wt_asn
 

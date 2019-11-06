@@ -10,7 +10,7 @@ import numpy as np
 # ================================================================= #
 # Function to compute the POD spatial modes in using a standard 
 # matrix operation technique and the new algorithm leveraging AMR
-# repetitions
+# repetitions that recursively finds unique cells.
 #
 # Inputs:
 # - X      : snapshot matrix
@@ -27,6 +27,11 @@ import numpy as np
 # - nt     : number of time steps
 # - nspat  : number of spatial locations
 # - finest : finest AMR grid level
+# - wt_art : weighting of arithmetic operations
+# - wt_acc : weighting of accessing operations
+# - wt_asn : weighting of assignment operations
+# - wt_log : weighting of logical operations
+# - wt_fun : weighting of function calls
 #
 # Outputs:
 # - time_im : CPU time to compute Phi using implemented algorithm
