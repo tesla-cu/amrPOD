@@ -21,8 +21,8 @@
 !
 ! To create an executable, at the terminal, run:
 !
-!    gfortran -O0 -o POD.ex POD.f90
-!    gfortran -O3 -o POD.ex POD.f08 (old version)
+!    gfortran -O0 -g -fcheck=all -fbacktrace -o POD.ex POD.f90
+!    gfortran -O3 -o POD.ex POD.f90
 !    gfortran -O3 -o POD.ex POD.f08 -L/usr/lib -llapack -L/usr/lib -lblas
 !
 ! The meaning of each variable name is:
@@ -43,12 +43,24 @@
 !    
 !
 
+
+include 'reshape_AMR.f90'
+include 'compute_R.f90'
+include 'compute_eig.f90'
+include 'compute_Phi.f90'
+include 'compute_A.f90'
+
 program POD
 
+use comp_R
+use rshp_AMR
 ! use mpi
 ! use omp_lib
 
 implicit none
+! include 'mpif.h'
+
+
 
 !
 
@@ -105,12 +117,15 @@ integer :: Ralg, Phialg, Aalg ! algorithm to use for each of the 3 steps
 
 ! ---------- Fast POD variables ------------------------------------------
 integer, allocatable, dimension(:,:) :: Xgrid ! companion matrix with grid levels
+double precision, allocatable, dimension(:)   :: Xcol ! column of X
+integer, allocatable, dimension(:)   :: Xgcol ! column of Xgrid
 real :: Rcpu2, Phicpu2, Acpu2 ! cpu time of each operation using normal algorithm
 logical :: do_amr ! are we doing the fast algorithm leveraging amr anywhere?
 integer :: finest, nlev ! finest level of AMR
 integer :: ndim ! dimension for POD (1D, 2D, or 3D)
 integer :: cval, dval
 integer, allocatable, dimension(:) :: c_l, d_l
+double precision, allocatable, dimension(:,:) :: test_2D
 
 
 
@@ -230,6 +245,9 @@ if (do_amr) then
 
    allocate(Xgrid(nvar*nspat,nt))
    allocate(c_l(0:finest), d_l(0:finest))
+   allocate(Xcol(nvar*nspat))
+   allocate(Xgcol(nvar*nspat))
+
 
 
    do i=0,finest
@@ -317,11 +335,10 @@ do i=1,nvar
    var = variables(i)
 
    do n=1,nt
-      ! write file name with full directory
-      ! write(file,'(a,a,I5.5,a)') &
+      ! Read variable data
+      ! NEEDS UPDATED FOR nxp < nx, etc.
       write(filename,datafmt) &
          trim(datadir), trim(var), itime(1)+n-1, '.bin'
-
 
       open(1, file=trim(filename), action='read', &
          access='stream', form='unformatted', status='old')
@@ -329,10 +346,30 @@ do i=1,nvar
       close(1)
       ! write(*,*) Xpod(nspat,j)
 
-      ! If we are utilizing the AMR, we need to reshape X and load data
+      ! If we are utilizing the AMR, we need to load grid data
+      ! and reshape data
       if (do_amr) then
+
+         write(filename,datafmt) &
+            trim(datadir), 'grid_level', itime(1)+n-1, '.bin'
+
+         open(1, file=trim(filename), action='read', &
+            access='stream', form='unformatted', status='old')
+         read(1) Xgrid(:,n)
+         close(1)
+
+         ! Xcol = Xpod(:,n)
+         ! call reshape_AMR(nxp, nyp, nzp*nvar, finest, Xcol, 'forward')
+         ! Xpod(:,n) = Xcol
+
          Xgrid(:,n) = 0
-         if (n==1) write(*,*) "NEED: RESHAPE AND XGRID"
+
+         ! NEEDS DONE FOR XGRID
+         ! Xcol = Xpod(:,n)
+         ! call reshape_AMR(nxp, nyp, nzp*nvar, finest, Xcol, 'forward')
+         ! Xpod = Xcol
+         
+         ! if (n==1) write(*,*) "NEED: RESHAPE AND XGRID"
          ! Xgrid = 0
       end if
 
@@ -385,50 +422,52 @@ write(*,*) "shape(Xpod) = ", shape(Xpod)
 write(*,*) "computing R ..."
 
 call cpu_time(cpu0)
-do n=1,nt
-   do m=1,n
-      Rsum= 0.
-      do i=1,nspat
-         Rsum = Rsum + Xpod(i,m)*Xpod(i,n)
-      enddo
-      Rpod(m,n) = Rsum
-      Rpod(n,m) = Rsum
-   enddo
-enddo
+call compute_R(Xpod, nspat, nt, Rpod, 0)
+! do n=1,nt
+!    do m=1,n
+!       Rsum= 0.
+!       do i=1,nspat
+!          Rsum = Rsum + Xpod(i,m)*Xpod(i,n)
+!       enddo
+!       Rpod(m,n) = Rsum
+!       Rpod(n,m) = Rsum
+!    enddo
+! enddo
 call cpu_time(cpuf)
 Rcpu1 = cpuf - cpu0
 
 write(*,*) "    normal cpu time ", Rcpu1, " seconds"
 
 call cpu_time(cpu0)
-do n=1,nt
-   do m=1,n
-      Rsum= 0.
-      i = 1
-      ! write(*,*) "tstep"
-      if (m==n) then
-         do while(i <= nspat)
-            dval = d_l(Xgrid(i,m))
-            ! write(*,*) "dval=",dval
-            Rsum = Rsum + dble(dval)*Xpod(i,m)*Xpod(i,n)
-            i    = i + dval
-         end do
-      else
-         do while(i <= nspat)
-            if (Xgrid(i,m) > Xgrid(i,n)) then
-               dval = d_l(Xgrid(i,m))
-            else
-               dval = d_l(Xgrid(i,n))
-            end if
-            ! write(*,*) 'dval',dval
-            Rsum = Rsum + dble(dval)*Xpod(i,m)*Xpod(i,n)
-            i    = i + dval
-         end do
-      end if     
-      Rpod(m,n) = Rsum
-      Rpod(n,m) = Rsum
-   enddo
-enddo
+call compute_R(Xpod, nspat, nt, Rpod, 1, Xgrid, finest, ndim)
+! do n=1,nt
+!    do m=1,n
+!       Rsum= 0.
+!       i = 1
+!       ! write(*,*) "tstep"
+!       if (m==n) then
+!          do while(i <= nspat)
+!             dval = d_l(Xgrid(i,m))
+!             ! write(*,*) "dval=",dval
+!             Rsum = Rsum + dble(dval)*Xpod(i,m)*Xpod(i,n)
+!             i    = i + dval
+!          end do
+!       else
+!          do while(i <= nspat)
+!             if (Xgrid(i,m) > Xgrid(i,n)) then
+!                dval = d_l(Xgrid(i,m))
+!             else
+!                dval = d_l(Xgrid(i,n))
+!             end if
+!             ! write(*,*) 'dval',dval
+!             Rsum = Rsum + dble(dval)*Xpod(i,m)*Xpod(i,n)
+!             i    = i + dval
+!          end do
+!       end if     
+!       Rpod(m,n) = Rsum
+!       Rpod(n,m) = Rsum
+!    enddo
+! enddo
 call cpu_time(cpuf)
 Rcpu1 = cpuf - cpu0
 
@@ -584,7 +623,6 @@ enddo
 ! WRITE(*,*) "done computing u, v, w for inflow"
 
 
-
-
-
 end program POD
+
+

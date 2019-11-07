@@ -22,9 +22,9 @@
   PODdir = '/folder/'
 
   ! for alg, 0=normal, 1=amr, 2=both (soon to be optimized)
-  Ralg = 2
+  Ralg   = 2
   Phialg = 2
-  Aalg = 2
+  Aalg   = 2
   ! algorithm = 2,2,2
   ! algorithm = 'fast'
 
@@ -40,7 +40,7 @@
 
 &AMR_POD_inputs
   
-  finest = 1
+  finest = 0
 
 
 /
