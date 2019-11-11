@@ -19,9 +19,6 @@ integer :: nxr, nyr, nzr
 integer :: nrshp1, nrshp2, nrshp3 ! integers used for reshape
 character(len=1)                          :: dir ! shortened direction
 integer,              dimension(0:finest) :: c_l
-integer, dimension(2) :: dshp_2D ! data shape
-integer, dimension(3) :: dshp_3D
-integer, dimension(4) :: dshp_4D
 double precision, allocatable, dimension(:)        :: data_1D
 double precision, allocatable, dimension(:,:)      :: data_2Da
 double precision, allocatable, dimension(:,:)      :: data_2Db
@@ -51,12 +48,7 @@ endif
 ! ======================== Forward reshaping ========================
 if (dir == "f") then
 
-   write(*,*) "doing forward"
-
-   ! if (ndim == 1) then
-   !    write(*,*) 'data is 1D'
    if (ndim == 2) then
-      write(*,*) 'data is 2D'
       allocate(data_2Da(nx,ny))
       data_2Da = reshape(data, [nx,ny])
       do i=0,finest
@@ -148,7 +140,7 @@ if (dir == "f") then
 
          ! Permute [1,2,4,3]
          allocate(data_4Db(nzr,nyr,nrshp1,c))
-         data_4Db = reshape(data_3Da, [nzr,nyr,nrshp1,c], order=[1,2,4,3])
+         data_4Db = reshape(data_4Da, [nzr,nyr,nrshp1,c], order=[1,2,4,3])
          deallocate(data_4Da)
 
          ! Reshape next dimension
@@ -171,7 +163,7 @@ if (dir == "f") then
       deallocate(data_3Da)
    endif
 
-
+! ======================== Reverse reshaping ========================
 elseif (dir== "r") then
 
    write(*,*) "doing reverse"
