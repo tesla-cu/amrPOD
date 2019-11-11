@@ -53,6 +53,8 @@ include 'compute_A.f90'
 program POD
 
 use comp_R
+use comp_A
+use comp_Phi
 use rshp_AMR
 ! use mpi
 ! use omp_lib
@@ -195,9 +197,15 @@ open(9, file='POD.inputs', form='formatted', status='old')
 read(9, nml=POD_inputs)
 close(9)
 
-nxp = ix(2) - ix(1) + 1
-nyp = iy(2) - iy(1) + 1
-nzp = iz(2) - iz(1) + 1
+! When close to done, FIX THIS!
+! nxp = ix(2) - ix(1) + 1
+! nyp = iy(2) - iy(1) + 1
+! nzp = iz(2) - iz(1) + 1
+
+nxp = nx
+nyp = ny
+nzp = nz
+
 
 ndim = 0
 if (nxp > 1) ndim = ndim + 1
@@ -224,8 +232,10 @@ nspat = nx*ny*nz
 
 
 allocate(Xpod(nvar*nspat,nt))
+allocate(Phi (nvar*nspat,nt))
 allocate(Rpod(nt,        nt))
 allocate(Psi(nt,nt))
+allocate(Apod(nt,nt))
 allocate(Lam(nt))
 allocate(opt_work(nt))
 
@@ -342,7 +352,8 @@ do i=1,nvar
 
       open(1, file=trim(filename), action='read', &
          access='stream', form='unformatted', status='old')
-      read(1) Xpod(:,n)
+      read(1) Xcol
+      Xpod(:,n) = Xcol
       close(1)
       ! write(*,*) Xpod(nspat,j)
 
@@ -350,21 +361,25 @@ do i=1,nvar
       ! and reshape data
       if (do_amr) then
 
+         Xcol = Xpod(:,n)
+         call reshape_AMR(nxp, nyp, nzp*nvar, finest, Xcol, 'forward')
+         Xpod(:,n) = Xcol
+
          write(filename,datafmt) &
             trim(datadir), 'grid_level', itime(1)+n-1, '.bin'
 
          open(1, file=trim(filename), action='read', &
             access='stream', form='unformatted', status='old')
-         read(1) Xgrid(:,n)
+         read(1) Xcol
          close(1)
 
-         ! Xcol = Xpod(:,n)
-         ! call reshape_AMR(nxp, nyp, nzp*nvar, finest, Xcol, 'forward')
-         ! Xpod(:,n) = Xcol
+         
 
-         Xgrid(:,n) = 0
+         ! Xgcol = Xgrid(:,n)
+         call reshape_AMR(nxp, nyp, nzp*nvar, finest, Xcol, 'forward')
+         Xgrid(:,n) = int(Xcol)
 
-         ! NEEDS DONE FOR XGRID
+         ! NEEDS DONE FOR XGRID, using ints
          ! Xcol = Xpod(:,n)
          ! call reshape_AMR(nxp, nyp, nzp*nvar, finest, Xcol, 'forward')
          ! Xpod = Xcol
@@ -419,59 +434,51 @@ write(*,*) "shape(Xpod) = ", shape(Xpod)
 
 ! write(*,*) "cpu time, method 1: ", etime_R1-stime_R1
 
-write(*,*) "computing R ..."
+! write(*,*) "computing R ..."
 
+! ---------- Compute R
+write(*,*)
 call cpu_time(cpu0)
 call compute_R(Xpod, nspat, nt, Rpod, 0)
-! do n=1,nt
-!    do m=1,n
-!       Rsum= 0.
-!       do i=1,nspat
-!          Rsum = Rsum + Xpod(i,m)*Xpod(i,n)
-!       enddo
-!       Rpod(m,n) = Rsum
-!       Rpod(n,m) = Rsum
-!    enddo
-! enddo
 call cpu_time(cpuf)
 Rcpu1 = cpuf - cpu0
+write(*,*) "    cpu time ", Rcpu1, " seconds"
 
-write(*,*) "    normal cpu time ", Rcpu1, " seconds"
+do i=1,4
+   write(*,*) Rpod(i,1:4)
+enddo
 
 call cpu_time(cpu0)
 call compute_R(Xpod, nspat, nt, Rpod, 1, Xgrid, finest, ndim)
-! do n=1,nt
-!    do m=1,n
-!       Rsum= 0.
-!       i = 1
-!       ! write(*,*) "tstep"
-!       if (m==n) then
-!          do while(i <= nspat)
-!             dval = d_l(Xgrid(i,m))
-!             ! write(*,*) "dval=",dval
-!             Rsum = Rsum + dble(dval)*Xpod(i,m)*Xpod(i,n)
-!             i    = i + dval
-!          end do
-!       else
-!          do while(i <= nspat)
-!             if (Xgrid(i,m) > Xgrid(i,n)) then
-!                dval = d_l(Xgrid(i,m))
-!             else
-!                dval = d_l(Xgrid(i,n))
-!             end if
-!             ! write(*,*) 'dval',dval
-!             Rsum = Rsum + dble(dval)*Xpod(i,m)*Xpod(i,n)
-!             i    = i + dval
-!          end do
-!       end if     
-!       Rpod(m,n) = Rsum
-!       Rpod(n,m) = Rsum
-!    enddo
-! enddo
 call cpu_time(cpuf)
 Rcpu1 = cpuf - cpu0
+write(*,*) "    cpu time ", Rcpu1, " seconds"
 
-write(*,*) "    AMR cpu time ", Rcpu1, " seconds"
+do i=1,4
+   write(*,*) Rpod(i,1:4)
+enddo
+
+! ---------- Compute Psi and Lambda
+
+
+! ---------- Compute Phi
+
+
+Phi = 0.1
+
+! ---------- Compute A
+write(*,*)
+call cpu_time(cpu0)
+call compute_A(Xpod, Phi, nspat, nt, Apod, 0)
+call cpu_time(cpuf)
+Acpu1 = cpuf - cpu0
+write(*,*) "    cpu time ", Acpu1, " seconds"
+
+call cpu_time(cpu0)
+call compute_A(Xpod, Phi, nspat, nt, Apod, 1, Xgrid, finest, ndim)
+call cpu_time(cpuf)
+Acpu1 = cpuf - cpu0
+write(*,*) "    cpu time ", Acpu1, " seconds"
 
 
 write(*,*) "Rpod(1,1) = ", Rpod(1,1)

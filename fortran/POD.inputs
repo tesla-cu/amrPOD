@@ -40,7 +40,7 @@
 
 &AMR_POD_inputs
   
-  finest = 0
+  finest = 3
 
 
 /
