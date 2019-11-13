@@ -13,13 +13,9 @@ integer,                               intent(in)  :: nt
 double precision, dimension(nspat,nt), intent(in)  :: Xpod
 double precision, dimension(nt,nt),    intent(in)  :: Psi
 double precision, dimension(nt),       intent(in)  :: Lambda
-double precision, dimension(nt,nt),    intent(out) :: Phi
+double precision, dimension(nspat,nt), intent(out) :: Phi
 integer,                               intent(in)  :: method
 ! ---------- AMR POD variables --------------------------------------
-! integer, optional, dimension(nspat,nt) :: Xgrid
-! integer, optional                      :: finest
-! integer, optional, dimension(0:finest) :: d_l
-! integer :: dval
 integer, optional, dimension(nspat,nt), intent(in) :: Xgrid
 integer, optional,                      intent(in) :: finest
 integer, optional,                      intent(in) :: ndim
@@ -30,7 +26,8 @@ integer                                            :: Xgrid_max
 integer                                            :: lvl, nlev
 integer, allocatable, dimension(:)                 :: d_l
 integer, allocatable, dimension(:)                 :: Gmat1
-integer, allocatable, dimension(:,:)               :: nl2, Hmat2
+integer, allocatable, dimension(:,:)               :: nl2
+double precision, allocatable, dimension(:,:)      :: Hmat2
 integer, allocatable, dimension(:,:,:)             :: Gmat2
 double precision                                   :: Hsum
 
@@ -41,9 +38,9 @@ if (method == 0) then
       do m=1,nt
          Phisum= 0.
          do n=1,nt
-            Phisum = Phisum + Xpod(i,n)*Phi(i,m)
+            Phisum = Phisum + Xpod(i,n)*Psi(n,m)
          enddo
-         Phi(m,n) = Phisum
+         Phi(i,m) = Phisum/sqrt(Lambda(m))
       enddo
    enddo
 
@@ -69,7 +66,6 @@ elseif ((method == 1) .or. (method==2)) then
 
       allocate(Gmat1(nspat))
 
-
       do i=1,nspat,d_0
          ! Precompute maximum grid level for each spatial location
          Gmat1 = 0
@@ -84,11 +80,11 @@ elseif ((method == 1) .or. (method==2)) then
                      exit
                   endif
                endif
-               Gval = d_l(Xgrid_max)
-               Gmat1(jj) = Gval
-               jj = jj + Gval
-               j = j + Gval
             enddo
+            Gval = d_l(Xgrid_max)
+            Gmat1(jj) = Gval
+            jj = jj + Gval
+            j = j + Gval
          enddo
 
          ! Compute elements of Phi within coarse cell
@@ -121,7 +117,7 @@ elseif ((method == 1) .or. (method==2)) then
 
       allocate(Gmat2(0:finest, d_1, nt))
       allocate(nl2(0:finest, d_1))
-      allocate(Hmat2(d_1,0:finest))
+      allocate(Hmat2(d_0,0:finest))
 
       do i=1,nspat,d_0
          Gmat2 = 0
@@ -131,24 +127,24 @@ elseif ((method == 1) .or. (method==2)) then
          do n=1,nt
             lvl = Xgrid(i,n)
             if (lvl == 0) then
-               Gmat2(0,1,nl2(0,1)) = n
                nl2(0,1) = nl2(0,1) + 1
+               Gmat2(0,1,nl2(0,1)) = n
             else
                if (finest > 1) then
                   jj = 1
                   j = i
-                  do while(jj <= d_0)
+                  do while(jj <= d_1)
                      lvl = Xgrid(j,n)
                      if (lvl == finest) then
-                        Gmat2(finest,jj,nl2(finest,jj)) = n
                         nl2(finest,jj) = nl2(finest,jj) + 1
+                        Gmat2(finest,jj,nl2(finest,jj)) = n
                         jj = jj + 1
                         j = j + d_l(finest-1)
                      else
                         do l=1,finest-1
                            if (lvl==l) then
-                              Gmat2(l,jj,nl2(l,jj)) = n
                               nl2(l,jj) = nl2(l,jj) + 1
+                              Gmat2(l,jj,nl2(l,jj)) = n
                               jj = jj + d_l(l+1)
                               j = j + d_l(l)
                            endif
@@ -156,15 +152,15 @@ elseif ((method == 1) .or. (method==2)) then
                      endif
                   enddo
                else
-                  Gmat2(1,1,nl2(1,1)) = n
                   nl2(1,1) = nl2(1,1) + 1
+                  Gmat2(1,1,nl2(1,1)) = n
                endif
             endif
          enddo
 
          ! Compute elements of H
          do n=1,nt
-            Hmat2 = 0
+            Hmat2 = 0.
             if (nl2(0,1) > 0) then
                Lsum = 0.
                do m=1,nl2(0,1)
@@ -186,7 +182,7 @@ elseif ((method == 1) .or. (method==2)) then
                               k = Gmat2(l,jj,m)
                               Lsum = Lsum + Xpod(j,k)*Psi(k,n)
                            enddo
-                           do m=(jj-1)*d_l(finest-1)+1,jj*d_l(finest-1)+d_l(l)
+                           do m=(jj-1)*d_l(finest-1)+1,(jj-1)*d_l(finest-1)+d_l(l)
                               Hmat2(m,l) = Lsum
                            enddo
                         endif
@@ -231,6 +227,8 @@ elseif ((method == 1) .or. (method==2)) then
                   enddo
                endif
             endif
+
+            ! Compute elements of Phi
             do m=1,d_0
                Hsum = 0.
                do l=0,finest
@@ -240,7 +238,7 @@ elseif ((method == 1) .or. (method==2)) then
             enddo
          enddo
       enddo
-      deallocate(Gmat1)
+      deallocate(Gmat2, nl2, Hmat2)
    endif
 
    deallocate(d_l)

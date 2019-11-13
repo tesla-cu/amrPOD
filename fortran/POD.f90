@@ -22,6 +22,11 @@
 ! To create an executable, at the terminal, run:
 !
 !    gfortran -O0 -g -fcheck=all -fbacktrace -o POD.ex POD.f90
+!    gfortran -O0 -g -fcheck=all -fbacktrace -o POD.ex POD.f90 
+!        -L/usr/lib -llapack -lblas
+!    gfortran -O0 -g -fcheck=all -fbacktrace -o POD.ex POD.f90 
+!        -L/Users/mikemeehan/Research/Papers/2019_POD_AMR/code/fortran 
+!        -llapack -lrefblas -ltmglib
 !    gfortran -O3 -o POD.ex POD.f90
 !    gfortran -O3 -o POD.ex POD.f08 -L/usr/lib -llapack -L/usr/lib -lblas
 !
@@ -232,12 +237,6 @@ nspat = nx*ny*nz
 
 
 allocate(Xpod(nvar*nspat,nt))
-allocate(Phi (nvar*nspat,nt))
-allocate(Rpod(nt,        nt))
-allocate(Psi(nt,nt))
-allocate(Apod(nt,nt))
-allocate(Lam(nt))
-allocate(opt_work(nt))
 
 ! ---------- Allocate and assign variables for fast POD
 if (Ralg>0 .or. Phialg>0 .or. Aalg>0) then
@@ -377,6 +376,7 @@ do i=1,nvar
 
          ! Xgcol = Xgrid(:,n)
          call reshape_AMR(nxp, nyp, nzp*nvar, finest, Xcol, 'forward')
+         ! call reshape_AMR(nxp, nyp, nzp*nvar, finest, Xcol, 'reverse')
          Xgrid(:,n) = int(Xcol)
 
          ! NEEDS DONE FOR XGRID, using ints
@@ -422,21 +422,13 @@ write(*,*) "shape(Xpod) = ", shape(Xpod)
 ! Once we do that, we send those values to the various procs, sync,
 ! and impose symmetry
 
-! Serial method
-! call cpu_time(stime_R1)
-! do j=1,nt
-!    do i=1,j
-!       Rpod(i,j) = sum(Xpod(1:nspat,i)*Xpod(1:nspat,j))
-!       Rpod(j,i) = Rpod(i,j)
-!    enddo
-! enddo
-! call cpu_time(etime_R1)
-
-! write(*,*) "cpu time, method 1: ", etime_R1-stime_R1
-
-! write(*,*) "computing R ..."
 
 ! ---------- Compute R
+
+
+allocate(Rpod(nt,nt))
+
+
 write(*,*)
 call cpu_time(cpu0)
 call compute_R(Xpod, nspat, nt, Rpod, 0)
@@ -458,21 +450,79 @@ do i=1,4
    write(*,*) Rpod(i,1:4)
 enddo
 
-! ---------- Compute Psi and Lambda
+! ---------- Compute Psi and Lambda ---------------------------------
+
+allocate(Psi(nt,nt))
+allocate(Lam(nt))
+
+! Arguments for dsyev (double symmetric eigenvalue):
+! http://www.netlib.org/lapack/explore-html/d2/d8a/group__double_s_yeigen_ga442c43fca5493590f8f26cf42fed4044.html
+!    'V'      - compute evals and evecs
+!    'U'      - use upper triangular mat
+!    nt       - order of matrix
+!    Rpod     - matrix to compute decomposition, outputs evecs
+!    nt       - leading order of A
+!    Lam      - eigenvalues
+!    opt_work - 
+!    L_work   - length of opt_work
+!    eig_info - information if errors
+
+L_work = 3*nt
+allocate(opt_work(L_work))
+call dsyev('V','U',nt,Rpod,nt,Lam,opt_work,L_work,eig_info)
+Psi = Rpod
+deallocate(Rpod)
 
 
-! ---------- Compute Phi
+! ---------- Compute Phi --------------------------------------------
+allocate(Phi (nvar*nspat,nt))
 
+write(*,*)
+call cpu_time(cpu0)
+call compute_Phi(Xpod, Psi, Lam, nspat, nt, Phi, 0)
+call cpu_time(cpuf)
+Rcpu1 = cpuf - cpu0
+write(*,*) "    cpu time ", Rcpu1, " seconds"
 
-Phi = 0.1
+do i=1,4
+   write(*,*) Phi(i,1:4)
+enddo
+
+call cpu_time(cpu0)
+call compute_Phi(Xpod, Psi, Lam, nspat, nt, Phi, 1, Xgrid, finest, ndim)
+call cpu_time(cpuf)
+Rcpu1 = cpuf - cpu0
+write(*,*) "    cpu time ", Rcpu1, " seconds"
+
+do i=1,4
+   write(*,*) Phi(i,1:4)
+enddo
+
+call cpu_time(cpu0)
+call compute_Phi(Xpod, Psi, Lam, nspat, nt, Phi, 2, Xgrid, finest, ndim)
+call cpu_time(cpuf)
+Rcpu1 = cpuf - cpu0
+write(*,*) "    cpu time ", Rcpu1, " seconds"
+
+do i=1,4
+   write(*,*) Phi(i,1:4)
+enddo
+
 
 ! ---------- Compute A
+
+allocate(Apod(nt,nt))
+
 write(*,*)
 call cpu_time(cpu0)
 call compute_A(Xpod, Phi, nspat, nt, Apod, 0)
 call cpu_time(cpuf)
 Acpu1 = cpuf - cpu0
 write(*,*) "    cpu time ", Acpu1, " seconds"
+
+do i=1,4
+   write(*,*) Apod(i,1:4)
+enddo
 
 call cpu_time(cpu0)
 call compute_A(Xpod, Phi, nspat, nt, Apod, 1, Xgrid, finest, ndim)
@@ -481,153 +531,9 @@ Acpu1 = cpuf - cpu0
 write(*,*) "    cpu time ", Acpu1, " seconds"
 
 
-write(*,*) "Rpod(1,1) = ", Rpod(1,1)
-
-! Argument meanings:
-!    'V' - compute evals and evecs
-!    'U' - use upper triangular mat, irrelevant if computing evecs
-!    nt  - order of matrix
-!    Psi - evecs, if using argument 'V' above
-!    nt  - leading order of A
-!    Lam - eigenvalues
-
-L_work = -1
-Lam = 0.0
-! write(*,*) shape(Lam)
-! write(*,*) Lam
 do i=1,4
-   write(*,*) Rpod(i,1:4)
+   write(*,*) Apod(i,1:4)
 enddo
-! call dsyev('V','L',nt,Rpod,nt,Lam,opt_work,L_work,eig_info)
-! ! call ssyev('V','L',nt,Rpod,nt,Lam,opt_work,L_work,eig_info)
-! write(*,*) "eig_info", eig_info
-! write(*,*) "opt_work", opt_work(1)
-! write(*,*) "max lam: ", Lam(nt)
-! write(*,*) Lam
-
-
-
-
-
-! First I am disappointed that method 2 is substantially slower than 
-! method 1 (about 2-3 times). Surely I thought that using built in 
-! functions would not speed up that much, but they did. This then begs
-! the question, why even go through the hassle? Is there really that
-! much to gain by doing iterations for each spatial point? By 
-! implementing a fast method, how much faster do we need to be in 
-! theory (i.e., # of iters) to actually see a speed up. The answer is
-! probably around an order of magnitude, quite substantial.
-
-
-
-
-!
-! Phi should be a bit easier (wrt parallel) since it is a rectangular operation, as
-! with A.
-
-
-
-
-! call MPI_Finalize(error) ! shut down MPI.
-
-
-
-! ! Set parameters (see Matlab code for more details)
-! xlo =-0.1
-! xhi = 0.1
-! ylo =-0.1
-! yhi = 0.1
-! nx  = 64
-! ny  = 64
-! dt = 0.0001
-! l  = 0.008
-! U_j = 15.3
-! Rii = 7.0    ! can get away using (U_j*pertmag)**2 in actual simulations
-
-! ! Calculate basics
-! xran = xhi-xlo
-! yran = yhi-ylo
-! dx = xran/nx
-! dy = yran/ny
-! nf = INT((l/dx)+0.5)
-! nf2 = 2*nf
-! tau = l/U_j
-
-! ! Fill R_ij with HIT
-! DO i=1,3
-!     DO j=1,3
-!         IF (i==j) THEN
-!             R(i,j) = Rii
-!         ELSE
-!             R(i,j) = 0.0
-!         END IF
-!     END DO
-! END DO
-
-! ! Cholesky factorization to form amplitude tensor
-! a(1,1) = SQRT(R(1,1))
-! a(1,2) = 0.0
-! a(1,3) = 0.0
-! a(2,1) = R(2,1)/a(1,1)
-! a(2,2) = SQRT(R(2,2) - a(2,1)**2)
-! a(2,3) = 0.0
-! a(3,1) = R(3,1)/a(1,1)
-! a(3,2) = (R(3,2) - a(2,1)*a(3,1))/a(2,2)
-! a(3,3) = SQRT(R(3,3) - a(3,1)**2 - a(3,2)**2)
-
-! ! Calculate k_filter matrix
-! ALLOCATE(k_filter(4*nf+1,4*nf+1))
-! DO i=1,4*nf+1
-!     DO j=1,4*nf+1
-!         k_filter(i,j) = SQRT(REAL((i-1-nf2)**2 + (j-1-nf2)**2))
-!     END DO
-! END DO
-
-! ! Calculate b_filter matrix
-! ALLOCATE(b_filter(4*nf+1,4*nf+1))
-! bj_sq = SQRT(SUM(SUM(EXP(-PI*k_filter/nf)**2, 1), 1))
-! b_filter = EXP(-PI*k_filter/nf)/bj_sq
-
-! ! Construct 2D sheets of white noise
-! ALLOCATE(rx(4*nf+nx,4*nf+ny), ry(4*nf+nx,4*nf+ny), rz(4*nf+nx,4*nf+ny))
-! CALL generate_white_noise_planes(4*nf+nx, 4*nf+ny, rx, ry, rz) 
-
-! ! Calculate array from -2*nf to 2*nf
-! ALLOCATE(NtoN((4*nf)+1))
-! DO i=1,(4*nf)+1
-!     NtoN(i) = i-nf2-1
-! END DO
-
-! ! Calculate psi fields using filter function
-! ALLOCATE(psix(nx,ny), psiy(nx,ny), psiz(nx,ny))
-! DO i=1,nx
-!     DO j=1,ny
-!         ! summing all dims of b.*r 
-!         psix(i,j) = SUM(SUM(b_filter*rx(i+nf2+NtoN,j+nf2+NtoN),1),1)
-!         psiy(i,j) = SUM(SUM(b_filter*ry(i+nf2+NtoN,j+nf2+NtoN),1),1)
-!         psiz(i,j) = SUM(SUM(b_filter*rz(i+nf2+NtoN,j+nf2+NtoN),1),1)
-!     END DO
-! END DO
-
-! ! Calculate u fields
-! ALLOCATE(ux(nx,ny), uy(nx,ny), uz(nx,ny))
-! ux = a(1,1)*psix
-! uy = a(2,1)*psix + a(2,2)*psiy
-! uz = a(3,1)*psix + a(3,2)*psiy + a(3,3)*psiz
-
-! ! Write out u, v, w file to analyze in Matlab
-! OPEN(UNIT=8, FILE='uvw.dat', STATUS='replace', ACTION='write', &
-!     IOSTAT=ierror)
-
-! do i=1,nx
-!     do j=1,ny
-!         WRITE(8,100) ux(i,j), uy(i,j), uz(i,j)
-!         100 FORMAT (F10.6, F10.6, F10.6)
-!     end do
-! end do
-
-! CLOSE(8)
-! WRITE(*,*) "done computing u, v, w for inflow"
 
 
 end program POD
