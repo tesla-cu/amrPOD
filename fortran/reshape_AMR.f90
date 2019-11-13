@@ -48,6 +48,7 @@ endif
 ! ======================== Forward reshaping ========================
 if (dir == "f") then
 
+   ! ---------- Two dimensions
    if (ndim == 2) then
       allocate(data_2Da(nx,ny))
       data_2Da = reshape(data, [nx,ny])
@@ -56,6 +57,7 @@ if (dir == "f") then
          nxr = size(data_2Da,1)
          nyr = size(data_2Da,2)
          nrshp1 = nspat/(c*nyr)
+         nrshp2 = nspat/c
 
          ! Permute [2,1]
          allocate(data_2Db(nyr,nxr))
@@ -73,47 +75,15 @@ if (dir == "f") then
          deallocate(data_3Da)
 
          ! Reshape back to 2D
-         allocate(data_2Da(nrshp1*nyr,c))
-         data_2Da = reshape(data_3Db, [nrshp1*nyr,c], order=[1,2])
+         allocate(data_2Da(nrshp2,c))
+         data_2Da = reshape(data_3Db, [nrshp2,c], order=[1,2])
          deallocate(data_3Db)
 
       enddo
       data = data_2Da(:,1)
       deallocate(data_2Da)
 
-
-      ! allocate(data_2Da(4,4))
-      ! data_2Da = 0.
-      ! data_2Da(1:2,3:4) = 1.
-      ! do i=1,4
-      !    write(*,*) "data_2Da(",i,",:) = ",data_2Da(i,:)
-      ! enddo
-      ! allocate(data_3Da(4,c,2))
-      ! data_3Da = reshape(data_2Da, [4,c,2], order=[1,2,3]) ! corr for sym
-      ! data_3Da = reshape(data_2Da, [4,c,2], order=[2,3,1]) ! corr non sym
-      ! do i=1,4
-      !    write(*,*) "data_3Da(",i,",:,1) = ",data_3Da(i,:,1)
-      ! enddo
-      ! do i=1,4
-      !    write(*,*) "data_3Da(",i,",:,2) = ",data_3Da(i,:,2)
-      ! enddo
-      ! deallocate(data_2Da)
-      ! allocate(data_3Db(4,2,c))
-      ! data_3Db = reshape(data_3Da, [4,2,c], order=[1,3,2])
-      ! do i=1,4
-      !    write(*,*) "data_3Db(",i,",:,1) = ",data_3Db(i,:,1)
-      ! enddo
-      ! do i=1,4
-      !    write(*,*) "data_3Db(",i,",:,2) = ",data_3Db(i,:,2)
-      ! enddo
-      ! allocate(data_2Da(8,2))
-      ! data_2Da = reshape(data_3Db, [8,2], order=[1,2])
-      ! do i=1,8
-      !    write(*,*) "data_2Da(",i,",:) = ",data_2Da(i,:)
-      ! enddo
-
-      ! stop
-
+   ! ---------- Three dimensions
    elseif (ndim == 3) then
       write(*,*) 'data is 3D'
 
@@ -167,6 +137,148 @@ if (dir == "f") then
 elseif (dir== "r") then
 
    write(*,*) "doing reverse"
+   if (ndim == 2) then
+      allocate(data_2Da(nspat,1))
+      data_2Da(:,1) = data
+      do i=finest-1,0,-1
+         c = c_l(i)
+         nxr = size(data_2Da,1)
+         nyr = size(data_2Da,2)
+         nrshp1 = nspat/(c*nyr)
+         nrshp2 = nspat/c
+
+         ! Reshape into higher dimension
+         allocate(data_3Da(c,nrshp1,nyr))
+         data_3Da = reshape(data_2Da, [c,nrshp1,nyr], order=[1,2,3])
+         deallocate(data_2Da)
+
+         ! Permute [1,3,2]
+         allocate(data_3Db(c,nyr,nrshp1))
+         data_3Db = reshape(data_3Da, [c,nyr,nrshp1], order=[1,3,2])
+         deallocate(data_3Da)
+
+         ! Reshape back to 2D
+         allocate(data_2Db(c,nrshp2))
+         data_2Db = reshape(data_3Db, [c,nrshp2], order=[1,2])
+         deallocate(data_3Db)
+
+         ! Permute [2,1]
+         allocate(data_2Da(nrshp2,c))
+         data_2Da = reshape(data_2Db, [nrshp2,c], order=[2,1])
+         deallocate(data_2Db)
+      enddo
+
+      nxr = size(data_2Da,1)
+      nyr = size(data_2Da,2)
+      nrshp1 = nspat/(ny*nyr)
+      ! nrshp2 = nspat/c
+
+      ! Reshape into higher dimension
+      allocate(data_3Da(ny,nrshp1,nyr))
+      data_3Da = reshape(data_2Da, [ny,nrshp1,nyr], order=[1,2,3])
+      deallocate(data_2Da)
+
+      ! Permute [1,3,2]
+      allocate(data_3Db(ny,nyr,nrshp1))
+      data_3Db = reshape(data_3Da, [ny,nyr,nrshp1], order=[1,3,2])
+      deallocate(data_3Da)
+
+      ! Reshape back to 2D
+      allocate(data_2Db(ny,nx))
+      data_2Db = reshape(data_3Db, [ny,nx], order=[1,2])
+      deallocate(data_3Db)
+
+      ! Permute [2,1]
+      allocate(data_2Da(nx,ny))
+      data_2Da = reshape(data_2Db, [nx,ny], order=[2,1])
+
+      data = reshape(data_2Da, [nspat])
+      deallocate(data_2Da)
+   elseif (ndim == 3) then
+      write(*,*) "NOT DONE!!!!!!!!"
+      stop
+
+      allocate(data_3Da(nspat,1,1))
+      data_3Da(:,1,1) = data
+      do i=finest-1,0,-1
+         c = c_l(i)
+         nxr = size(data_3Da,1)
+         nyr = size(data_3Da,2)
+         nzr = size(data_3Da,3)
+         nrshp1 = nspat/(c*nyr*nzr)
+         nrshp2 = nspat/(c*c*nzr)
+         nrshp3 = nspat/(c*c)
+
+         ! Reshape into higher dimension
+         allocate(data_4Da(c,nrshp1,nyr,nzr))
+         data_4Da = reshape(data_3Da, [c,nrshp1,nyr,nzr], order=[1,2,3,4])
+         deallocate(data_3Da)
+
+         ! Permute [1,3,2,4]
+         allocate(data_4Db(c,nyr,nrshp1,nzr))
+         data_4Db = reshape(data_4Da, [c,nyr,nrshp1,nzr], order=[1,3,2,4])
+         deallocate(data_4Da)
+
+         ! Reshape other dimension
+         allocate(data_4Da(c,c,nrshp2,nzr))
+         data_4Da = reshape(data_4Db, [c,c,nrshp2,nzr], order=[1,2,3,4])
+         deallocate(data_4Db)
+
+         ! Permute [1,2,4,3]
+         allocate(data_4Db(c,c,nzr,nrshp2))
+         data_4Db = reshape(data_4Da, [c,c,nzr,nrshp2], order=[1,2,4,3])
+         deallocate(data_4Da)
+
+         ! Reshape to three dimensions
+         allocate(data_3Db(c,c,nrshp3))
+         data_3Db = reshape(data_4Db, [c,c,nrshp3], order=[1,2,3])
+         deallocate(data_4Db)
+
+         ! Permute [3,2,1]
+         allocate(data_3Da(nrshp3,c,c))
+         data_3Da = reshape(data_3Db, [nrshp3,c,c], order=[3,2,1])
+         deallocate(data_3Db)
+      enddo
+
+      nxr = size(data_3Da,1)
+      nyr = size(data_3Da,2)
+      nzr = size(data_3Da,3)
+      nrshp1 = nspat/(nz*nyr*nzr)
+      nrshp2 = nspat/(nz*ny*nzr)
+
+      ! Reshape into higher dimension
+      allocate(data_4Da(nz,nrshp1,nyr,nzr))
+      data_4Da = reshape(data_3Da, [nz,nrshp1,nyr,nzr], order=[1,2,3,4])
+      deallocate(data_3Da)
+
+      ! Permute [1,3,2,4]
+      allocate(data_4Db(nz,nyr,nrshp1,nzr))
+      data_4Db = reshape(data_4Da, [nz,nyr,nrshp1,nzr], order=[1,3,2,4])
+      deallocate(data_4Da)
+
+      ! Reshape other dimension
+      allocate(data_4Da(nz,ny,nrshp2,nzr))
+      data_4Da = reshape(data_4Db, [nz,ny,nrshp2,nzr], order=[1,2,3,4])
+      deallocate(data_4Db)
+
+      ! Permute [1,2,4,3]
+      allocate(data_4Db(nz,ny,nzr,nrshp2))
+      data_4Db = reshape(data_4Da, [nz,ny,nzr,nrshp2], order=[1,2,4,3])
+      deallocate(data_4Da)
+
+      ! Reshape to three dimensions
+      allocate(data_3Db(nz,ny,nx))
+      data_3Db = reshape(data_4Db, [nz,ny,nx], order=[1,2,3])
+      deallocate(data_4Db)
+
+      ! Permute [3,2,1]
+      allocate(data_3Da(nx,ny,nz))
+      data_3Da = reshape(data_3Db, [nx,ny,nz], order=[3,2,1])
+      deallocate(data_3Db)
+
+      data = reshape(data_3Da, [nspat])
+      deallocate(data_3Da)
+   endif
 
 else
 
