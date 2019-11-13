@@ -11,9 +11,9 @@ if __name__ == '__main__':
     print('starting script to perform POD on AMR grids ...')
 
     # ---------- User defined inputs --------------------------------
-    nx          = 64   # x spatial points                  
-    ny          = 64    # y spatial points
-    nz          = 1     # z spatial points
+    nx          = 128   # x spatial points                  
+    ny          = 128    # y spatial points
+    nz          = 64    # z spatial points
     finest      = 5     # finest level of AMR in the domain
     nt          = 5     # spanning nt
     ls          = np.array([4/16, 4/16, 2/16, 2/16, 2/16, 2/16])

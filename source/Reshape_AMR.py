@@ -84,9 +84,11 @@ def Reshape_AMR(nx, ny, nz, finest, data, direction):
 	elif direction[0].lower() == 'r':
 
 		# Create array that specifies a dimension of reshape
-		c_lr       = np.zeros((nlev), dtype=int) # c_l in reverse
-		c_lr[0:-1] = c_l[-2::-1] # reversed elements of c_l excluding last
-		c_lr[-1]   = nx          # last iteration must be nx
+		# c_lr       = np.zeros((nlev), dtype=int) # c_l in reverse
+		# c_lr[0:-1] = c_l[-2::-1] # reversed elements of c_l excluding last
+		# c_lr[-1]   = nx          # last iteration must be nx
+
+		c_lr = c_l[-2::-1] # reversed elements of c_l excluding last
 
 		# 1D, no reshaping required
 		if ndim == 1:
@@ -103,11 +105,19 @@ def Reshape_AMR(nx, ny, nz, finest, data, direction):
 				data_2D = np.reshape(  data_2D, (-1, c))
 				data_2D = np.transpose(data_2D, ( 1,  0))
 
+			nxr = data_2D.shape[0]
+
+			data_2D = np.reshape(  data_2D, (nxr, -1, nx))
+			data_2D = np.transpose(data_2D, ( 1,  0,  2))
+			data_2D = np.reshape(  data_2D, (ny, nx))
+			data_2D = np.transpose(data_2D, ( 1,  0))
+
 			data_1D = np.reshape(data_2D, (nspat))
 
 		# 3D reshaping procedure, see text for details
 		elif ndim == 3:
-			data_3D = np.expand_dims(data, axis=0)
+			data_3D = np.expand_dims(data,    axis=0)
+			data_3D = np.expand_dims(data_3D, axis=0)
 			for c in c_lr:
 				nxr = data_3D.shape[0]
 				nyr = data_3D.shape[1]
@@ -118,6 +128,16 @@ def Reshape_AMR(nx, ny, nz, finest, data, direction):
 				data_3D = np.transpose(data_3D, ( 1,  0,  2,   3))
 				data_3D = np.reshape(  data_3D, (-1,  c,  c))
 				data_3D = np.transpose(data_3D, ( 2,  1,  0))
+
+			nxr = data_3D.shape[0]
+			nyr = data_3D.shape[1]
+
+			data_3D = np.reshape(  data_3D, ( nxr, nyr,  -1,   nx))
+			data_3D = np.transpose(data_3D, ( 0,  2,  1,   3))
+			data_3D = np.reshape(  data_3D, ( nxr, -1,  ny,   nx))
+			data_3D = np.transpose(data_3D, ( 1,  0,  2,   3))
+			data_3D = np.reshape(  data_3D, (nz,  ny,  nx))
+			data_3D = np.transpose(data_3D, ( 2,  1,  0))
 
 			data_1D = np.reshape(data_3D, (nspat))
 
