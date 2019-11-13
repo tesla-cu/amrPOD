@@ -29,11 +29,11 @@ integer, allocatable, dimension(:)                 :: Gmat
 ! ========================== Standard POD ===========================
 if (method == 0) then
    write(*,*) "computing A using standard operations ..."
-   do n=1,nt
-      do m=1,nt
+   do m=1,nt
+      do n=1,nt
          Asum= 0.
          do i=1,nspat
-            Asum = Asum + Xpod(i,n)*Phi(i,m)
+            Asum = Asum + Xpod(i,m)*Phi(i,n)
          enddo
          Apod(m,n) = Asum
       enddo
@@ -72,15 +72,15 @@ elseif (method == 1) then
    enddo
 
    ! Compute A with proper weighting
-   do n=1,nt
-      do m=1,nt
+   do m=1,nt
+      do n=1,nt
          Asum= 0.
          i = 1
          do while(i <= nspat)
-            Asum = Gmat(i)*Xpod(i,m)*Phi(i,n)
+            Asum = Asum + dble(Gmat(i))*Xpod(i,m)*Phi(i,n)
             i = i + Gmat(i)
          end do 
-         Apod(n,m) = Asum
+         Apod(m,n) = Asum
       enddo
    enddo
 

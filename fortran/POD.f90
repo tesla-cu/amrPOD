@@ -23,10 +23,7 @@
 !
 !    gfortran -O0 -g -fcheck=all -fbacktrace -o POD.ex POD.f90
 !    gfortran -O0 -g -fcheck=all -fbacktrace -o POD.ex POD.f90 
-!        -L/usr/lib -llapack -lblas
-!    gfortran -O0 -g -fcheck=all -fbacktrace -o POD.ex POD.f90 
-!        -L/Users/mikemeehan/Research/Papers/2019_POD_AMR/code/fortran 
-!        -llapack -lrefblas -ltmglib
+!        -L. -llapack -lrefblas
 !    gfortran -O3 -o POD.ex POD.f90
 !    gfortran -O3 -o POD.ex POD.f08 -L/usr/lib -llapack -L/usr/lib -lblas
 !
@@ -529,7 +526,6 @@ call compute_A(Xpod, Phi, nspat, nt, Apod, 1, Xgrid, finest, ndim)
 call cpu_time(cpuf)
 Acpu1 = cpuf - cpu0
 write(*,*) "    cpu time ", Acpu1, " seconds"
-
 
 do i=1,4
    write(*,*) Apod(i,1:4)
