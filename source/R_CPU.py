@@ -28,7 +28,7 @@ import time
 # - time_im : CPU time to compute R using implemented algorithm
 # - time_un : CPU time to compute R using unaltered algorithm
 # ================================================================= #
-def compute_R_CPU(X, X_grid, R, d_l, nt, nspat):
+def compute_R_CPU(X, X_grid, R, d_l, nt, nspat, finest):
 
 	# ========== Unaltered Computation ============================ #
 
@@ -65,6 +65,8 @@ def compute_R_CPU(X, X_grid, R, d_l, nt, nspat):
 	# Initialize R matrix for computation of implemented algorithm
 	R_im = np.zeros((nt, nt))
 
+	d_f1 = d_l[finest-1]
+
 	# Compute R matrix with implemented algorithm
 	for m in range(nt):      # iterate over nt rows
 		for n in range(m+1): # iterate up to and including diagnoal
@@ -84,10 +86,18 @@ def compute_R_CPU(X, X_grid, R, d_l, nt, nspat):
 				# Compute inner product by weighting and skipping 
 				# cells that are repeated
 				for ii in range(nspat): # dummy iteration
-					if i < nspat: 		
-						d_val = d_l[X_grid[i,m]]     # # of repeats
-						r_sum += d_val*X[i,n]*X[i,m] # weight computation
-						i += d_val                   # skip repeats
+					if i < nspat:
+						# Determine if this is a finest computation, if
+						# so, we know it is for the next d_f1-1 as well
+						if X_grid[i,m] == finest:
+							for j in range(i,i+d_f1):
+								r_sum += X[j,n]*X[j,m]
+							i += d_f1
+						# Otherwise, weight computation and skip
+						else:
+							d_val = d_l[X_grid[i,m]]     # # of repeats
+							r_sum += d_val*X[i,n]*X[i,m] # weight computation
+							i += d_val                   # skip repeats
 					else:
 						break
 
@@ -97,14 +107,20 @@ def compute_R_CPU(X, X_grid, R, d_l, nt, nspat):
 				# cells that are repeated
 				for ii in range(nspat): # dummy iteration
 					if i < nspat:
-						# Determine which grid level is higher and 
-						# use this as weight and # of repeats
-						if X_grid[i,m] > X_grid[i,n]:
-							d_val = d_l[X_grid[i,m]]
+						# Determine if this is a finest computation, if
+						# so, we know it is for the next d_f1-1 as well
+						if X_grid[i,m] == finest or X_grid[i,n] == finest:
+							for j in range(i,i+d_f1):
+								r_sum += X[j,n]*X[j,m]
+							i += d_f1
+						# Otherwise, weight computation and skip
 						else:
-							d_val = d_l[X_grid[i,n]]
-						r_sum += d_val*X[i,n]*X[i,m] # weight computation
-						i += d_val                   # skip repeats
+							if X_grid[i,m] > X_grid[i,n]:
+								d_val = d_l[X_grid[i,m]]
+							else:
+								d_val = d_l[X_grid[i,n]]
+							r_sum += d_val*X[i,n]*X[i,m] # weight computation
+							i += d_val                   # skip repeats
 					else:
 						break
 

@@ -64,11 +64,13 @@ def compute_A_CPU(X, X_grid, Phi, A, d_l, nt, nspat, finest):
 	# Initialize timer
 	tic = time.time()
 
-	# Initialize R matrix for computation of implemented algorithm
+	# Initialize A matrix for computation of implemented algorithm
 	A_im = np.zeros((nt, nt))
 
 	# Initialize matrix to store maximum grid level
-	G = np.zeros((nspat), dtype=int)	
+	G = np.zeros((nspat), dtype=int)
+
+	d_f1 = d_l[finest-1]
 
 	# Initialize index of spatial location
 	i = 0
@@ -92,8 +94,12 @@ def compute_A_CPU(X, X_grid, Phi, A, d_l, nt, nspat, finest):
 					if X_grid_max == finest:
 							break
 
-			G[i] =  d_l[X_grid_max] # get # of repeats
-			i    += G[i]            # skip cells that are repeated
+			if X_grid_max == finest:
+				G[i] = 1
+				i    += d_f1
+			else:
+				G[i] =  d_l[X_grid_max] # get # of repeats
+				i    += G[i]            # skip cells that are repeated
 		else:
 			break
 
@@ -111,8 +117,13 @@ def compute_A_CPU(X, X_grid, Phi, A, d_l, nt, nspat, finest):
 			# Compute value of one element in A
 			for ii in range(nspat): # dummy loop
 				if i < nspat:       # exit loop if at end
-					a_sum += G[i]*X[i,m]*Phi[i,n] # weight computation
-					i += G[i]                     # skip repeats
+					if G[i] == 1:
+						for j in range(i,i+d_f1):
+							a_sum += X[j,m]*Phi[j,n]
+						i += d_f1
+					else:
+						a_sum += G[i]*X[i,m]*Phi[i,n] # weight computation
+						i += G[i]                     # skip repeats
 				else:
 					break
 

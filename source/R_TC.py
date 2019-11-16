@@ -32,7 +32,7 @@ import numpy as np
 # - im : num of operations to compute R using implemented algorithm
 # - un : num of operations to compute R using unaltered algorithm
 # ================================================================= #
-def compute_R_TC(X, X_grid, R, d_l, nt, nspat, wt_art, wt_acc, wt_asn, wt_log, wt_fun):
+def compute_R_TC(X, X_grid, R, d_l, nt, nspat, finest, wt_art, wt_acc, wt_asn, wt_log, wt_fun):
 
 	# ========== Initialize Operation Counts ====================== #
 
@@ -91,6 +91,12 @@ def compute_R_TC(X, X_grid, R, d_l, nt, nspat, wt_art, wt_acc, wt_asn, wt_log, w
 	im_asn += wt_asn
 	im_fun += wt_fun
 
+
+	d_f1 = d_l[finest-1]
+	im_asn += wt_asn
+	im_art += wt_art
+	im_acc += im_acc
+
 	for m in range(nt):
 		im_art += wt_art
 		im_asn += wt_asn
@@ -115,18 +121,36 @@ def compute_R_TC(X, X_grid, R, d_l, nt, nspat, wt_art, wt_acc, wt_asn, wt_log, w
 					im_log += wt_log
 					if i < nspat:
 
-						d_val  = d_l[X_grid[i,m]]
-						im_acc += 2*wt_acc
-						im_asn += wt_asn
+						im_log += wt_log
+						if X_grid[i,m] == finest:
 
-						r_sum  += d_val*X[i,n]*X[i,m]
-						im_acc += 2*wt_acc
-						im_asn += wt_asn
-						im_art += 3*wt_art
+							im_art += wt_art
+							for j in range(i,i+d_f1):
+								im_art += wt_art
+								im_asn += wt_asn
 
-						i      += d_val
-						im_asn += wt_asn
-						im_art += wt_art
+								r_sum += X[j,n]*X[j,m]
+								im_art += 2*wt_art
+								im_acc += 2*wt_acc
+								im_asn += wt_asn
+
+							i += d_f1
+							im_art += wt_art
+							im_asn += wt_asn
+						else:
+
+							d_val  = d_l[X_grid[i,m]]
+							im_acc += 2*wt_acc
+							im_asn += wt_asn
+
+							r_sum  += d_val*X[i,n]*X[i,m]
+							im_acc += 2*wt_acc
+							im_asn += wt_asn
+							im_art += 3*wt_art
+
+							i      += d_val
+							im_asn += wt_asn
+							im_art += wt_art
 
 					else:
 						break
@@ -138,28 +162,45 @@ def compute_R_TC(X, X_grid, R, d_l, nt, nspat, wt_art, wt_acc, wt_asn, wt_log, w
 					
 					im_log += wt_log
 					if i < nspat:
-						
-						im_log += wt_log
-						im_acc += 2*wt_acc
-						if X_grid[i,m] > X_grid[i,n]:
 
-							d_val  = d_l[X_grid[i,m]]
-							im_acc += 2*wt_acc
+						im_log += 2*wt_log
+						if X_grid[i,m] == finest or X_grid[i,n] == finest:
+
+							im_art += wt_art
+							for j in range(i,i+d_f1):
+								im_art += wt_art
+								im_asn += wt_asn
+
+								r_sum += X[j,n]*X[j,m]
+								im_art += 2*wt_art
+								im_acc += 2*wt_acc
+								im_asn += wt_asn
+
+							i += d_f1
+							im_art += wt_art
 							im_asn += wt_asn
-
 						else:
-							d_val  = d_l[X_grid[i,n]]
+						
+							im_log += wt_log
 							im_acc += 2*wt_acc
+							if X_grid[i,m] > X_grid[i,n]:
+								d_val  = d_l[X_grid[i,m]]
+								im_acc += 2*wt_acc
+								im_asn += wt_asn
+
+							else:
+								d_val  = d_l[X_grid[i,n]]
+								im_acc += 2*wt_acc
+								im_asn += wt_asn
+
+							r_sum  += d_val*X[i,n]*X[i,m]
+							im_acc += 2*wt_acc
+							im_art += 3*wt_art
 							im_asn += wt_asn
 
-						r_sum  += d_val*X[i,n]*X[i,m]
-						im_acc += 2*wt_acc
-						im_art += 3*wt_art
-						im_asn += wt_asn
-
-						i      += d_val
-						im_art += wt_art
-						im_asn += wt_asn
+							i      += d_val
+							im_art += wt_art
+							im_asn += wt_asn
 
 					else:
 						break

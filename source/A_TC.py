@@ -98,6 +98,11 @@ def compute_A_TC(X, X_grid, Phi, A, d_l, nt, nspat, finest, wt_art, wt_acc, wt_a
 	i       = 0
 	im_asn += wt_asn
 
+	d_f1 = d_l[finest-1]
+	im_asn += wt_asn
+	im_art += wt_art
+	im_acc += im_acc
+	
 	for ii in range(nspat):
 		im_art += wt_art
 		im_asn += wt_asn
@@ -125,14 +130,24 @@ def compute_A_TC(X, X_grid, Phi, A, d_l, nt, nspat, finest, wt_art, wt_acc, wt_a
 					if X_grid_max == finest:
 						break
 
-			G[i]   =  d_l[X_grid_max]
-			im_acc += 2*wt_acc
-			im_asn += wt_asn
+			im_log += wt_log
+			if X_grid_max == finest:
+				G[i] = 1
+				im_acc += wt_acc
+				im_asn += wt_asn
 
-			i      += G[i]
-			im_art += wt_art
-			im_acc += wt_acc
-			im_asn += wt_asn
+				i    += d_f1
+				im_art += wt_art
+				im_asn += wt_asn
+			else:
+				G[i]   =  d_l[X_grid_max]
+				im_acc += 2*wt_acc
+				im_asn += wt_asn
+
+				i      += G[i]
+				im_art += wt_art
+				im_acc += wt_acc
+				im_asn += wt_asn
 
 		else:
 			break
@@ -157,15 +172,31 @@ def compute_A_TC(X, X_grid, Phi, A, d_l, nt, nspat, finest, wt_art, wt_acc, wt_a
 
 				im_log += wt_log
 				if i < nspat:
-					a_sum  += G[i]*X[i,m]*Phi[i,n]
-					im_acc += 3*wt_acc
-					im_art += 3*wt_art
-					im_asn += wt_asn
 
-					i      += G[i]
-					im_acc += wt_acc
-					im_asn += wt_asn
-					im_art += wt_art
+					im_log += wt_log
+					if G[i] == 1:
+
+						im_art += wt_art
+						for j in range(i,i+d_f1):
+							im_art += wt_art
+							im_asn += wt_asn
+
+							a_sum += X[j,m]*Phi[j,n]
+							im_acc += 2*wt_acc
+							im_art += 2*wt_art
+							im_asn += wt_asn
+
+						i += d_f1
+					else:
+						a_sum  += G[i]*X[i,m]*Phi[i,n]
+						im_acc += 3*wt_acc
+						im_art += 3*wt_art
+						im_asn += wt_asn
+
+						i      += G[i]
+						im_acc += wt_acc
+						im_asn += wt_asn
+						im_art += wt_art
 
 				else:
 					break
