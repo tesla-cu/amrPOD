@@ -22,14 +22,14 @@ if __name__ == '__main__':
     # ---------- User defined inputs -------------------------------- 
     gen_grid    = True  # are we generating synthetic data?
     compute_tc  = True  # are we computing the time complexity?
-    compute_cpu = True # are we computing the cpu time?
-    nx          = 64   # x spatial points                  
-    ny          = 64   # y spatial points
+    compute_cpu = False # are we computing the cpu time?
+    nx          = 64    # x spatial points                  
+    ny          = 64    # y spatial points
     nz          = 1     # z spatial points
     finest      = 1     # finest level of AMR in the domain
-    nsample     = 2     # number of samples for each parameter set
-    nt_arr      = np.arange(5, 25, 5)     # spanning nt
-    l1_arr      = np.arange(0.0, 33/64, 4/64) # spanning l1
+    nsample     = 8     # number of samples for each parameter set
+    nt_arr      = np.arange(2, 62, 2)         # spanning nt
+    l1_arr      = np.arange(0.0, 49/64, 1/64) # spanning l1
     lcs         = np.zeros((finest+1)) # fraction of grid that stays constant in time
 
     # Direction where /code/ livesc
@@ -47,7 +47,7 @@ if __name__ == '__main__':
         os.mkdir(datadir)
 
     # Directory that describes the study we are looking at
-    studydir = datadir + 'l1_nt_oldRA/'
+    studydir = datadir + 'l1_nt/'
     if not os.path.exists(studydir):
         os.mkdir(studydir)
 
@@ -101,8 +101,7 @@ if __name__ == '__main__':
         CPU_rms_unalt = np.zeros((len(xvals), len(yvals), 4))
 
     # Start parallel processing
-    # nthread = mp.cpu_count()
-    nthread = 2
+    nthread = mp.cpu_count()
     print('starting pool with %i threads ...' % nthread)
     pool = mp.Pool(processes=nthread)
 
@@ -237,9 +236,9 @@ if __name__ == '__main__':
     sim_info.write("x_inc:    %i\n" % np.diff(xvals[0:2]))
     sim_info.write("x_end:    %i\n" % xvals[-1])
     sim_info.write("yvar:     %s\n" % "l1")
-    sim_info.write("y_0:      %i\n" % yvals[0])
-    sim_info.write("y_inc:    %i\n" % np.diff(yvals[0:2]))
-    sim_info.write("y_end:    %i\n" % yvals[-1])
+    sim_info.write("y_0:      %0.8f\n" % yvals[0])
+    sim_info.write("y_inc:    %0.8f\n" % np.diff(yvals[0:2]))
+    sim_info.write("y_end:    %0.8f\n" % yvals[-1])
     sim_info.close()
 
     # Write out time complexity data
@@ -289,32 +288,4 @@ if __name__ == '__main__':
     
     # Plot these various quantities
     plot_single(txtdir, imgdir, compute_tc, compute_cpu, xvals, yvals, 'nt', 'l1')
-
-
-    # Code if we want to span rc
-    """
-    rc_arr       = np.arange(12,1,-2)
-    n            = np.size(rc_arr)
-    l_frac_0     = .9
-    tol          = 10000
-
-    #-------- Solve for other level fracs based on specified r_c
-    for i in range(n):
-        flag = 1
-        while flag < tol:
-            a       = np.array([ [1, 1], [ 1/d_l[1], 1/d_l[2] ]])
-            b       = np.array([1 - l_frac_0, 1/rc_arr[i] - l_frac_0/d_l[0]])
-            l1l2    = LA.solve(a,b)
-            if l1l2[0] >=0 and l1l2[0] <= 1 and l1l2[1] >= 0 and l1l2[1] <= 1:
-                break
-            else:
-                flag     += 1
-                l_frac_0 -= d_l[0]/(nx*ny*nz)
-
-        l1_frac_arr[i] = l1l2[0]
-        l2_frac_arr[i] = l1l2[1]
-        l0_frac_arr[i] = 1 - l1l2[0] - l1l2[1]
-        l_frac_data[i,:] = np.array([l0_frac_arr[i],l1_frac_arr[i],l2_frac_arr[i]])
-    """
-
 
