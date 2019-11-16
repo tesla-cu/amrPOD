@@ -11,9 +11,6 @@ from R_TC    import compute_R_TC
 from Phi_CPU import compute_Phi_CPU
 from Phi_TC  import compute_Phi_TC
 
-# from Phi_CPU_recur import compute_Phi_CPU
-# from Phi_TC_recur  import compute_Phi_TC
-
 from A_CPU   import compute_A_CPU
 from A_TC    import compute_A_TC
 
@@ -101,7 +98,7 @@ def Compute_POD_correct(nx, ny, nz, finest, nt, ls, lcs):
 	Lambda      = np.diag(Lambda) # make this a matrix
 
 	# ---------- Calculate POD with iterative operations ------------
-	R_imp,  R_unalt  = compute_R_CPU  (X, X_grid,                 R,   d_l, nt, nspat)
+	R_imp,  R_unalt  = compute_R_CPU  (X, X_grid,                 R,   d_l, nt, nspat, finest)
 	P1_imp, P1_unalt = compute_Phi_CPU(X, X_grid, Psi, Lambda, 1, Phi, d_l, nt, nspat, finest)
 	P2_imp, P2_unalt = compute_Phi_CPU(X, X_grid, Psi, Lambda, 2, Phi, d_l, nt, nspat, finest)
 	A_imp,  A_unalt  = compute_A_CPU  (X, X_grid, Phi,            A,   d_l, nt, nspat, finest)
