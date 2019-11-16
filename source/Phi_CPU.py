@@ -299,20 +299,20 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest)
 							# Check if we have any cells at the finest-1 level
 							if nl[finest-1, idx] > 0:
 
-								clvl = finest-1
+								l = finest-1
 
 								# Initialize temporary variable to store sum of  
-								# clvl contributions to an element of Phi
+								# l contributions to an element of Phi
 								l_sum = 0
 
 								# Compute contribution of current level
-								for m in range(nl[clvl, idx]):
-									k = G_mat[clvl, idx, m]
+								for m in range(nl[l, idx]):
+									k = G_mat[l, idx, m]
 									l_sum += X[j,k] * Psi[k,n]
 
 								# Assign contribution to H
-								for m in range(idx*d_l[clvl], (idx+1)*d_l[clvl]):
-									H[m, clvl] = l_sum
+								for m in range(idx*d_l[l], (idx+1)*d_l[l]):
+									H[m, l] = l_sum
 
 							# Compute finest level contribution
 							if nl[finest, idx] > 0:
@@ -321,7 +321,7 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest)
 								for k in range(j, j+d_l[finest-1]):
 
 									# Initialize temporary variable to store sum of  
-									# clvl contributions to an element of Phi
+									# l contributions to an element of Phi
 									l_sum = 0
 
 									# Compute contribution of current level
@@ -361,7 +361,7 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest)
 					# H rows, which is used for computing elements
 					# of Phi
 					H_sum = 0
-					for l in range(finest+1):
+					for l in range(nlev):
 						H_sum += H[m,l]
 
 					# Assign value of element of Phi

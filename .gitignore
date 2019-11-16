@@ -105,3 +105,8 @@ venv.bak/
 
 # MacOS
 .DS_Store
+
+# Fortran
+*.o
+*.ex
+*.ex.dSYM/

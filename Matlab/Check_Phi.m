@@ -5,7 +5,8 @@ nx    = 512;
 ny    = 512;
 nz    = 1;
 nspat = nx*ny*nz;
-nt    = 10;
+% nt    = 10;
+nt    = 101;
 
 % Direction where /code/ lives
 basedir = '/Users/mikemeehan/Research/Papers/2019_POD_AMR/';
@@ -22,7 +23,7 @@ studydir = [datadir 'check_MAT/'];
 
 % File information
 file_fmt = '%s%05i.bin';
-var      = 'density';
+var      = 'z_velocity';
 
 % Load data
 X = zeros(nspat, nt);

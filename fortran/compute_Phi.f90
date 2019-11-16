@@ -11,6 +11,7 @@ double precision :: Phisum, Lsum
 integer,                               intent(in)  :: nspat
 integer,                               intent(in)  :: nt
 double precision, dimension(nspat,nt), intent(in)  :: Xpod
+double precision, dimension(nt,nspat)              :: XpodT
 double precision, dimension(nt,nt),    intent(in)  :: Psi
 double precision, dimension(nt),       intent(in)  :: Lambda
 double precision, dimension(nspat,nt), intent(out) :: Phi
@@ -34,11 +35,13 @@ double precision                                   :: Hsum
 ! ========================== Standard POD ===========================
 if (method == 0) then
    write(*,*) "computing Phi using standard operations ..."
+   XpodT = reshape(Xpod, [nt,nspat], order=[2,1])
    do i=1,nspat
       do m=1,nt
          Phisum= 0.
          do n=1,nt
-            Phisum = Phisum + Xpod(i,n)*Psi(n,m)
+            ! Phisum = Phisum + Xpod(i,n)*Psi(n,m)
+            Phisum = Phisum + XpodT(n,i)*Psi(n,m)
          enddo
          Phi(i,m) = Phisum/sqrt(Lambda(m))
       enddo

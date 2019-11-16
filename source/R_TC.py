@@ -91,7 +91,6 @@ def compute_R_TC(X, X_grid, R, d_l, nt, nspat, finest, wt_art, wt_acc, wt_asn, w
 	im_asn += wt_asn
 	im_fun += wt_fun
 
-
 	d_f1 = d_l[finest-1]
 	im_asn += wt_asn
 	im_art += wt_art
