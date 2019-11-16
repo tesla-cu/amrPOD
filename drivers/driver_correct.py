@@ -20,8 +20,7 @@ if __name__ == '__main__':
     lcs         = np.array([1/16, 1/16, 0/16, 0/16, 0/16, 2/16]) 
 
     # Direction where /code/ livesc
-    # basedir = '/Users/samsimonswellin/desktop/'
-    basedir = '/Users/mikemeehan/Research/Papers/2019_POD_AMR/'
+    basedir = '../../'
 
     # Directory where AMR data is stored
     # amr_datadir = '/Users/samsimonswellin/desktop/' + \

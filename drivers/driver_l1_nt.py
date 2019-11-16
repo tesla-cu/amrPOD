@@ -33,8 +33,7 @@ if __name__ == '__main__':
     lcs         = np.zeros((finest+1)) # fraction of grid that stays constant in time
 
     # Direction where /code/ livesc
-    # basedir = '/Users/samsimonswellin/desktop/'
-    basedir = '/Users/mikemeehan/Research/Papers/2019_POD_AMR/'
+    basedir = '../../'
 
     # Directory where AMR data is stored
     # amr_datadir = '/Users/samsimonswellin/desktop/' + \

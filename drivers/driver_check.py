@@ -18,8 +18,7 @@ if __name__ == '__main__':
     nt     = 10    # number of time steps
 
     # Direction where /code/ lives
-    # basedir = '/Users/samsimonswellin/desktop/'
-    basedir = '/Users/mikemeehan/Research/Papers/2019_POD_AMR/'
+    basedir = '../../'
 
     # Directory where AMR data is stored
     # amr_datadir = '/Users/samsimonswellin/desktop/' + \
