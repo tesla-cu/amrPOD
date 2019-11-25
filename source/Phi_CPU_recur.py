@@ -264,20 +264,23 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest)
 		time_im = time.time() - tic
 
 	# ========== Check Correctness of Matrices ==================== #
+
+	# Check if we should check for correctness
+	if Phi != False:
 	
-	# Compute relative error for each cell
-	err_im = np.max(abs(np.subtract(Phi_im, Phi)) / abs(Phi))
-	err_un = np.max(abs(np.subtract(Phi_un, Phi)) / abs(Phi))
+		# Compute relative error for each cell
+		err_im = np.max(abs(np.subtract(Phi_im, Phi)) / abs(Phi))
+		err_un = np.max(abs(np.subtract(Phi_un, Phi)) / abs(Phi))
 
-	if err_im < 1e-6:
-		print('The implemented Phi is correct')
-	else:
-		print('The implemented Phi is incorrect')
+		if err_im < 1e-6:
+			print('The implemented Phi is correct')
+		else:
+			print('The implemented Phi is incorrect')
 
-	if err_un < 1e-6:
-		print('The unaltered Phi is correct')
-	else:
-		print('The unaltered Phi is incorrect')
+		if err_un < 1e-6:
+			print('The unaltered Phi is correct')
+		else:
+			print('The unaltered Phi is incorrect')
 
 	return time_im, time_un
 

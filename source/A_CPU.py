@@ -92,7 +92,7 @@ def compute_A_CPU(X, X_grid, Phi, A, d_l, nt, nspat, finest):
 					# If this is the finest, no point in continuing
 					# looking for finer cells
 					if X_grid_max == finest:
-							break
+						break
 
 			if X_grid_max == finest:
 				G[i] = 1
@@ -135,19 +135,22 @@ def compute_A_CPU(X, X_grid, Phi, A, d_l, nt, nspat, finest):
 
 	# ========== Check Correctness of Matrices ==================== #
 	
-	# Compute relative error for each cell
-	err_im = np.max(abs(np.subtract(A_im, A)) / abs(A))
-	err_un = np.max(abs(np.subtract(A_un, A)) / abs(A))
+	# Check if we should check for correctness
+	if A != False:
 
-	if err_im < 1e-6:
-		print('The implemented A is correct')
-	else:
-		print('The implemented A is incorrect')
+		# Compute relative error for each cell
+		err_im = np.max(abs(np.subtract(A_im, A)) / abs(A))
+		err_un = np.max(abs(np.subtract(A_un, A)) / abs(A))
 
-	if err_un < 1e-6:
-		print('The unaltered A is correct')
-	else:
-		print('The unaltered A is incorrect')
+		if err_im < 1e-6:
+			print('The implemented A is correct')
+		else:
+			print('The implemented A is incorrect')
+
+		if err_un < 1e-6:
+			print('The unaltered A is correct')
+		else:
+			print('The unaltered A is incorrect')
 
 	# Return CPU time of implemented and unaltered algorithm
 	return time_im, time_un

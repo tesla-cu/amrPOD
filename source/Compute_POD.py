@@ -83,40 +83,33 @@ def Compute_POD(gen_grid, nx, ny, nz, finest, l_fracs, lc_fracs, nt, TC_CPU='CPU
 	lc_comp = lc_comp/nspat
 	# print("lc_comp = ", lc_comp)
 
-	# ---------- Calculate POD with matrix operations ---------------
-	X_tp        = np.transpose(X)
-	R           = np.matmul(X_tp, X)
-	Lambda, Psi = LA.eig(R)
-	idx_eig     = np.argsort(Lambda) # sort evals and evecs
-	Lambda      = Lambda[idx_eig]
-	Psi         = Psi[:,idx_eig]
-	Phi         = np.matmul(X,Psi)
-	Phi         = np.matmul(Phi, np.diag(1/np.sqrt(Lambda)))
-	A           = np.matmul(X_tp, Phi)
-	Lambda      = np.diag(Lambda) # make this a matrix
+	# ---------- Initialize dummy matrices ---------------
+	Psi    = np.ones((nt,nt))
+	Lambda = np.ones((nt,nt))
+	Phi    = np.ones((nspat,nt))
 
 	# ---------- Compute time complexity of each operation ----------
 	if TC_CPU == 'TC':
 
-		R_imp,  R_unalt  = compute_R_TC(X, X_grid, R, d_l, nt, nspat, finest, \
+		R_imp,  R_unalt  = compute_R_TC  (X, X_grid,                 False, d_l, nt, nspat, finest, \
 			wt_art, wt_acc, wt_asn, wt_log, wt_fun)
 
-		P1_imp, P1_unalt = compute_Phi_TC(X, X_grid, Psi, Lambda, 1, Phi, d_l, nt, nspat, finest, \
+		P1_imp, P1_unalt = compute_Phi_TC(X, X_grid, Psi, Lambda, 1, False, d_l, nt, nspat, finest, \
 			wt_art, wt_acc, wt_asn, wt_log, wt_fun)
 
-		P2_imp, P2_unalt = compute_Phi_TC(X, X_grid, Psi, Lambda, 2, Phi, d_l, nt, nspat, finest, \
+		P2_imp, P2_unalt = compute_Phi_TC(X, X_grid, Psi, Lambda, 2, False, d_l, nt, nspat, finest, \
 			wt_art, wt_acc, wt_asn, wt_log, wt_fun)
 
-		A_imp,  A_unalt  = compute_A_TC(X, X_grid, Phi, A, d_l, nt, nspat, finest, \
+		A_imp,  A_unalt  = compute_A_TC  (X, X_grid, Phi,            False, d_l, nt, nspat, finest, \
 			wt_art, wt_acc, wt_asn, wt_log, wt_fun)
 
 	# ---------- Compute CPU time of each operation -----------------
 	elif TC_CPU == 'CPU':
 
-		R_imp,  R_unalt  = compute_R_CPU(X, X_grid, R, d_l, nt, nspat, finest)
-		P1_imp, P1_unalt = compute_Phi_CPU(X, X_grid, Psi, Lambda, 1, Phi, d_l, nt, nspat, finest)
-		P2_imp, P2_unalt = compute_Phi_CPU(X, X_grid, Psi, Lambda, 2, Phi, d_l, nt, nspat, finest)
-		A_imp,  A_unalt  = compute_A_CPU(X, X_grid, Phi, A, d_l, nt, nspat, finest)
+		R_imp,  R_unalt  = compute_R_CPU  (X, X_grid,                 False, d_l, nt, nspat, finest)
+		P1_imp, P1_unalt = compute_Phi_CPU(X, X_grid, Psi, Lambda, 1, False, d_l, nt, nspat, finest)
+		P2_imp, P2_unalt = compute_Phi_CPU(X, X_grid, Psi, Lambda, 2, False, d_l, nt, nspat, finest)
+		A_imp,  A_unalt  = compute_A_CPU  (X, X_grid, Phi,            False, d_l, nt, nspat, finest)
 
 	else:
 		print("Input must be either 'CPU' or 'TC'")

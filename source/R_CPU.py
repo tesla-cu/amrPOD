@@ -132,20 +132,23 @@ def compute_R_CPU(X, X_grid, R, d_l, nt, nspat, finest):
 	time_im = time.time() - tic
 
 	# ========== Check Correctness of Matrices ==================== #
+
+	# Check if we should check for correctness
+	if R != False:
 	
-	# Compute relative error for each cell
-	err_im = np.max(abs(np.subtract(R_im, R)) / abs(R))
-	err_un = np.max(abs(np.subtract(R_un, R)) / abs(R))
+		# Compute relative error for each cell
+		err_im = np.max(abs(np.subtract(R_im, R)) / abs(R))
+		err_un = np.max(abs(np.subtract(R_un, R)) / abs(R))
 
-	if err_im < 1e-6:
-		print('The implemented R is correct')
-	else:
-		print('The implemented R is incorrect')
+		if err_im < 1e-6:
+			print('The implemented R is correct')
+		else:
+			print('The implemented R is incorrect')
 
-	if err_un < 1e-6:
-		print('The unaltered R is correct')
-	else:
-		print('The unaltered R is incorrect')
+		if err_un < 1e-6:
+			print('The unaltered R is correct')
+		else:
+			print('The unaltered R is incorrect')
 
 	# Return CPU time of implemented and unaltered algorithm
 	return time_im, time_un
