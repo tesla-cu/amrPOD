@@ -457,7 +457,7 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest, 
 						im_asn += wt_asn
 
 						im_art += 2*wt_art
-						im_acc += im_acc
+						im_acc += wt_acc
 						for j in range(i, i + d_0, d_l[finest-1]):
 							im_art += wt_art
 							im_asn += wt_asn
