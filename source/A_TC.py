@@ -208,7 +208,7 @@ def compute_A_TC(X, X_grid, Phi, A, d_l, nt, nspat, finest, wt_art, wt_acc, wt_a
 	# ========== Check Correctness of Matrices ==================== #
 
 	# Check if we should check for correctness
-	if A != False:
+	if type(A) != bool:
 
 		# Compute relative error for each cell
 		err_im = np.max(abs(np.subtract(A_im, A)) / abs(A))

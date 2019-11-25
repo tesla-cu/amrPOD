@@ -394,7 +394,7 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest, 
 	# ========== Check Correctness of Matrices ==================== #
 
 	# Check if we should check for correctness
-	if Phi != False:
+	if type(Phi) != bool:
 
 		# Compute relative error for each cell
 		err_im = np.max(abs(np.subtract(Phi_im, Phi)) / abs(Phi))

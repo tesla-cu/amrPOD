@@ -134,7 +134,7 @@ def compute_R_CPU(X, X_grid, R, d_l, nt, nspat, finest):
 	# ========== Check Correctness of Matrices ==================== #
 
 	# Check if we should check for correctness
-	if R != False:
+	if type(R) != bool:
 	
 		# Compute relative error for each cell
 		err_im = np.max(abs(np.subtract(R_im, R)) / abs(R))
