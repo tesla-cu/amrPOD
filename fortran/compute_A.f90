@@ -5,7 +5,7 @@ subroutine compute_A(Xpod, Phi, nspat, nt, Apod, method, Xgrid, finest, ndim)
 implicit none
 
 ! ---------- General variables --------------------------------------
-integer :: i, m, n
+integer :: i, j, m, n
 double precision :: Asum
 ! ---------- Standard POD variables ---------------------------------
 integer                              , intent(in)  :: nspat
@@ -22,6 +22,7 @@ integer, optional, dimension(nspat,nt), intent(in) :: Xgrid
 integer, optional,                      intent(in) :: finest
 integer, optional,                      intent(in) :: ndim
 integer                                            :: dval
+integer                                            :: d_f1
 integer                                            :: Xgrid_max
 integer, allocatable, dimension(:)                 :: d_l
 integer, allocatable, dimension(:)                 :: Gmat
@@ -55,6 +56,8 @@ elseif (method == 1) then
       stop
    endif
 
+   d_f1 = d_l(finest-1)
+
    ! Precompute maximum grid level for each spatial location
    i = 1
    do while(i <= nspat)
@@ -77,8 +80,16 @@ elseif (method == 1) then
          Asum= 0.
          i = 1
          do while(i <= nspat)
-            Asum = Asum + dble(Gmat(i))*Xpod(i,m)*Phi(i,n)
-            i = i + Gmat(i)
+            if (Gmat(i) == 1) then
+               do j=i,i+d_f1-1
+                  Asum = Asum + Xpod(j,m)*Phi(j,n)
+               enddo
+               i = i + d_f1
+            else
+               Asum = Asum + dble(Gmat(i))*Xpod(i,m)*Phi(i,n)
+               i = i + Gmat(i)
+            endif
+            
          end do 
          Apod(m,n) = Asum
       enddo

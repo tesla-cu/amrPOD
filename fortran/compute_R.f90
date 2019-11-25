@@ -5,7 +5,7 @@ subroutine compute_R(Xpod, nspat, nt, Rpod, method, Xgrid, finest, ndim)
 implicit none
 
 ! ---------- General variables --------------------------------------
-integer :: i, m, n
+integer :: i, j, m, n
 double precision :: Rsum
 ! ---------- Standard POD variables ---------------------------------
 integer                              , intent(in)  :: nspat
@@ -14,14 +14,11 @@ double precision, dimension(nspat,nt), intent(in)  :: Xpod
 double precision, dimension(nt,nt)   , intent(out) :: Rpod
 integer                              , intent(in)  :: method
 ! ---------- AMR POD variables --------------------------------------
-! integer, optional, dimension(nspat,nt) :: Xgrid
-! integer, optional                      :: finest
-! integer, optional, dimension(0:finest) :: d_l
-! integer :: dval
 integer, optional, dimension(nspat,nt), intent(in) :: Xgrid
 integer, optional,                      intent(in) :: finest
 integer, optional,                      intent(in) :: ndim
 integer                                            :: dval
+integer                                            :: d_f1
 integer, allocatable, dimension(:)                 :: d_l
 
 ! ========================== Standard POD ===========================
@@ -53,25 +50,41 @@ elseif (method == 1) then
       stop
    endif
 
+   d_f1 = d_l(finest-1)
+
    do n=1,nt
       do m=1,n
          Rsum= 0.
          i = 1
          if (m==n) then
             do while(i <= nspat)
-               dval = d_l(Xgrid(i,m))
-               Rsum = Rsum + dble(dval)*Xpod(i,m)*Xpod(i,n)
-               i    = i + dval
+               if (Xgrid(i,m) == finest) then
+                  do j=i,i+d_f1-1
+                     Rsum = Rsum + Xpod(j,m)*Xpod(j,m)
+                  enddo
+                  i = i + d_f1
+               else
+                  dval = d_l(Xgrid(i,m))
+                  Rsum = Rsum + dble(dval)*Xpod(i,m)*Xpod(i,m)
+                  i    = i + dval
+               endif
             end do
          else
             do while(i <= nspat)
-               if (Xgrid(i,m) > Xgrid(i,n)) then
-                  dval = d_l(Xgrid(i,m))
+               if ((Xgrid(i,m) == finest) .or. (Xgrid(i,n) == finest)) then
+                  do j=i,i+d_f1-1
+                     Rsum = Rsum + Xpod(j,m)*Xpod(j,n)
+                  enddo
+                  i = i + d_f1
                else
-                  dval = d_l(Xgrid(i,n))
-               end if
-               Rsum = Rsum + dble(dval)*Xpod(i,m)*Xpod(i,n)
-               i    = i + dval
+                  if (Xgrid(i,m) > Xgrid(i,n)) then
+                     dval = d_l(Xgrid(i,m))
+                  else
+                     dval = d_l(Xgrid(i,n))
+                  end if
+                  Rsum = Rsum + dble(dval)*Xpod(i,m)*Xpod(i,n)
+                  i    = i + dval
+               endif
             end do
          end if     
          Rpod(m,n) = Rsum
