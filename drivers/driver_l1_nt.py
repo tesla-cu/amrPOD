@@ -112,7 +112,7 @@ if __name__ == '__main__':
             nt = xval # less confusing
             l1 = yval # less confusing
 
-            print('nt = %i, l1 = %0.4f' % (nt, l1))
+            print('nt = %i, l1 = %0.6f' % (nt, l1))
 
             # Since we have l in our vars, we need to get ls
             ls = np.array([1.0-l1, l1])
