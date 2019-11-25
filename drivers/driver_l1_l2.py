@@ -23,16 +23,19 @@ if __name__ == '__main__':
     gen_grid    = True  # are we generating synthetic data?
     compute_tc  = True  # are we computing the time complexity?
     compute_cpu = False # are we computing the cpu time?
-    nx          = 64    # x spatial points                  
-    ny          = 64    # y spatial points
+    nx          = 64   # x spatial points                  
+    ny          = 64   # y spatial points
     nz          = 1     # z spatial points
-    finest      = 1     # finest level of AMR in the domain
-    nsample     = 64    # number of samples for each parameter set
-    nt_arr      = np.arange(2, 62, 2)         # spanning nt
-    l1_arr      = np.arange(0.0, 49/64, 1/64) # spanning l1
+    finest      = 2     # finest level of AMR in the domain
+    nsample     = 8    # number of samples for each parameter set
+    nt          = 50     # spanning nt
+    l1_arr      = np.arange(0.0, 33/64, 1/64) # spanning l1
+    l2_arr      = np.arange(0.0, 33/64, 1/64) # spanning l1
     lcs         = np.zeros((finest+1)) # fraction of grid that stays constant in time
 
     # Direction where /code/ livesc
+    # basedir = '/Users/samsimonswellin/desktop/'
+    # basedir = '/Users/mikemeehan/Research/Papers/2019_POD_AMR/'
     basedir = '../../'
 
     # Directory where AMR data is stored
@@ -47,7 +50,7 @@ if __name__ == '__main__':
         os.mkdir(datadir)
 
     # Directory that describes the study we are looking at
-    studydir = datadir + 'l1_nt/'
+    studydir = datadir + 'l1_l2/'
     if not os.path.exists(studydir):
         os.mkdir(studydir)
 
@@ -64,7 +67,7 @@ if __name__ == '__main__':
     # ---------- Useful things based on inputs ----------------------
 
     # Variables we will iterate through
-    xvals = nt_arr # what will be plotted on the x-axis
+    xvals = l2_arr # what will be plotted on the x-axis
     yvals = l1_arr # what will be plotted on the y-axis
 
     # Useful things we will need
@@ -100,6 +103,7 @@ if __name__ == '__main__':
         CPU_rms_imp   = np.zeros((len(xvals), len(yvals), 4))
         CPU_rms_unalt = np.zeros((len(xvals), len(yvals), 4))
 
+
     # Start parallel processing
     nthread = mp.cpu_count()
     print('starting pool with %i threads ...' % nthread)
@@ -109,13 +113,13 @@ if __name__ == '__main__':
 
     for ixval, xval in enumerate(xvals):
         for iyval, yval in enumerate(yvals):
-            nt = xval # less confusing
+            l2 = xval # less confusing
             l1 = yval # less confusing
 
-            print('nt = %i, l1 = %0.4f' % (nt, l1))
+            print('l1 = %0.6f, l2 = %0.6f' % (l1, l2))
 
             # Since we have l in our vars, we need to get ls
-            ls = np.array([1.0-l1, l1])
+            ls = np.array([1.0-l1-l2, l1, l2])
 
             # ---------- Compute time complexity --------------------
             if compute_tc:
@@ -137,7 +141,7 @@ if __name__ == '__main__':
                     res = np.zeros((nsample), dtype=int)
 
                     for j in range(nsample):
-                            res[j] = res_tuple[j][i]
+                        res[j] = res_tuple[j][i]
 
                     res_avg = np.mean(res)
                     res_rms = np.std(res-res_avg)
@@ -187,7 +191,7 @@ if __name__ == '__main__':
                     res = np.zeros((nsample))
 
                     for j in range(nsample):
-                            res[j] = res_tuple[j][i]
+                        res[j] = res_tuple[j][i]
 
                     res_avg = np.mean(res)
                     res_rms = np.std(res-res_avg)
@@ -230,11 +234,12 @@ if __name__ == '__main__':
     sim_info.write("nx:       %i\n" % nx)
     sim_info.write("ny:       %i\n" % ny)
     sim_info.write("nz:       %i\n" % nz)
-    sim_info.write("xvar:     %s\n" % "nt")
+    sim_info.write("nt:       %i\n" % nt)
     [sim_info.write("lc%i:      %0.8f\n" % (i,lc)) for i,lc in enumerate(lcs)]
-    sim_info.write("x_0:      %i\n" % xvals[0])
-    sim_info.write("x_inc:    %i\n" % np.diff(xvals[0:2]))
-    sim_info.write("x_end:    %i\n" % xvals[-1])
+    sim_info.write("xvar:     %s\n" % "l2")
+    sim_info.write("x_0:      %0.8f\n" % xvals[0])
+    sim_info.write("x_inc:    %0.8f\n" % np.diff(xvals[0:2]))
+    sim_info.write("x_end:    %0.8f\n" % xvals[-1])
     sim_info.write("yvar:     %s\n" % "l1")
     sim_info.write("y_0:      %0.8f\n" % yvals[0])
     sim_info.write("y_inc:    %0.8f\n" % np.diff(yvals[0:2]))
@@ -287,5 +292,33 @@ if __name__ == '__main__':
 
     
     # Plot these various quantities
-    plot_single(txtdir, imgdir, compute_tc, compute_cpu, xvals, yvals, 'nt', 'l1')
+    plot_single(txtdir, imgdir, compute_tc, compute_cpu, xvals, yvals, 'l2', 'l1')
+
+
+    # Code if we want to span rc
+    """
+    rc_arr       = np.arange(12,1,-2)
+    n            = np.size(rc_arr)
+    l_frac_0     = .9
+    tol          = 10000
+
+    #-------- Solve for other level fracs based on specified r_c
+    for i in range(n):
+        flag = 1
+        while flag < tol:
+            a       = np.array([ [1, 1], [ 1/d_l[1], 1/d_l[2] ]])
+            b       = np.array([1 - l_frac_0, 1/rc_arr[i] - l_frac_0/d_l[0]])
+            l1l2    = LA.solve(a,b)
+            if l1l2[0] >=0 and l1l2[0] <= 1 and l1l2[1] >= 0 and l1l2[1] <= 1:
+                break
+            else:
+                flag     += 1
+                l_frac_0 -= d_l[0]/(nx*ny*nz)
+
+        l1_frac_arr[i] = l1l2[0]
+        l2_frac_arr[i] = l1l2[1]
+        l0_frac_arr[i] = 1 - l1l2[0] - l1l2[1]
+        l_frac_data[i,:] = np.array([l0_frac_arr[i],l1_frac_arr[i],l2_frac_arr[i]])
+    """
+
 

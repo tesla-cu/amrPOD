@@ -23,11 +23,11 @@ if __name__ == '__main__':
     gen_grid    = True  # are we generating synthetic data?
     compute_tc  = True  # are we computing the time complexity?
     compute_cpu = False # are we computing the cpu time?
-    nx          = 64    # x spatial points                  
-    ny          = 64    # y spatial points
-    nz          = 1     # z spatial points
+    nx          = 16    # x spatial points                  
+    ny          = 16    # y spatial points
+    nz          = 16    # z spatial points
     finest      = 1     # finest level of AMR in the domain
-    nsample     = 64    # number of samples for each parameter set
+    nsample     = 8     # number of samples for each parameter set
     nt_arr      = np.arange(2, 62, 2)         # spanning nt
     l1_arr      = np.arange(0.0, 49/64, 1/64) # spanning l1
     lcs         = np.zeros((finest+1)) # fraction of grid that stays constant in time
@@ -47,7 +47,7 @@ if __name__ == '__main__':
         os.mkdir(datadir)
 
     # Directory that describes the study we are looking at
-    studydir = datadir + 'l1_nt/'
+    studydir = datadir + 'l1_nt_3D/'
     if not os.path.exists(studydir):
         os.mkdir(studydir)
 
