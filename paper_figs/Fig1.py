@@ -91,8 +91,8 @@ def Fig1(datadir, imgdir):
         # im = ax.contourf(Nt, L1, img, 100, origin='lower', cmap='bwr')
         im = ax.contourf(Nt, L1, img, 100, origin='lower', \
             extent=[ntmin,ntmax,l1min,l1max], cmap='bwr', \
-            vmin=-0.35, vmax=0.35)
-        im.set_clim(-0.35, 0.35)
+            vmin=-0.3, vmax=0.3)
+        im.set_clim(-0.3, 0.3)
         # cbar = ax.figure.colorbar(im, ax=ax)
         cbar = ax.cax.colorbar(im)
         ax.cax.set_ylabel('$\log(TC_{im}/TC_{un})$')
@@ -144,18 +144,19 @@ def Fig1(datadir, imgdir):
 
         # im = ax.contourf(Nt, L1, img, 100, origin='lower', cmap='bwr')
         im = ax.contourf(Nt, L1, img, 100, origin='lower', \
-            extent=[ntmin,ntmax,l1min,l1max], cmap='bwr', \
+            extent=[ntmin,ntmax,l1min,l1max], cmap='Reds', \
             vmin=0.0, vmax=1.6)
         im.set_clim(0.0, 1.6)
         # cbar = ax.figure.colorbar(im, ax=ax)
         cbar = ax.cax.colorbar(im)
-        ax.cax.set_ylabel('rms$(TC_{im})/$rms$(TC_{un})$ X 100')
+        # ax.cax.set_ylabel('rms$(TC_{im})/$rms$(TC_{un})$ X 100')
+        ax.cax.set_ylabel('Fluctuations')
 
         # ax.set_xticks([ntmin,(ntmax+ntmin)/2,ntmax])
         # ax.set_yticks([l1min,(l1max+l1min)/2,l1max])
         ax.set_xticks(np.linspace(10,50,3))
         ax.set_yticks(np.linspace(1/8,5/8,3))
-        ax.set_xticklabels([])
+        ax.set_xticklabels(['10','30','50'])
         ax.set_yticklabels(['1/8','3/8','5/8'])
         ax.set_xlabel('$n_t$')
         ax.set_ylabel('$\ell_1$')
