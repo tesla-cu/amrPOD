@@ -23,8 +23,8 @@ if __name__ == '__main__':
     gen_grid    = True  # are we generating synthetic data?
     compute_tc  = True  # are we computing the time complexity?
     compute_cpu = False # are we computing the cpu time?
-    nx          = 32   # x spatial points                  
-    ny          = 32   # y spatial points
+    nx          = 64   # x spatial points                  
+    ny          = 64   # y spatial points
     nz          = 1     # z spatial points
     finest      = 1     # finest level of AMR in the domain
     nsample     = 8    # number of samples for each parameter set
