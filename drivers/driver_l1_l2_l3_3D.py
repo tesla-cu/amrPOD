@@ -79,9 +79,10 @@ if __name__ == '__main__':
 
     
     # Initialize matrices to store data
-    #    - dim 1: what will be plotted on the xaxis
-    #    - dim 2: what will be plotted on the yaxis
-    #    - dim 3: the different algorithms
+    #    - dim 1: xvar
+    #    - dim 2: yvar
+    #    - dim 3: zvar
+    #    - dim 4: the different algorithms
     #        - index 0: R
     #        - index 1: Phi, method 1
     #        - index 2: Phi, method 2
