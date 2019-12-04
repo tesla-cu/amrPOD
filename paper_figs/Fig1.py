@@ -1,4 +1,3 @@
-
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import AxesGrid
@@ -9,8 +8,6 @@ def Fig1(datadir, imgdir):
 
     # Set up figure
     fig = plt.figure()
-    
-
 
     # Load data
     txtdir = datadir + 'l1_nt/txt_files/'
@@ -48,7 +45,8 @@ def Fig1(datadir, imgdir):
 
     Nt, L1 = np.meshgrid(nt, l1, indexing='ij')
 
-    grid = AxesGrid(fig, (0.08,0.54,0.80,0.35),
+    # Top half of figure ------------------------------------------------------
+    grid = AxesGrid(fig, (0.07,0.53,0.84,0.39),
         nrows_ncols = (1, 4),
         axes_pad = 0.1,
         aspect = False,
@@ -66,47 +64,56 @@ def Fig1(datadir, imgdir):
         if i == 0:
             num = TC_R_avg_imp
             den = TC_R_avg_unalt
-            ax.set_title('Computing R')
+            ax.set_title(r'$\mathbf{R}$')
         elif i == 1:
             num = TC_P1_avg_imp
             den = TC_P1_avg_unalt
-            ax.set_title('Computing P1')
+            ax.set_title(r'$\mathbf{\Phi}$ -- Method 1')
         elif i == 2:
             num = TC_P2_avg_imp
             den = TC_P2_avg_unalt
-            ax.set_title('Computing P2')
+            ax.set_title(r'$\mathbf{\Phi}$ -- Method 2')
         elif i == 3:
             num = TC_A_avg_imp
             den = TC_A_avg_unalt
-            ax.set_title('Computing A')
+            ax.set_title(r'$\mathbf{A}$')
 
-        img = np.log10(num/den)
-        print(np.max(img))
-        print(np.min(img))
+        # Get ratio of AMR over standard operations
+        ratio = np.log10(num/den)
+        # ratio = num/den
+        print(np.max(ratio))
+        print(np.min(ratio))
 
-
-        
-        # ax.title = i
-
-        # im = ax.contourf(Nt, L1, img, 100, origin='lower', cmap='bwr')
-        im = ax.contourf(Nt, L1, img, 100, origin='lower', \
+        # Display contoured image
+        im = ax.contourf(Nt, L1, ratio, 100, origin='lower', \
             extent=[ntmin,ntmax,l1min,l1max], cmap='bwr', \
-            vmin=-0.3, vmax=0.3)
-        im.set_clim(-0.3, 0.3)
-        # cbar = ax.figure.colorbar(im, ax=ax)
-        cbar = ax.cax.colorbar(im)
-        ax.cax.set_ylabel('$\log(TC_{im}/TC_{un})$')
+            vmin=-0.25, vmax=0.25)
+        # im = ax.contourf(Nt, L1, ratio, 100, origin='lower', \
+        #     extent=[ntmin,ntmax,l1min,l1max], cmap='bwr', \
+        #     vmin=0.5, vmax=1.5)
 
-        # ax.set_xticks([ntmin,(ntmax+ntmin)/2,ntmax])
-        # ax.set_yticks([l1min,(l1max+l1min)/2,l1max])
+        # Colorbar information
+        cbar = ax.cax.colorbar(im)
+        ax.cax.set_ylabel(r'$\log(\overline{T}_a/\overline{T}_s)$ (ops)')
+        cbar.ax.set_ylim(-0.25,0.25)
+        cbar.ax.set_yticks(np.linspace(-0.2,0.2,5))
+        cbar.ax.set_yticklabels(['-0.2','-0.1','0.0','0.1','0.2'])
+        # cbar.ax.set_yticklabels([])
+        # ax.cax.set_ylabel(r'$\overline{T}_a/\overline{T}_s$ (ops)')
+        # cbar.ax.set_ylim(0.5,1.5)
+        # cbar.ax.set_yticks(np.linspace(0.6,1.4,5))
+        # cbar.ax.set_yticklabels(['0.6','0.8','1.0','1.2','1.4'])
+
+        # Label information
         ax.set_xticks(np.linspace(10,50,3))
         ax.set_yticks(np.linspace(1/8,5/8,3))
         ax.set_xticklabels([])
         ax.set_yticklabels(['1/8','3/8','5/8'])
-        ax.set_ylabel('$\ell_1$')
+        ax.set_xlabel([])
+        ax.set_ylabel('$p_1$')
 
-
-    grid = AxesGrid(fig, (0.08,0.12,0.80,0.35),
+    # Bottom half of figure ---------------------------------------------------
+    grid = AxesGrid(fig, (0.07,0.11,0.84,0.39),
         nrows_ncols = (1, 4),
         axes_pad = 0.1,
         aspect = False,
@@ -134,52 +141,39 @@ def Fig1(datadir, imgdir):
             num = TC_A_rms_imp
             den = TC_A_avg_imp
 
-        img = (num/den)*100
-        print(np.max(img))
-        print(np.min(img))
+        # Get ratio of fluctuations over average
+        ratio = (num/den)*1000
+        print(np.max(ratio))
+        print(np.min(ratio))
 
-
-        
-        # ax.title = i
-
-        # im = ax.contourf(Nt, L1, img, 100, origin='lower', cmap='bwr')
-        im = ax.contourf(Nt, L1, img, 100, origin='lower', \
+        # Display contoured image
+        # im = ax.contourf(Nt, L1, ratio, 100, origin='lower', \
+        #     extent=[ntmin,ntmax,l1min,l1max], cmap='Reds', \
+        #     vmin=0.0, vmax=1.6)
+        im = ax.contourf(Nt, L1, ratio, 100, origin='lower', \
             extent=[ntmin,ntmax,l1min,l1max], cmap='Reds', \
-            vmin=0.0, vmax=1.6)
-        im.set_clim(0.0, 1.6)
-        # cbar = ax.figure.colorbar(im, ax=ax)
-        cbar = ax.cax.colorbar(im)
-        # ax.cax.set_ylabel('rms$(TC_{im})/$rms$(TC_{un})$ X 100')
-        ax.cax.set_ylabel('Fluctuations')
+            vmin=0.0, vmax=8.0)
 
-        # ax.set_xticks([ntmin,(ntmax+ntmin)/2,ntmax])
-        # ax.set_yticks([l1min,(l1max+l1min)/2,l1max])
+        # Colorbar information
+        cbar = ax.cax.colorbar(im)
+        ax.cax.set_ylabel(r'RMS$({T}_a)/\overline{T}_a \times 10^3$ (ops)')
+        cbar.ax.set_ylim(0,8)
+        cbar.ax.set_yticks(np.linspace(0,8,5))
+        cbar.ax.set_yticklabels(['0.0','2.0','4.0','6.0','8.0'])
+
+
+        # Label information
         ax.set_xticks(np.linspace(10,50,3))
         ax.set_yticks(np.linspace(1/8,5/8,3))
         ax.set_xticklabels(['10','30','50'])
         ax.set_yticklabels(['1/8','3/8','5/8'])
         ax.set_xlabel('$n_t$')
-        ax.set_ylabel('$\ell_1$')
+        ax.set_ylabel('$p_1$')
 
 
-    # print('saving image ...')
-    fig.set_size_inches(6.5,3.25,forward=True) # figure size must be set here
+    # Save figure
+    fig.set_size_inches(6.5,3.4,forward=True)
     plt.savefig(imgdir + 'fig1.png', dpi=300)
-
-
-    # img = np.transpose(np.divide(num, den))
-    # img = np.divide(num, den)
-    # Xaxis, Yaxis = np.meshgrid(xaxis, yaxis, copy=False, indexing='ij')
-    # cont_levs = 100
-    # xmin = np.min(xaxis)
-    # xmax = np.max(xaxis)
-    # ymin = np.min(yaxis)
-    # ymax = np.max(yaxis)
-
-
-    # fig = plt.figure(clear=True)
-    # ax = fig.add_subplot(1,1,1)
-
     
 
     print('\tdone with figure 1')
