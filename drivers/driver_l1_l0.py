@@ -28,9 +28,9 @@ if __name__ == '__main__':
     nz          = 1     # z spatial points
     finest      = 2     # finest level of AMR in the domain
     nsample     = 8    # number of samples for each parameter set
-    nt          = 10     # spanning nt
-    l0_arr      = np.arange(0.0, 33/64, 16/64) # spanning l0
-    l1_arr      = np.arange(0.0, 33/64, 16/64) # spanning l1
+    nt          = 50     # spanning nt
+    l0_arr      = np.arange(0.0, 33/64, 1/64) # spanning l0
+    l1_arr      = np.arange(0.0, 33/64, 1/64) # spanning l1
     lcs         = np.zeros((finest+1)) # fraction of grid that stays constant in time
 
     # Direction where /code/ livesc
