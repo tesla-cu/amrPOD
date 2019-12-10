@@ -94,7 +94,7 @@ def Fig1(datadir, imgdir):
 
         # Colorbar information
         cbar = ax.cax.colorbar(im)
-        ax.cax.set_ylabel(r'$\log(\overline{T}_a/\overline{T}_s)$ (ops)')
+        ax.cax.set_ylabel(r'$\log(\overline{T}_a/T_s)$ (ops)')
         cbar.ax.set_ylim(-0.25,0.25)
         cbar.ax.set_yticks(np.linspace(-0.2,0.2,5))
         cbar.ax.set_yticklabels(['-0.2','-0.1','0.0','0.1','0.2'])
