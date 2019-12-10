@@ -1,5 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt 
 import multiprocessing as mp
 import os
 import sys
@@ -23,7 +22,7 @@ if __name__ == '__main__':
     gen_grid    = True  # are we generating synthetic data?
     compute_tc  = True  # are we computing the time complexity?
     compute_cpu = False # are we computing the cpu time?
-    nx          = 64   # x spatial points                  
+    nx          = 64   # x spatial points   
     ny          = 64   # y spatial points
     nz          = 1     # z spatial points
     finest      = 1     # finest level of AMR in the domain
@@ -103,7 +102,7 @@ if __name__ == '__main__':
         CPU_rms_imp   = np.zeros((len(xvals), len(yvals), 4))
         CPU_rms_unalt = np.zeros((len(xvals), len(yvals), 4))
 
-
+    
     # Start parallel processing
     nthread = mp.cpu_count()
     print('starting pool with %i threads ...' % nthread)
