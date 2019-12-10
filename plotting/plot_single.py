@@ -1,6 +1,6 @@
 import numpy as np
-import matplotlib.pyplot as plt 
-import matplotlib.ticker as ticker
+import matplotlib.pyplot as plt
+plt.switch_backend('agg')
 import os
 import sys
 

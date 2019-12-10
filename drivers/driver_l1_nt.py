@@ -1,5 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt 
 import multiprocessing as mp
 import os
 import sys
@@ -284,7 +283,6 @@ if __name__ == '__main__':
         np.savetxt(txtdir + "/CPU_A_avg_unalt.txt",  CPU_avg_unalt[:,:,3])
         np.savetxt(txtdir + "/CPU_A_rms_imp.txt",    CPU_rms_imp[:,:,3])
         np.savetxt(txtdir + "/CPU_A_rms_unalt.txt",  CPU_rms_unalt[:,:,3])
-
     
     # Plot these various quantities
     plot_single(txtdir, imgdir, compute_tc, compute_cpu, xvals, yvals, 'nt', 'l1')
