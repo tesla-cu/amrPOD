@@ -2,26 +2,18 @@ import numpy as np
 import matplotlib.pyplot as plt 
 import random as rand
 
+
+
+
+# ---------- Arguments ------------------------------------------
+# nx     - num grid cells in x-dir at finest resolution
+# ny     - num grid cells in y-dir at finest resolution
+# nz     - num grid cells in z-dir at finest resolution
+# c_l    - 
+# d_l    - 
+# l_arr  - 
+# lc_arr - 
 def GenGrid(nx, ny, nz, c_l, d_l, l_arr, lc_arr):
-
-    # ---------- Arguments ------------------------------------------
-    # nx     - num grid cells in x-dir at finest resolution
-    # ny     - num grid cells in y-dir at finest resolution
-    # nz     - num grid cells in z-dir at finest resolution
-    # c_l    - 
-    # d_l    - 
-    # l_arr  - 
-    # lc_arr - 
-
-    # Note, set lc_arr[0] in argument
-
-    # ---------- Error checking 
-
-    if sum(l_arr) != 1:
-            print('Error: l_arr does not sum to 1.0!')
-            exit()
-
-    # error for l<lc and other things
 
     # # ---------- Helpful quantities derived from user inputs
     finest = len(l_arr)-1    # finest lvl of AMR
@@ -31,6 +23,20 @@ def GenGrid(nx, ny, nz, c_l, d_l, l_arr, lc_arr):
     if nx > 1: ndim += 1 
     if ny > 1: ndim += 1 
     if nz > 1: ndim += 1 
+
+    # ---------- Error checking 
+    if not np.isclose(np.sum(l_arr), 1.0, atol=1e-12):
+        print('Error: l_arr must sum to 1.0!')
+        exit()
+
+    if any(l_arr - lc_arr < 0.0):
+        print('Error: lc cannot be greater than l!')
+        exit()
+
+    if not (nspat/d_l[-2]).is_integer():
+        print('Error: AMR blocks are not evenly divisible by nspat!')
+        exit()
+    
 
     # ---------- Initialization of arrays and matrices
     nccells_lc_arr  = np.zeros((nlev), dtype=int)
