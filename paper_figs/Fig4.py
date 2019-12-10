@@ -134,14 +134,13 @@ def Fig4(datadir, imgdir):
 
         im = ax.contourf(L0, L1, ratio, 100, origin='lower', \
             extent=[l0min,l0max,l1min,l1max], cmap='bwr', \
-            vmin=0, vmax=2)
+            vmin=0.3, vmax=1.7)
 
         # Colorbar information
-        cbar = ax.cax.colorbar(im)
-        ax.cax.set_ylabel(r'$\overline{T}_a/\overline{T}_s$ [ops]')
-        # cbar.ax.set_ylim(0.2,0.1)
-        # cbar.ax.set_yticks(np.linspace(-0.2,0.1,4))
-        # cbar.ax.set_yticklabels(['-0.2','-0.1','0.0','0.1'])
+        cbar = ax.cax.colorbar(im, format='%0.1f')
+        ax.cax.set_ylabel(r'$\overline{T}_a/T_s$ [ops]')
+        cbar.ax.set_ylim(0.32,1.27)
+        cbar.ax.set_yticks(np.linspace(0.4,1.2,5))
 
 
         # Label inforrmation
