@@ -1,48 +1,59 @@
 import numpy as np
-import matplotlib.pyplot as plt 
 import random as rand
 
-
-
-
-# ---------- Arguments ------------------------------------------
-# nx     - num grid cells in x-dir at finest resolution
-# ny     - num grid cells in y-dir at finest resolution
-# nz     - num grid cells in z-dir at finest resolution
-# c_l    - 
-# d_l    - 
-# l_arr  - 
-# lc_arr - 
+# =========================================================================== #
+# Function to generate synthetic AMR data based on user inputs
+#
+# Inputs:
+# - nx     : number of cells in the x direction
+# - ny     : number of cells in the x direction
+# - nz     : number of cells in the x direction
+# - nt     : number of time steps
+# - c_l    : number of repeated computations in a particular dimension
+# - d_l    : total number of repeated computations for a cell
+# - l_arr  : array of the fraction of the domain at a particular level
+# - lc_arr : array of the fraction of the domain at a particular level that 
+#            is held constand
+#
+# Outputs:
+# - grid : generated grid with specified parameters
+# =========================================================================== #
 def GenGrid(nx, ny, nz, c_l, d_l, l_arr, lc_arr):
 
-    # # ---------- Helpful quantities derived from user inputs
-    finest = len(l_arr)-1    # finest lvl of AMR
-    nspat = int(nx*ny*nz)   # num spatial points
-    nlev  = finest + 1 # num levels
-    ndim  = 0          # num dimensions
+    # -------------- Helpful quantities derived from user inputs --------------
+    finest = len(l_arr)-1 # finest lvl of AMR
+    nspat = int(nx*ny*nz) # num spatial points
+    nlev  = finest + 1    # number of  levels
+    ndim  = 0             # number of dimensions
     if nx > 1: ndim += 1 
     if ny > 1: ndim += 1 
     if nz > 1: ndim += 1 
 
-    # ---------- Error checking 
+    # ---------------------------- Error checking -----------------------------
+
+    # Check sum(l_arr) is close to 1
     if not np.isclose(np.sum(l_arr), 1.0, atol=1e-12):
         print('Error: l_arr must sum to 1.0!')
         exit()
 
+    # Check lc is less than or equal to l for a given level
     if any(l_arr - lc_arr < 0.0):
         print('Error: lc cannot be greater than l!')
         exit()
 
-    if not (nspat/d_l[-2]).is_integer():
+    # Check we have enough resolution and enough cells to generate the grid
+    if not (nx/d_l[-2]).is_integer() and not (nx/d_l[0]).is_integer() and \
+       not (ny/d_l[-2]).is_integer() and not (ny/d_l[0]).is_integer() and  \
+       not (nz/d_l[-2]).is_integer() and not (nz/d_l[0]).is_integer():
         print('Error: AMR blocks are not evenly divisible by nspat!')
         exit()
     
 
-    # ---------- Initialization of arrays and matrices
+    # ----------------- Initialization of arrays and matrices -----------------
     nccells_lc_arr  = np.zeros((nlev), dtype=int)
     levels = np.arange(0, nlev)
 
-    # ---------- Compute quantities used to generate grids  
+    # --------------- Compute quantities used to generate grids ---------------
 
     # Compute the number of coarse cells we can tag for lc's
     nc_cells  = nspat/d_l[0]
@@ -53,10 +64,7 @@ def GenGrid(nx, ny, nz, c_l, d_l, l_arr, lc_arr):
     for l in levels:
         nccells_lc_arr[l] = sum(nc_cells*lc_arr[0:l+1])
 
-    # ========== Begin operation to compute grids =======================
-
-    # Iterate in time computing new grids with each snapshot
-    # for n in range(nt):
+    # =================== Begin operation to compute grids ====================
 
     # Tag cells for lc
     count = 0
