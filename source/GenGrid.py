@@ -20,7 +20,7 @@ import random as rand
 # =========================================================================== #
 def GenGrid(nx, ny, nz, c_l, d_l, l_arr, lc_arr):
 
-    # -------------- Helpful quantities derived from user inputs --------------
+    # ------------ Helpful quantities derived from user inputs -------------- #
     finest = len(l_arr)-1 # finest lvl of AMR
     nspat = int(nx*ny*nz) # num spatial points
     nlev  = finest + 1    # number of  levels
@@ -29,7 +29,7 @@ def GenGrid(nx, ny, nz, c_l, d_l, l_arr, lc_arr):
     if ny > 1: ndim += 1 
     if nz > 1: ndim += 1 
 
-    # ---------------------------- Error checking -----------------------------
+    # -------------------------- Error checking ----------------------------- #
 
     # Check sum(l_arr) is close to 1
     if not np.isclose(np.sum(l_arr), 1.0, atol=1e-12):
@@ -49,11 +49,11 @@ def GenGrid(nx, ny, nz, c_l, d_l, l_arr, lc_arr):
         exit()
     
 
-    # ----------------- Initialization of arrays and matrices -----------------
+    # --------------- Initialization of arrays and matrices ----------------- #
     nccells_lc_arr  = np.zeros((nlev), dtype=int)
     levels = np.arange(0, nlev)
 
-    # --------------- Compute quantities used to generate grids ---------------
+    # ------------- Compute quantities used to generate grids --------------- #
 
     # Compute the number of coarse cells we can tag for lc's
     nc_cells  = nspat/d_l[0]
@@ -64,9 +64,9 @@ def GenGrid(nx, ny, nz, c_l, d_l, l_arr, lc_arr):
     for l in levels:
         nccells_lc_arr[l] = sum(nc_cells*lc_arr[0:l+1])
 
-    # =================== Begin operation to compute grids ====================
+    # ================= Begin operation to compute grids ==================== #
 
-    # Tag cells for lc
+    # ------------------------- Tag cells for lc ---------------------------- #
     count = 0
     grid = np.zeros((nx, ny, nz))
     for i in range(0, nx, c_l[0]):
@@ -78,7 +78,7 @@ def GenGrid(nx, ny, nz, c_l, d_l, l_arr, lc_arr):
                         grid[i:i+c_l[0], j:j+c_l[0], k:k+c_l[0]] = l
                         break
 
-    # Find the indices that we can start at without disrupting lc
+    # ----- Find the indices that we can start at without disrupting lc ----- # 
     count = 0
     flag = False
     for i in range(0, nx, c_l[0]):
