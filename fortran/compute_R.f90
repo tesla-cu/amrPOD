@@ -23,7 +23,6 @@ integer, allocatable, dimension(:)                 :: d_l
 
 ! ========================== Standard POD ===========================
 if (method == 0) then
-   write(*,*) "computing R using standard operations ..."
    do n=1,nt
       do m=1,n
          Rsum= 0.
@@ -37,7 +36,6 @@ if (method == 0) then
 
 ! ============================= AMR POD =============================
 elseif (method == 1) then
-   write(*,*) "computing R utilizing AMR ..."
 
    ! Check if all optional arguments are inputed
    if (present(Xgrid) .and. present(finest) .and. present(ndim)) then

@@ -14,6 +14,8 @@
 
   rm_mean = .TRUE.
 
+  nsamp = 8
+
 
   ! file_fmt = '%s%05d.bin'
   datadir = '/Users/mikemeehan/Research/InternalResearchPapers/AMR_POD/data/slice/x0.000-0.000_y-1.000-1.000_z0.000-2.000_t40.0000-42.0000/'

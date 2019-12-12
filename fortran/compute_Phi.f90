@@ -34,7 +34,6 @@ double precision                                   :: Hsum
 
 ! ========================== Standard POD ===========================
 if (method == 0) then
-   write(*,*) "computing Phi using standard operations ..."
    XpodT = reshape(Xpod, [nt,nspat], order=[2,1])
    do i=1,nspat
       do m=1,nt
@@ -65,7 +64,6 @@ elseif ((method == 1) .or. (method==2)) then
 
    ! ---------- Method 1 --------------------------------------------
    if (method == 1) then
-      write(*,*) "computing Phi utilizing AMR, method 1 ..."
 
       allocate(Gmat1(nspat))
 
@@ -114,7 +112,6 @@ elseif ((method == 1) .or. (method==2)) then
 
    ! ---------- Method 2 --------------------------------------------
    elseif (method == 2) then
-      write(*,*) "computing Phi utilizing AMR, method 2 ..."
 
       nlev = finest + 1
 

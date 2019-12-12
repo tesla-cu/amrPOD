@@ -29,7 +29,6 @@ integer, allocatable, dimension(:)                 :: Gmat
 
 ! ========================== Standard POD ===========================
 if (method == 0) then
-   write(*,*) "computing A using standard operations ..."
    do m=1,nt
       do n=1,nt
          Asum= 0.
@@ -42,7 +41,6 @@ if (method == 0) then
 
 ! ============================= AMR POD =============================
 elseif (method == 1) then
-   write(*,*) "computing A utilizing AMR ..."
 
    ! Check if all optional arguments are inputed
    if (present(Xgrid) .and. present(finest) .and. present(ndim)) then

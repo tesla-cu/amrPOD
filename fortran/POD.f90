@@ -22,25 +22,10 @@
 ! To create an executable, at the terminal, run:
 !
 !    gfortran -O0 -g -fcheck=all -fbacktrace -o POD.ex POD.f90
-!    gfortran -O0 -g -fcheck=all -fbacktrace -o POD.ex POD.f90 
-!        -L. -llapack -lrefblas
+!    gfortran -O0 -g -fcheck=all -fbacktrace -o POD.ex POD.f90 -L. -llapack -lrefblas
 !    gfortran -O3 -o POD.ex POD.f90
-!    gfortran -O3 -o POD.ex POD.f08 -L/usr/lib -llapack -L/usr/lib -lblas
+!    gfortran -O3 -o POD.ex POD.f90 -L. -llapack -lrefblas
 !
-! The meaning of each variable name is:
-!
-!    algorithm - either 'normal' or 'fast', where normal is the 
-!                standard method and 'fast' utilizes the AMR
-!    dim - spatial dimension of the fields to compute POD
-!    datafmt - format of the files to be read and used in POD
-!    datadir - directory of the files to be read and used in POD
-!    datatyp - type of files to be read and used in POD
-!    nspat - number of spatial points (nx*ny*nz)
-!    nt - number of time steps
-!    nx, ny, nz - number of grid cells in the x, y, and z directions
-
-!    
-!    PODdir - directory to write the POD information
 !    
 !    
 !
@@ -58,8 +43,9 @@ use comp_R
 use comp_A
 use comp_Phi
 use rshp_AMR
+
 ! use mpi
-! use omp_lib
+use omp_lib
 
 implicit none
 ! include 'mpif.h'
@@ -79,6 +65,8 @@ real, parameter :: PI = 4.0*atan(1.0) ! pi=3.1415 ...
 integer, parameter :: maxlen=256 ! max length of string
 logical               :: chk ! check variable 
 
+character(len=20), parameter :: CFMT = "(F10.4)"
+
 ! ---------- Data parameters
 integer :: nx, ny, nz ! number of points in each spatial direction
 real :: dt ! time step
@@ -86,10 +74,12 @@ real :: dt ! time step
 
 
 character(len=maxlen) :: datafmt, datadir, datatyp
+character(len=maxlen) :: CPUdir
 character(len=maxlen) :: filename
 integer               :: file_unit, length
+integer :: fid
 
-real :: cpu0, cpuf ! initial and final CPU times
+
 
 
 ! ---------- POD variables ------------------------------------------
@@ -105,6 +95,7 @@ integer :: nvar
 integer :: nxp, nyp, nzp ! number of points in each spatial direction for POD
 integer, dimension(2) :: ix, iy, iz ! spatial indices for POD (start, end)
 integer :: nt ! number of time steps
+character(len=5) :: nt_id
 integer, dimension(2) :: itime ! temporal indices for POD (start, end)
 
 integer :: nspat ! number of spatial points
@@ -114,7 +105,6 @@ double precision, allocatable, dimension(:,:) :: Xpod, Rpod, Phi, Psi, Apod ! PO
 double precision, allocatable, dimension(:)   :: Lam, opt_work
 double precision :: Rsum, Phisum, Asum ! single elements of R, Phi, and A
 integer :: L_work, eig_info
-real :: Rcpu1, Phicpu1, Acpu1 ! cpu time of each operation using normal algorithm
 
 character(len=maxlen) :: PODdir
 integer :: Ralg, Phialg, Aalg ! algorithm to use for each of the 3 steps
@@ -123,7 +113,6 @@ integer :: Ralg, Phialg, Aalg ! algorithm to use for each of the 3 steps
 integer, allocatable, dimension(:,:) :: Xgrid ! companion matrix with grid levels
 double precision, allocatable, dimension(:)   :: Xcol ! column of X
 integer, allocatable, dimension(:)   :: Xgcol ! column of Xgrid
-real :: Rcpu2, Phicpu2, Acpu2 ! cpu time of each operation using normal algorithm
 logical :: do_amr ! are we doing the fast algorithm leveraging amr anywhere?
 integer :: finest, nlev ! finest level of AMR
 integer :: ndim ! dimension for POD (1D, 2D, or 3D)
@@ -131,6 +120,44 @@ integer :: cval, dval
 integer, allocatable, dimension(:) :: c_l, d_l
 double precision, allocatable, dimension(:,:) :: test_2D
 
+! Timing variables -------------------------------------------------
+integer :: nsamp ! number of samples for ensembles of CPU
+integer :: tot_CPU ! total CPU time
+real :: Rshp_CPU
+real, allocatable, dimension(:) :: R_CPU
+real, allocatable, dimension(:) :: Phi_CPU
+real, allocatable, dimension(:) :: A_CPU ! cpu time of each operation
+integer      :: c0, c1, c2, cr
+integer, allocatable, dimension(:) :: cpu0, cpuf ! init and final CPU times for each op
+integer           :: hrs, mins
+
+double precision :: clock_rate, seconds
+
+character(len=10) :: clock_time
+
+! real :: cpu0, cpuf ! initial and final CPU times
+! real, allocatable, dimension(:) :: cpu0_arr, cpuf_arr ! initial and final CPU times
+
+namelist /POD_inputs/ nx, ny, nz, nsamp, itime, ix, iy, iz, &
+datafmt, datadir, datatyp , PODdir, Ralg, Phialg, Aalg, variables, &
+var_nam_len, rm_mean
+
+namelist /AMR_POD_inputs/ finest
+
+
+! Set up timing
+call date_and_time(time=clock_time)
+call system_clock(count_rate=cr)
+clock_rate = real(cr)
+call system_clock(c0)
+
+write(*, '(A)') '------------------------------------------------'//   &
+                '------------------------------------------------'
+write(*, '(A)') 'POD computation started at '//             &
+               clock_time(1:2)//':'//clock_time(3:4)//':'//           &
+               clock_time(5:10)//' local time.'
+write(*, '(A)') '------------------------------------------------'//   &
+                '------------------------------------------------'
 
 
 ! ---------- Setup MPI
@@ -150,11 +177,7 @@ double precision, allocatable, dimension(:,:) :: test_2D
 ! =========================== Read Inputs ===========================
 
 
-namelist /POD_inputs/ nx, ny, nz, itime, ix, iy, iz, &
-datafmt, datadir, datatyp , PODdir, Ralg, Phialg, Aalg, variables, &
-var_nam_len, rm_mean
 
-namelist /AMR_POD_inputs/ finest
 
 
 ! ---------- Set defaults
@@ -187,6 +210,7 @@ finest = 0
 
 
 
+
 ! ---------- Read inputs
 
 ! untin = 1000
@@ -198,6 +222,16 @@ finest = 0
 open(9, file='POD.inputs', form='formatted', status='old')
 read(9, nml=POD_inputs)
 close(9)
+
+
+
+
+
+! call system_clock(count_rate=rate)
+! rate = real(cr, DP)
+! call system_clock(c0)
+
+
 
 ! When close to done, FIX THIS!
 ! nxp = ix(2) - ix(1) + 1
@@ -229,8 +263,15 @@ end do
 
 ! ---------- Allocate and assign variables for standard POD
 nt    = itime(2) - itime(1) + 1
+write(nt_id, '(I5)') nt
 nspat = nx*ny*nz
 
+
+! Set up CPU timing
+allocate(cpu0(nsamp), cpuf(nsamp))
+allocate(R_cpu(nsamp), Phi_cpu(nsamp), A_cpu(nsamp))
+CPUdir = trim(datadir)//'CPU_timing_nt'//trim(adjustl(nt_id))//'/'
+call execute_command_line('mkdir -p '//CPUdir, wait=.true.)
 
 
 allocate(Xpod(nvar*nspat,nt))
@@ -260,8 +301,8 @@ if (do_amr) then
       c_l(i) = 2**(finest-i)
       d_l(i) = (2**ndim)**(finest-i)
    end do
-   write(*,*) c_l
-   write(*,*) d_l
+   ! write(*,*) c_l
+   ! write(*,*) d_l
    
 end if
 
@@ -323,11 +364,11 @@ if (do_amr) then
 end if
 
 ! if (rank == 0) then
-write(*,*) "we will be performing POD on the following variables:"
-do i=1,nvar
-   write(*,*) "    ",trim(variables(i))
-end do
-write(*,*)
+! write(*,*) "we will be performing POD on the following variables:"
+! do i=1,nvar
+!    write(*,*) "    ",trim(variables(i))
+! end do
+! write(*,*)
 ! endif
 
 
@@ -336,6 +377,9 @@ write(*,*)
 
 ! Note may want to read, depending on the size that X becomes,
 ! in the snapshots one at a time
+
+
+Rshp_CPU = 0.
 
 do i=1,nvar
    var = variables(i)
@@ -358,7 +402,10 @@ do i=1,nvar
       if (do_amr) then
 
          Xcol = Xpod(:,n)
+         call system_clock(cpu0(1))
          call reshape_AMR(nxp, nyp, nzp*nvar, finest, Xcol, 'forward')
+         call system_clock(cpuf(1))
+         Rshp_CPU = Rshp_CPU + real(cpuf(1) - cpu0(1))/clock_rate
          Xpod(:,n) = Xcol
 
          write(filename,datafmt) &
@@ -369,10 +416,11 @@ do i=1,nvar
          read(1) Xcol
          close(1)
 
-         
-
          ! Xgcol = Xgrid(:,n)
+         call system_clock(cpu0(1))
          call reshape_AMR(nxp, nyp, nzp*nvar, finest, Xcol, 'forward')
+         call system_clock(cpuf(1))
+         Rshp_CPU = Rshp_CPU + real(cpuf(1) - cpu0(1))/clock_rate
          ! call reshape_AMR(nxp, nyp, nzp*nvar, finest, Xcol, 'reverse')
          Xgrid(:,n) = int(Xcol)
 
@@ -388,9 +436,15 @@ do i=1,nvar
    enddo
 enddo
 
+open(newunit=fid, file=trim(CPUdir)//'Reshape_CPU.txt', &
+   form='formatted')
+write(*,*) "reshaping cpu time ", Rshp_CPU, " seconds"
+write(fid, CFMT) Rshp_CPU
+close(fid)
+
 
 ! write(*,*) Xpod(:,1)
-write(*,*) "shape(Xpod) = ", shape(Xpod)
+! write(*,*) "shape(Xpod) = ", shape(Xpod)
 
 
 ! =============================== POD ===============================
@@ -423,29 +477,69 @@ write(*,*) "shape(Xpod) = ", shape(Xpod)
 ! ---------- Compute R
 
 
+! call omp_set_num_threads(4)
+
 allocate(Rpod(nt,nt))
 
 
+! !$OMP PARALLEL DO PRIVATE(j)
+!    do i=1,nsamp,omp_get_num_threads()
+!       j = i + omp_get_thread_num()
+!       call cpu_time(cpu0_arr(j))
+!       call compute_R(Xpod, nspat, nt, Rpod, 0)
+!       call cpu_time(cpuf_arr(j))
+!       Rcpu_arr(j) = cpuf_arr(j) - cpu0_arr(j)
+!       write(*,*) "    cpu time ", Rcpu_arr(j), " seconds"
+!    enddo
+! !$OMP END PARALLEL DO
+
 write(*,*)
-call cpu_time(cpu0)
-call compute_R(Xpod, nspat, nt, Rpod, 0)
-call cpu_time(cpuf)
-Rcpu1 = cpuf - cpu0
-write(*,*) "    cpu time ", Rcpu1, " seconds"
-
-do i=1,4
-   write(*,*) Rpod(i,1:4)
+write(*,*) "computing R using standard operations ..."
+!!$OMP PARALLEL DO
+do i=1,nsamp
+   call system_clock(cpu0(i))
+   call compute_R(Xpod, nspat, nt, Rpod, 0)
+   call system_clock(cpuf(i))
 enddo
+!!$OMP END PARALLEL DO
 
-call cpu_time(cpu0)
-call compute_R(Xpod, nspat, nt, Rpod, 1, Xgrid, finest, ndim)
-call cpu_time(cpuf)
-Rcpu1 = cpuf - cpu0
-write(*,*) "    cpu time ", Rcpu1, " seconds"
 
-do i=1,4
-   write(*,*) Rpod(i,1:4)
+open(newunit=fid, file=trim(CPUdir)//'R_CPU_standard.txt', &
+   form='formatted')
+R_CPU = real(cpuf - cpu0)/clock_rate
+do i=1,nsamp
+   write(*,*) "    cpu time ", R_CPU(i), " seconds"
+   write(fid, CFMT) R_CPU(i)
 enddo
+close(fid)
+
+! do i=1,4
+!    write(*,*) Rpod(i,1:4)
+! enddo
+
+write(*,*) "computing R utilizing AMR ..."
+!!$OMP PARALLEL DO
+do i=1,nsamp
+   call system_clock(cpu0(i))
+   call compute_R(Xpod, nspat, nt, Rpod, 1, Xgrid, finest, ndim)
+   call system_clock(cpuf(i))
+enddo
+!!$OMP END PARALLEL DO
+! R_CPU = cpuf - cpu0
+! write(*,*) "    cpu time ", R_CPU, " seconds"
+
+open(newunit=fid, file=trim(CPUdir)//'R_CPU_AMR.txt', &
+   form='formatted')
+R_CPU = real(cpuf - cpu0)/clock_rate
+do i=1,nsamp
+   write(*,*) "    cpu time ", R_CPU(i), " seconds"
+   write(fid, CFMT) R_CPU(i)
+enddo
+close(fid)
+
+! do i=1,4
+!    write(*,*) Rpod(i,1:4)
+! enddo
 
 ! ---------- Compute Psi and Lambda ---------------------------------
 
@@ -474,36 +568,66 @@ deallocate(Rpod)
 ! ---------- Compute Phi --------------------------------------------
 allocate(Phi (nvar*nspat,nt))
 
+
 write(*,*)
-call cpu_time(cpu0)
-call compute_Phi(Xpod, Psi, Lam, nspat, nt, Phi, 0)
-call cpu_time(cpuf)
-Rcpu1 = cpuf - cpu0
-write(*,*) "    cpu time ", Rcpu1, " seconds"
+write(*,*) "computing Phi using standard operations ..."
+do i=1,nsamp
+   call system_clock(cpu0(i))
+   call compute_Phi(Xpod, Psi, Lam, nspat, nt, Phi, 0)
+   call system_clock(cpuf(i))
+enddo 
 
-do i=1,4
-   write(*,*) Phi(i,1:4)
+open(newunit=fid, file=trim(CPUdir)//'Phi_CPU_standard.txt', &
+   form='formatted')
+Phi_CPU = real(cpuf - cpu0)/clock_rate
+do i=1,nsamp
+   write(*,*) "    cpu time ", Phi_CPU(i), " seconds"
+   write(fid, CFMT) Phi_CPU(i)
+enddo
+close(fid)
+! do i=1,4
+!    write(*,*) Phi(i,1:4)
+! enddo
+
+write(*,*) "computing Phi utilizing AMR, method 1 ..."
+do i=1,nsamp
+   call system_clock(cpu0(i))
+   call compute_Phi(Xpod, Psi, Lam, nspat, nt, Phi, 1, Xgrid, finest, ndim)
+   call system_clock(cpuf(i))
 enddo
 
-call cpu_time(cpu0)
-call compute_Phi(Xpod, Psi, Lam, nspat, nt, Phi, 1, Xgrid, finest, ndim)
-call cpu_time(cpuf)
-Rcpu1 = cpuf - cpu0
-write(*,*) "    cpu time ", Rcpu1, " seconds"
+open(newunit=fid, file=trim(CPUdir)//'Phi_CPU_AMR1.txt', &
+   form='formatted')
+Phi_CPU = real(cpuf - cpu0)/clock_rate
+do i=1,nsamp
+   write(*,*) "    cpu time ", Phi_CPU(i), " seconds"
+   write(fid, CFMT) Phi_CPU(i)
+enddo
+close(fid)
 
-do i=1,4
-   write(*,*) Phi(i,1:4)
+! do i=1,4
+!    write(*,*) Phi(i,1:4)
+! enddo
+
+write(*,*) "computing Phi utilizing AMR, method 2 ..."
+do i=1,nsamp
+   call system_clock(cpu0(i))
+   call compute_Phi(Xpod, Psi, Lam, nspat, nt, Phi, 2, Xgrid, finest, ndim)
+   call system_clock(cpuf(i))
 enddo
 
-call cpu_time(cpu0)
-call compute_Phi(Xpod, Psi, Lam, nspat, nt, Phi, 2, Xgrid, finest, ndim)
-call cpu_time(cpuf)
-Rcpu1 = cpuf - cpu0
-write(*,*) "    cpu time ", Rcpu1, " seconds"
-
-do i=1,4
-   write(*,*) Phi(i,1:4)
+open(newunit=fid, file=trim(CPUdir)//'Phi_CPU_AMR2.txt', &
+   form='formatted')
+Phi_CPU = real(cpuf - cpu0)/clock_rate
+do i=1,nsamp
+   write(*,*) "    cpu time ", Phi_CPU(i), " seconds"
+   write(fid, CFMT) Phi_CPU(i)
 enddo
+close(fid)
+
+! do i=1,4
+!    write(*,*) Phi(i,1:4)
+! enddo
 
 
 ! ---------- Compute A
@@ -511,25 +635,66 @@ enddo
 allocate(Apod(nt,nt))
 
 write(*,*)
-call cpu_time(cpu0)
-call compute_A(Xpod, Phi, nspat, nt, Apod, 0)
-call cpu_time(cpuf)
-Acpu1 = cpuf - cpu0
-write(*,*) "    cpu time ", Acpu1, " seconds"
-
-do i=1,4
-   write(*,*) Apod(i,1:4)
+write(*,*) "computing A using standard operations ..."
+do i=1,nsamp
+   call system_clock(cpu0(i))
+   call compute_A(Xpod, Phi, nspat, nt, Apod, 0)
+   call system_clock(cpuf(i))
 enddo
 
-call cpu_time(cpu0)
-call compute_A(Xpod, Phi, nspat, nt, Apod, 1, Xgrid, finest, ndim)
-call cpu_time(cpuf)
-Acpu1 = cpuf - cpu0
-write(*,*) "    cpu time ", Acpu1, " seconds"
-
-do i=1,4
-   write(*,*) Apod(i,1:4)
+open(newunit=fid, file=trim(CPUdir)//'A_CPU_standard.txt', &
+   form='formatted')
+A_CPU = real(cpuf - cpu0)/clock_rate
+do i=1,nsamp
+   write(*,*) "    cpu time ", A_CPU(i), " seconds"
+   write(fid, CFMT) A_CPU(i)
 enddo
+close(fid)
+
+! do i=1,4
+!    write(*,*) Apod(i,1:4)
+! enddo
+
+write(*,*) "computing A utilizing AMR ..."
+do i=1,nsamp
+   call system_clock(cpu0(i))
+   call compute_A(Xpod, Phi, nspat, nt, Apod, 1, Xgrid, finest, ndim)
+   call system_clock(cpuf(i))
+enddo
+open(newunit=fid, file=trim(CPUdir)//'A_CPU_AMR.txt', &
+   form='formatted')
+A_CPU = real(cpuf - cpu0)/clock_rate
+do i=1,nsamp
+   write(*,*) "    cpu time ", A_CPU(i), " seconds"
+   write(fid, CFMT) A_CPU(i)
+enddo
+close(fid)
+
+! do i=1,4
+!    write(*,*) Apod(i,1:4)
+! enddo
+
+call date_and_time(time=clock_time)
+call system_clock(c2)
+c1 = (c2 - c0)/cr
+hrs = int(c1/3600)
+mins = int(mod(c1, 3600)/60)
+seconds = real(c1 - hrs*3600 - mins*60) &
+         + real(mod(c2-c0, cr))/clock_rate
+
+write(*, '(A)') '------------------------------------------------'//   &
+                '------------------------------------------------'
+
+write(*, '(A)') 'POD computation finished at '//            &
+               clock_time(1:2)//':'//clock_time(3:4)//':'//           &
+               clock_time(5:10)//' local time.'//new_line('a')
+
+write(*, '(A,I3.2,A,I2.2,A,I2.2,F0.3,A)')                              &
+   'Total program walltime = ', hrs, ':', mins, ':', int(seconds),    &
+   seconds-int(seconds), ' (HHH:MM:SS.SSS)'
+
+write(*, '(A)') '------------------------------------------------'//   &
+                '------------------------------------------------'
 
 
 end program POD
