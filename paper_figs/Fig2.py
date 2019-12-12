@@ -115,7 +115,7 @@ def Fig2(datadir, imgdir):
 
         # Colorbar information
         cbar = ax.cax.colorbar(im)
-        ax.cax.set_ylabel(r'$\log(\overline{T}_a/\overline{T}_s)$ (ops)')
+        ax.cax.set_ylabel(r'$\log(\overline{T}_a/T_s)$ (ops)')
         cbar.ax.set_ylim(-0.25,0.1)
         cbar.ax.set_yticks(np.linspace(-0.2,0.1,4))
         cbar.ax.set_yticklabels(['-0.2','-0.1','0.0','0.1'])
@@ -178,7 +178,7 @@ def Fig2(datadir, imgdir):
         ax.set_xticklabels(['10', '30', '50'])
         ax.set_yticklabels(['-0.1','0','0.1'])
         ax.set_xlabel('$n_t$')
-        ax.set_ylabel(r'$\log(\overline{T}_a/\overline{T}_s)$ (ops)')
+        ax.set_ylabel(r'$\log(\overline{T}_a/T_s)$ (ops)')
         ax.set_xlim(np.min(nt),np.max(nt))
         if i == 3:
             ax.legend(loc='right', bbox_to_anchor=(1.5, 0.3), ncol=2, \
