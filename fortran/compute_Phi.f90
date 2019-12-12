@@ -223,7 +223,7 @@ elseif ((method == 1) .or. (method==2)) then
                         p = Gmat2(1,1,m)
                         Lsum = Lsum + Xpod(k,p)*Psi(p,n)
                      enddo
-                     Hmat2(k-i,1) = Lsum
+                     Hmat2(k-i+1,1) = Lsum
                   enddo
                endif
             endif
