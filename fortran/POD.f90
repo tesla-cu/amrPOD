@@ -74,6 +74,7 @@ real :: dt ! time step
 
 
 character(len=maxlen) :: datafmt, datadir, datatyp
+character(len=1)      :: dataorder
 character(len=maxlen) :: CPUdir
 character(len=maxlen) :: filename
 integer               :: file_unit, length
@@ -118,7 +119,8 @@ integer :: finest, nlev ! finest level of AMR
 integer :: ndim ! dimension for POD (1D, 2D, or 3D)
 integer :: cval, dval
 integer, allocatable, dimension(:) :: c_l, d_l
-double precision, allocatable, dimension(:,:) :: test_2D
+double precision, allocatable, dimension(:,:) :: data_2D, data_2D_rev
+double precision, allocatable, dimension(:,:,:) :: data_3D, data_3D_rev
 
 ! Timing variables -------------------------------------------------
 integer :: nsamp ! number of samples for ensembles of CPU
@@ -139,7 +141,7 @@ character(len=10) :: clock_time
 ! real, allocatable, dimension(:) :: cpu0_arr, cpuf_arr ! initial and final CPU times
 
 namelist /POD_inputs/ nx, ny, nz, nsamp, itime, ix, iy, iz, &
-datafmt, datadir, datatyp , PODdir, Ralg, Phialg, Aalg, variables, &
+datafmt, datadir, datatyp, dataorder, PODdir, Ralg, Phialg, Aalg, variables, &
 var_nam_len, rm_mean
 
 namelist /AMR_POD_inputs/ finest
@@ -390,11 +392,18 @@ do i=1,nvar
       write(filename,datafmt) &
          trim(datadir), trim(var), itime(1)+n-1, '.bin'
 
-      open(1, file=trim(filename), action='read', &
+      open(newunit=fid, file=trim(filename), action='read', &
          access='stream', form='unformatted', status='old')
-      read(1) Xcol
+      read(fid) Xcol
+      if (dataorder=='c' .and. ndim==3) then
+         allocate(data_3D_rev(nz,ny,nx), data_3D(nx,ny,nz))
+         data_3D_rev = reshape(Xcol, [nz,ny,nx])
+         data_3D = reshape(data_3D_rev, [nz,ny,nx], order=[3,2,1])
+         Xcol = reshape(data_3D, [nspat])
+         deallocate(data_3D_rev, data_3D)
+      endif
       Xpod(:,n) = Xcol
-      close(1)
+      close(fid)
       ! write(*,*) Xpod(nspat,j)
 
       ! If we are utilizing the AMR, we need to load grid data
@@ -411,10 +420,17 @@ do i=1,nvar
          write(filename,datafmt) &
             trim(datadir), 'grid_level', itime(1)+n-1, '.bin'
 
-         open(1, file=trim(filename), action='read', &
+         open(newunit=fid, file=trim(filename), action='read', &
             access='stream', form='unformatted', status='old')
-         read(1) Xcol
-         close(1)
+         read(fid) Xcol
+         if (dataorder=='c' .and. ndim==3) then
+            allocate(data_3D_rev(nz,ny,nx), data_3D(nx,ny,nz))
+            data_3D_rev = reshape(Xcol, [nz,ny,nx])
+            data_3D = reshape(data_3D_rev, [nz,ny,nx], order=[3,2,1])
+            Xcol = reshape(data_3D, [nspat])
+            deallocate(data_3D_rev, data_3D)
+         endif
+         close(fid)
 
          ! Xgcol = Xgrid(:,n)
          call system_clock(cpu0(1))
@@ -513,9 +529,9 @@ do i=1,nsamp
 enddo
 close(fid)
 
-! do i=1,4
-!    write(*,*) Rpod(i,1:4)
-! enddo
+do i=1,4
+   write(*,*) Rpod(i,1:4)
+enddo
 
 write(*,*) "computing R utilizing AMR ..."
 !!$OMP PARALLEL DO
@@ -537,9 +553,9 @@ do i=1,nsamp
 enddo
 close(fid)
 
-! do i=1,4
-!    write(*,*) Rpod(i,1:4)
-! enddo
+do i=1,4
+   write(*,*) Rpod(i,1:4)
+enddo
 
 ! ---------- Compute Psi and Lambda ---------------------------------
 
@@ -585,9 +601,10 @@ do i=1,nsamp
    write(fid, CFMT) Phi_CPU(i)
 enddo
 close(fid)
-! do i=1,4
-!    write(*,*) Phi(i,1:4)
-! enddo
+
+do i=1,4
+   write(*,*) Phi(i,1:4)
+enddo
 
 write(*,*) "computing Phi utilizing AMR, method 1 ..."
 do i=1,nsamp
@@ -605,9 +622,9 @@ do i=1,nsamp
 enddo
 close(fid)
 
-! do i=1,4
-!    write(*,*) Phi(i,1:4)
-! enddo
+do i=1,4
+   write(*,*) Phi(i,1:4)
+enddo
 
 write(*,*) "computing Phi utilizing AMR, method 2 ..."
 do i=1,nsamp
@@ -625,9 +642,9 @@ do i=1,nsamp
 enddo
 close(fid)
 
-! do i=1,4
-!    write(*,*) Phi(i,1:4)
-! enddo
+do i=1,4
+   write(*,*) Phi(i,1:4)
+enddo
 
 
 ! ---------- Compute A
@@ -651,9 +668,9 @@ do i=1,nsamp
 enddo
 close(fid)
 
-! do i=1,4
-!    write(*,*) Apod(i,1:4)
-! enddo
+do i=1,4
+   write(*,*) Apod(i,1:4)
+enddo
 
 write(*,*) "computing A utilizing AMR ..."
 do i=1,nsamp
@@ -670,9 +687,9 @@ do i=1,nsamp
 enddo
 close(fid)
 
-! do i=1,4
-!    write(*,*) Apod(i,1:4)
-! enddo
+do i=1,4
+   write(*,*) Apod(i,1:4)
+enddo
 
 call date_and_time(time=clock_time)
 call system_clock(c2)
