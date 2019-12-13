@@ -45,7 +45,7 @@ use comp_Phi
 use rshp_AMR
 
 ! use mpi
-use omp_lib
+! use omp_lib
 
 implicit none
 ! include 'mpif.h'
@@ -57,7 +57,7 @@ implicit none
 ! =============== Allocate variables universal for POD ==============
 
 ! ---------- General variables
-integer         :: i, j, k ! spatial counting variables
+integer         :: i, j, k, l ! spatial counting variables
 integer         :: m, n ! time counting variables
 
 integer         :: ierror, untin, iostat
@@ -129,6 +129,7 @@ real :: Rshp_CPU
 real, allocatable, dimension(:) :: R_CPU
 real, allocatable, dimension(:) :: Phi_CPU
 real, allocatable, dimension(:) :: A_CPU ! cpu time of each operation
+double precision, allocatable, dimension(:) :: p_comp, pm_comp ! computed p and p^m
 integer      :: c0, c1, c2, cr
 integer, allocatable, dimension(:) :: cpu0, cpuf ! init and final CPU times for each op
 integer           :: hrs, mins
@@ -395,13 +396,13 @@ do i=1,nvar
       open(newunit=fid, file=trim(filename), action='read', &
          access='stream', form='unformatted', status='old')
       read(fid) Xcol
-      if (dataorder=='c' .and. ndim==3) then
-         allocate(data_3D_rev(nz,ny,nx), data_3D(nx,ny,nz))
-         data_3D_rev = reshape(Xcol, [nz,ny,nx])
-         data_3D = reshape(data_3D_rev, [nz,ny,nx], order=[3,2,1])
-         Xcol = reshape(data_3D, [nspat])
-         deallocate(data_3D_rev, data_3D)
-      endif
+      ! if (dataorder=='c' .and. ndim==3) then
+      !    allocate(data_3D_rev(nz,ny,nx), data_3D(nx,ny,nz))
+      !    data_3D_rev = reshape(Xcol, [nz,ny,nx])
+      !    data_3D = reshape(data_3D_rev, [nz,ny,nx], order=[3,2,1])
+      !    Xcol = reshape(data_3D, [nspat])
+      !    deallocate(data_3D_rev, data_3D)
+      ! endif
       Xpod(:,n) = Xcol
       close(fid)
       ! write(*,*) Xpod(nspat,j)
@@ -423,13 +424,13 @@ do i=1,nvar
          open(newunit=fid, file=trim(filename), action='read', &
             access='stream', form='unformatted', status='old')
          read(fid) Xcol
-         if (dataorder=='c' .and. ndim==3) then
-            allocate(data_3D_rev(nz,ny,nx), data_3D(nx,ny,nz))
-            data_3D_rev = reshape(Xcol, [nz,ny,nx])
-            data_3D = reshape(data_3D_rev, [nz,ny,nx], order=[3,2,1])
-            Xcol = reshape(data_3D, [nspat])
-            deallocate(data_3D_rev, data_3D)
-         endif
+         ! if (dataorder=='c' .and. ndim==3) then
+         !    allocate(data_3D_rev(nz,ny,nx), data_3D(nx,ny,nz))
+         !    data_3D_rev = reshape(Xcol, [nz,ny,nx])
+         !    data_3D = reshape(data_3D_rev, [nz,ny,nx], order=[3,2,1])
+         !    Xcol = reshape(data_3D, [nspat])
+         !    deallocate(data_3D_rev, data_3D)
+         ! endif
          close(fid)
 
          ! Xgcol = Xgrid(:,n)
@@ -457,6 +458,29 @@ open(newunit=fid, file=trim(CPUdir)//'Reshape_CPU.txt', &
 write(*,*) "reshaping cpu time ", Rshp_CPU, " seconds"
 write(fid, CFMT) Rshp_CPU
 close(fid)
+
+! ---------- Compute p^m and p
+allocate(p_comp(0:finest), pm_comp(0:finest))
+p_comp = 0.
+pm_comp = 0.
+
+! Compute p
+do n=1,nt
+   do l=0,finest
+      ! p_comp(l) = p_comp(l) + dble(sum(Xgrid(:,n), mask=Xgrid(:,n)==l)/nspat)
+      p_comp(l) = p_comp(l) + dble(count(mask=Xgrid(:,n)==l))/dble(nt*nspat)
+   enddo
+enddo
+write(*,*) "p_comp = ",p_comp
+write(*,*) "sum(p_comp) = ",sum(p_comp)
+
+! Compute p^m
+do i=1,nspat
+   pm_comp(maxval(Xgrid(i,:))) = pm_comp(maxval(Xgrid(i,:))) + 1./dble(nspat)
+end do
+write(*,*) "pm_comp = ",pm_comp
+write(*,*) "sum(pm_comp) = ",sum(pm_comp)
+
 
 
 ! write(*,*) Xpod(:,1)
