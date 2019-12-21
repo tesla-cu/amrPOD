@@ -57,6 +57,21 @@ elseif (method == 1) then
    d_f1 = d_l(finest-1)
 
    ! Precompute maximum grid level for each spatial location
+   ! i = 1
+   ! do while(i <= nspat)
+   !    Xgrid_max = Xgrid(i,1)
+   !    do m=2,nt
+   !       if (Xgrid(i,m) > Xgrid_max) then
+   !          Xgrid_max = Xgrid(i,m)
+   !          if (Xgrid_max == finest) then
+   !             exit
+   !          endif
+   !       endif
+   !    enddo
+   !    Gmat(i) = d_l(Xgrid_max)
+   !    i = i + d_l(Xgrid_max)
+   ! enddo
+
    i = 1
    do while(i <= nspat)
       Xgrid_max = Xgrid(i,1)
@@ -68,14 +83,28 @@ elseif (method == 1) then
             endif
          endif
       enddo
-      Gmat(i) = d_l(Xgrid_max)
-      i = i + d_l(Xgrid_max)
+      if (Xgrid_max == finest) then
+         Gmat(i) = 1
+         i = i + d_f1
+      else
+         Gmat(i) = d_l(Xgrid_max)
+         i = i + d_l(Xgrid_max)
+      endif
    enddo
+
+   ! Gmat(1:nspat:d_f1) = maxval(Xgrid(1:nspat:d_f1,:), dim=2)
+   ! do i=1,nspat,d_f1
+   !    Gmat(i) = d_l(Gmat(i))
+   ! enddo
+   ! Gmat = maxval(Xgrid, dim=2)
+   ! do i=1,nspat
+   !    Gmat(i) = d_l(Gmat(i))
+   ! enddo
 
    ! Compute A with proper weighting
    do m=1,nt
       do n=1,nt
-         Asum= 0.
+         Asum = 0.
          i = 1
          do while(i <= nspat)
             if (Gmat(i) == 1) then
