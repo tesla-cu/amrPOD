@@ -65,7 +65,7 @@ elseif ((method == 1) .or. (method==2)) then
    ! ---------- Method 1 --------------------------------------------
    if (method == 1) then
 
-      allocate(Gmat1(nspat))
+      allocate(Gmat1(d_0))
 
       do i=1,nspat,d_0
          ! Precompute maximum grid level for each spatial location
