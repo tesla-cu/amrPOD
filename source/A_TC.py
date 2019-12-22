@@ -174,6 +174,7 @@ def compute_A_TC(X, X_grid, Phi, A, d_l, nt, nspat, finest, wt_art, wt_acc, wt_a
 				if i < nspat:
 
 					im_log += wt_log
+					im_acc += wt_acc
 					if G[i] == 1:
 
 						im_art += wt_art
@@ -187,6 +188,9 @@ def compute_A_TC(X, X_grid, Phi, A, d_l, nt, nspat, finest, wt_art, wt_acc, wt_a
 							im_asn += wt_asn
 
 						i += d_f1
+						im_art += wt_art
+						im_asn += wt_asn
+
 					else:
 						a_sum  += G[i]*X[i,m]*Phi[i,n]
 						im_acc += 3*wt_acc
