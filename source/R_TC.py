@@ -61,6 +61,7 @@ def compute_R_TC(X, X_grid, R, d_l, nt, nspat, finest, wt_art, wt_acc, wt_asn, w
 		un_art += wt_art
 		un_asn += wt_asn
 
+		un_art += wt_art
 		for n in range(m+1):
 			un_art += wt_art
 			un_asn += wt_asn
@@ -100,6 +101,7 @@ def compute_R_TC(X, X_grid, R, d_l, nt, nspat, finest, wt_art, wt_acc, wt_asn, w
 		im_art += wt_art
 		im_asn += wt_asn
 
+		im_art += wt_art
 		for n in range(m+1):
 			im_art += wt_art
 			im_asn += wt_asn
@@ -121,6 +123,7 @@ def compute_R_TC(X, X_grid, R, d_l, nt, nspat, finest, wt_art, wt_acc, wt_asn, w
 					if i < nspat:
 
 						im_log += wt_log
+						im_acc += wt_acc
 						if X_grid[i,m] == finest:
 
 							im_art += wt_art
@@ -163,6 +166,7 @@ def compute_R_TC(X, X_grid, R, d_l, nt, nspat, finest, wt_art, wt_acc, wt_asn, w
 					if i < nspat:
 
 						im_log += 2*wt_log
+						im_acc += 2*wt_acc
 						if X_grid[i,m] == finest or X_grid[i,n] == finest:
 
 							im_art += wt_art
