@@ -519,6 +519,7 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest, 
 
 										p = G_mat[finest, idx, m]
 										im_acc += wt_acc
+										im_asn += wt_asn
 
 										l_sum += X[k,p] * Psi[p,n]
 										im_acc += 2*wt_acc
