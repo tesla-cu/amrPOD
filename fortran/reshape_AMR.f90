@@ -118,7 +118,7 @@ if (dir == "f") then
 
          ! Permute [1,3,2,4]
          allocate(data_4Db(nzr,nrshp2,c,c))
-         data_4Db = reshape(data_4Db, [nzr,nrshp2,c,c], order=[1,3,2,4])
+         data_4Db = reshape(data_4Da, [nzr,nrshp2,c,c], order=[1,3,2,4])
          deallocate(data_4Da)
 
          ! Reshape back to 3D
