@@ -21,10 +21,12 @@
 !
 ! To create an executable, at the terminal, run:
 !
-!    gfortran -O0 -g -fcheck=all -fbacktrace -o POD.ex POD.f90
 !    gfortran -O0 -g -fcheck=all -fbacktrace -o POD.ex POD.f90 -L. -llapack -lrefblas
-!    gfortran -O3 -o POD.ex POD.f90
-!    gfortran -O3 -o POD.ex POD.f90 -L. -llapack -lrefblas
+!    gfortran -O3 -o POD.ex POD.f90 -L. -llapack -lrefblas 
+!
+! For more timing info:
+!    gfortran -pg -O3 -o POD.ex POD.f90 -L. -llapack -lrefblas 
+!    gprof POD.ex > POD.stats
 !
 !    
 !    
