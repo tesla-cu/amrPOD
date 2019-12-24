@@ -96,6 +96,7 @@ elseif (method == 1) then
    ! do i=1,nspat,d_f1
    !    Gmat(i) = d_l(Gmat(i))
    ! enddo
+   
    ! Gmat = maxval(Xgrid, dim=2)
    ! do i=1,nspat
    !    Gmat(i) = d_l(Gmat(i))

@@ -85,8 +85,6 @@ if (dir == "f") then
 
    ! ---------- Three dimensions
    elseif (ndim == 3) then
-      write(*,*) 'data is 3D'
-
       allocate(data_3Da(nx,ny,nz))
       data_3Da = reshape(data, [nx,ny,nz])
       do i=0,finest

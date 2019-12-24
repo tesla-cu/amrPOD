@@ -65,7 +65,8 @@ real, parameter :: PI = 4.0*atan(1.0) ! pi=3.1415 ...
 integer, parameter :: maxlen=256 ! max length of string
 logical               :: chk ! check variable 
 
-character(len=20), parameter :: CFMT = "(F10.4)"
+character(len=20), parameter :: CFMT = "(F12.8)"
+character(len=20), parameter :: PFMT = "(F12.10)"
 
 ! ---------- Data parameters
 integer :: nx, ny, nz ! number of points in each spatial direction
@@ -270,11 +271,7 @@ write(nt_id, '(I5)') nt
 nspat = nx*ny*nz
 
 
-! Set up CPU timing
-allocate(cpu0(nsamp), cpuf(nsamp))
-allocate(R_cpu(nsamp), Phi_cpu(nsamp), A_cpu(nsamp))
-CPUdir = trim(datadir)//'CPU_timing_nt'//trim(adjustl(nt_id))//'/'
-call execute_command_line('mkdir -p '//CPUdir, wait=.true.)
+
 
 
 allocate(Xpod(nvar*nspat,nt))
@@ -366,15 +363,13 @@ if (do_amr) then
    enddo
 end if
 
-! if (rank == 0) then
-! write(*,*) "we will be performing POD on the following variables:"
-! do i=1,nvar
-!    write(*,*) "    ",trim(variables(i))
-! end do
-! write(*,*)
-! endif
+! Set up CPU timing
+allocate(cpu0(nsamp), cpuf(nsamp))
+allocate(R_cpu(nsamp), Phi_cpu(nsamp), A_cpu(nsamp))
+CPUdir = trim(datadir)//'CPU_timing_nt'//trim(adjustl(nt_id))//'/'
+call execute_command_line('mkdir -p '//CPUdir, wait=.true.)
 
-
+! Output important information about the POD (basically just inputs)
 
 ! ============================ Read Data ============================
 
@@ -460,26 +455,46 @@ write(fid, CFMT) Rshp_CPU
 close(fid)
 
 ! ---------- Compute p^m and p
-allocate(p_comp(0:finest), pm_comp(0:finest))
-p_comp = 0.
-pm_comp = 0.
+if (do_amr) then
+   allocate(p_comp(0:finest), pm_comp(0:finest))
+   p_comp = 0.
+   pm_comp = 0.
 
-! Compute p
-do n=1,nt
-   do l=0,finest
-      ! p_comp(l) = p_comp(l) + dble(sum(Xgrid(:,n), mask=Xgrid(:,n)==l)/nspat)
-      p_comp(l) = p_comp(l) + dble(count(mask=Xgrid(:,n)==l))/dble(nt*nspat)
+   ! Compute p
+   do n=1,nt
+      do l=0,finest
+         ! p_comp(l) = p_comp(l) + dble(sum(Xgrid(:,n), mask=Xgrid(:,n)==l)/nspat)
+         p_comp(l) = p_comp(l) + dble(count(mask=Xgrid(:,n)==l))/dble(nt*nspat)
+      enddo
    enddo
-enddo
-write(*,*) "p_comp = ",p_comp
-write(*,*) "sum(p_comp) = ",sum(p_comp)
+   write(*,*) "p_comp = ",p_comp
+   write(*,*) "sum(p_comp) = ",sum(p_comp)
 
-! Compute p^m
-do i=1,nspat
-   pm_comp(maxval(Xgrid(i,:))) = pm_comp(maxval(Xgrid(i,:))) + 1./dble(nspat)
-end do
-write(*,*) "pm_comp = ",pm_comp
-write(*,*) "sum(pm_comp) = ",sum(pm_comp)
+   ! Compute p^m
+   do i=1,nspat
+      pm_comp(maxval(Xgrid(i,:))) = pm_comp(maxval(Xgrid(i,:))) + 1./dble(nspat)
+   end do
+   write(*,*) "pm_comp = ",pm_comp
+   write(*,*) "sum(pm_comp) = ",sum(pm_comp)
+
+   ! Write out p to txt file
+   open(newunit=fid, file=trim(CPUdir)//'p.txt', &
+      form='formatted')
+   do i=0,finest
+      write(fid, PFMT) p_comp(i)
+   enddo
+   close(fid)
+
+   ! Write out p^m to txt file
+   open(newunit=fid, file=trim(CPUdir)//'pm.txt', &
+      form='formatted')
+   do i=0,finest
+      write(fid, PFMT) pm_comp(i)
+   enddo
+   close(fid)
+
+   deallocate(p_comp, pm_comp)
+endif
 
 
 
@@ -553,9 +568,9 @@ do i=1,nsamp
 enddo
 close(fid)
 
-do i=1,4
-   write(*,*) Rpod(i,1:4)
-enddo
+! do i=1,4
+!    write(*,*) Rpod(i,1:4)
+! enddo
 
 write(*,*) "computing R utilizing AMR ..."
 !!$OMP PARALLEL DO
@@ -577,9 +592,9 @@ do i=1,nsamp
 enddo
 close(fid)
 
-do i=1,4
-   write(*,*) Rpod(i,1:4)
-enddo
+! do i=1,4
+!    write(*,*) Rpod(i,1:4)
+! enddo
 
 ! ---------- Compute Psi and Lambda ---------------------------------
 
@@ -626,9 +641,9 @@ do i=1,nsamp
 enddo
 close(fid)
 
-do i=1,4
-   write(*,*) Phi(i,1:4)
-enddo
+! do i=1,4
+!    write(*,*) Phi(i,1:4)
+! enddo
 
 write(*,*) "computing Phi utilizing AMR, method 1 ..."
 do i=1,nsamp
@@ -646,9 +661,9 @@ do i=1,nsamp
 enddo
 close(fid)
 
-do i=1,4
-   write(*,*) Phi(i,1:4)
-enddo
+! do i=1,4
+!    write(*,*) Phi(i,1:4)
+! enddo
 
 write(*,*) "computing Phi utilizing AMR, method 2 ..."
 do i=1,nsamp
@@ -666,9 +681,9 @@ do i=1,nsamp
 enddo
 close(fid)
 
-do i=1,4
-   write(*,*) Phi(i,1:4)
-enddo
+! do i=1,4
+!    write(*,*) Phi(i,1:4)
+! enddo
 
 
 ! ---------- Compute A
@@ -692,9 +707,9 @@ do i=1,nsamp
 enddo
 close(fid)
 
-do i=1,4
-   write(*,*) Apod(i,1:4)
-enddo
+! do i=1,4
+!    write(*,*) Apod(i,1:4)
+! enddo
 
 write(*,*) "computing A utilizing AMR ..."
 do i=1,nsamp
@@ -711,9 +726,9 @@ do i=1,nsamp
 enddo
 close(fid)
 
-do i=1,4
-   write(*,*) Apod(i,1:4)
-enddo
+! do i=1,4
+!    write(*,*) Apod(i,1:4)
+! enddo
 
 call date_and_time(time=clock_time)
 call system_clock(c2)
