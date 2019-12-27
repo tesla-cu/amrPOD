@@ -73,11 +73,11 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest, 
 			phi_sum = 0
 			un_asn  += wt_asn
 
-			for k in range(nt):
+			for n in range(nt):
 				un_art += wt_art
 				un_asn += wt_asn
 
-				phi_sum += X[i,k] * Psi[k,m]
+				phi_sum += X[i,n] * Psi[n,m]
 				un_acc  += 2*wt_acc
 				un_art  += 2*wt_art
 				un_asn  += wt_asn
@@ -108,7 +108,7 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest, 
 			im_asn += wt_asn
 			im_fun += wt_fun
 
-			idx    = 0 
+			jj     = 0 
 			im_asn += wt_asn
 
 			j      = i  
@@ -119,7 +119,7 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest, 
 				im_asn += wt_asn
 
 				im_log += wt_log
-				if idx < d_0:
+				if jj < d_0:
 
 					X_grid_max = X_grid[j,0]
 					im_acc     += wt_acc
@@ -145,11 +145,11 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest, 
 					im_acc += wt_acc
 					im_asn += wt_asn
 
-					G[idx] =  g_val 
+					G[jj] =  g_val 
 					im_acc += wt_acc
 					im_asn += wt_asn
 
-					idx    += g_val 
+					jj    += g_val 
 					im_art += wt_art
 					im_asn += wt_asn
 
@@ -164,7 +164,7 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest, 
 				im_art += wt_art
 				im_asn += wt_asn
 
-				idx    = 0
+				jj     = 0
 				im_asn += wt_asn
 
 				j      = i 
@@ -175,7 +175,7 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest, 
 					im_asn += wt_asn
 
 					im_log += wt_log
-					if idx < d_0:
+					if jj < d_0:
 
 						phi_sum = 0
 						im_asn  += wt_asn
@@ -189,7 +189,7 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest, 
 							im_art  += 2*wt_art
 							im_asn  += wt_asn
 
-						g_val  = G[idx]
+						g_val  = G[jj]
 						im_acc += wt_acc
 						im_asn += wt_asn
 
@@ -208,7 +208,7 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest, 
 							im_acc += wt_acc
 							im_asn += wt_asn
 
-						idx    += g_val 
+						jj    += g_val 
 						im_asn += wt_asn
 						im_art += wt_art
 
@@ -276,7 +276,7 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest, 
 					im_log += wt_log
 					if finest > 1:
 
-						idx = 0
+						jj = 0
 						im_asn += wt_asn
 
 						j = i
@@ -287,7 +287,7 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest, 
 							im_asn += wt_asn
 
 							im_log += wt_log
-							if idx < d_1:
+							if jj < d_1:
 
 								lvl = X_grid[j,n]
 								im_acc += wt_acc
@@ -296,16 +296,16 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest, 
 								im_log += wt_log
 								if lvl == finest:
 
-									G_mat[finest, idx, nl[finest, idx]] = n
+									G_mat[finest, jj, nl[finest, jj]] = n
 									im_acc += 2*wt_acc
 									im_asn += wt_asn
 
-									nl[finest, idx] += 1
+									nl[finest, jj] += 1
 									im_acc += wt_acc
 									im_art += wt_art
 									im_asn += wt_asn
 
-									idx += 1
+									jj += 1
 									im_art += wt_art
 									im_asn += wt_asn
 
@@ -322,16 +322,16 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest, 
 										im_log += wt_log
 										if lvl == l:
 
-											G_mat[l, idx, nl[l, idx]] = n
+											G_mat[l, jj, nl[l, jj]] = n
 											im_acc += 2*wt_acc
 											im_asn += wt_asn
 
-											nl[l, idx] += 1
+											nl[l, jj] += 1
 											im_acc += wt_acc
 											im_art += wt_art
 											im_asn += wt_asn
 
-											idx += d_l[l+1]
+											jj += d_l[l+1]
 											im_art += 2*wt_art
 											im_acc += wt_acc
 											im_asn += wt_asn
@@ -405,7 +405,7 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest, 
 							im_art += wt_art
 							im_asn += wt_asn
 
-							idx = 0
+							jj = 0
 							im_asn += wt_asn
 
 							im_art += wt_art
@@ -416,17 +416,17 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest, 
 
 								im_log += wt_log
 								im_acc += wt_acc
-								if nl[l, idx] > 0:
+								if nl[l, jj] > 0:
 
 									l_sum = 0
 									im_asn += wt_asn
 
 									im_acc += wt_acc
-									for m in range(nl[l, idx]):
+									for m in range(nl[l, jj]):
 										im_art += wt_art
 										im_asn += wt_asn
 
-										k = G_mat[l, idx, m]
+										k = G_mat[l, jj, m]
 										im_acc += wt_acc
 										im_asn += wt_asn
 
@@ -437,7 +437,7 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest, 
 
 									im_art += 5*wt_art
 									im_acc += 3*wt_acc
-									for m in range(idx*d_l[finest-1], idx*d_l[finest-1] + d_l[l]):
+									for m in range(jj*d_l[finest-1], jj*d_l[finest-1] + d_l[l]):
 										im_art += wt_art
 										im_asn += wt_asn
 
@@ -445,7 +445,7 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest, 
 										im_acc += wt_acc
 										im_asn += wt_asn
 
-								idx += d_l[l + 1]
+								jj += d_l[l + 1]
 								im_acc += wt_acc
 								im_art += 2*wt_art
 								im_asn += wt_asn
@@ -453,7 +453,7 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest, 
 					im_log += wt_log
 					if finest > 1:
 
-						idx = 0
+						jj = 0
 						im_asn += wt_asn
 
 						im_art += 2*wt_art
@@ -465,7 +465,7 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest, 
 							im_acc += wt_acc
 							im_art += wt_art
 							im_log += wt_log
-							if nl[finest-1, idx] > 0:
+							if nl[finest-1, jj] > 0:
 
 								l = finest-1
 								im_art += wt_art
@@ -475,11 +475,11 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest, 
 								im_asn += wt_asn
 
 								im_acc += wt_acc
-								for m in range(nl[l, idx]):
+								for m in range(nl[l, jj]):
 									im_art += wt_art
 									im_asn += wt_asn
 
-									k = G_mat[l, idx, m]
+									k = G_mat[l, jj, m]
 									im_acc += wt_acc
 									im_asn += wt_asn
 
@@ -491,7 +491,7 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest, 
 
 								im_art += 3*wt_art
 								im_acc += 2*wt_acc
-								for m in range(idx*d_l[l], (idx+1)*d_l[l]):
+								for m in range(jj*d_l[l], (jj+1)*d_l[l]):
 									im_art += wt_art
 									im_asn += wt_asn
 
@@ -501,7 +501,7 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest, 
 
 							im_log += wt_log
 							im_acc += wt_acc
-							if nl[finest, idx] > 0:
+							if nl[finest, jj] > 0:
 
 								im_acc += wt_acc
 								im_art += 2*im_art
@@ -513,11 +513,11 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest, 
 									im_asn += wt_asn
 
 									im_acc += wt_acc
-									for m in range(nl[finest, idx]):
+									for m in range(nl[finest, jj]):
 										im_art += wt_art
 										im_asn += wt_asn
 
-										p = G_mat[finest, idx, m]
+										p = G_mat[finest, jj, m]
 										im_acc += wt_acc
 										im_asn += wt_asn
 
@@ -526,12 +526,12 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest, 
 										im_asn += wt_asn
 										im_art += 2*wt_art
 
-									H[k-j+d_l[finest-1]*idx, finest] = l_sum
+									H[k-j+d_l[finest-1]*jj, finest] = l_sum
 									im_art += 4*wt_art
 									im_acc += 2*wt_acc
 									im_asn += wt_asn
 
-							idx += 1
+							jj += 1
 							im_art += wt_art
 							im_asn += wt_asn
 
