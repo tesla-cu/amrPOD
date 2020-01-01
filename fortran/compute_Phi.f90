@@ -11,11 +11,11 @@ double precision :: Phisum, Lsum
 integer,                               intent(in)  :: nspat
 integer,                               intent(in)  :: nt
 double precision, dimension(nspat,nt), intent(in)  :: Xpod
-double precision, dimension(nt,nspat)              :: XpodT
 double precision, dimension(nt,nt),    intent(in)  :: Psi
 double precision, dimension(nt),       intent(in)  :: Lambda
 double precision, dimension(nspat,nt), intent(out) :: Phi
 integer,                               intent(in)  :: method
+double precision                                   :: temp
 ! ---------- AMR POD variables --------------------------------------
 integer, optional, dimension(nspat,nt), intent(in) :: Xgrid
 integer, optional,                      intent(in) :: finest
@@ -25,29 +25,46 @@ integer                                            :: Gval
 integer                                            :: d_0, d_1
 integer                                            :: Xgrid_max
 integer                                            :: lvl, nlev
-integer, allocatable, dimension(:)                 :: d_l
-integer, allocatable, dimension(:)                 :: Gmat1
-integer, allocatable, dimension(:,:)               :: nl2
+integer,          allocatable, dimension(:)        :: d_l
+integer,          allocatable, dimension(:)        :: Gmat1
+integer,          allocatable, dimension(:,:)      :: nl2
 double precision, allocatable, dimension(:,:)      :: Hmat2
-integer, allocatable, dimension(:,:,:)             :: Gmat2
+integer,          allocatable, dimension(:,:,:)    :: Gmat2
 double precision                                   :: Hsum
 
 ! ========================== Standard POD ===========================
 if (method == 0) then
-   XpodT = reshape(Xpod, [nt,nspat], order=[2,1])
-   do i=1,nspat
-      do m=1,nt
-         Phisum= 0.
-         do n=1,nt
-            ! Phisum = Phisum + Xpod(i,n)*Psi(n,m)
-            Phisum = Phisum + XpodT(n,i)*Psi(n,m)
+
+   ! Old method
+   ! do i=1,nspat
+   !    do m=1,nt
+   !       Phisum= 0.
+   !       do n=1,nt
+   !          Phisum = Phisum + Xpod(i,n)*Psi(n,m)
+   !       enddo
+   !       Phi(i,m) = Phisum/sqrt(Lambda(m))
+   !    enddo
+   ! enddo
+
+   ! New method based on LAPACK
+   Phi = 0.
+   do m=1,nt
+      do n=1,nt
+         temp = Psi(n,m)
+         do i=1,nspat
+            Phi(i,m) = Phi(i,m) + temp*Xpod(i,n)
          enddo
-         Phi(i,m) = Phisum/sqrt(Lambda(m))
+      enddo
+   enddo
+   do m=1,nt
+      temp = sqrt(Lambda(m))
+      do i=1,nspat
+         Phi(i,m) = Phi(i,m)/temp
       enddo
    enddo
 
 ! ============================= AMR POD =============================
-elseif ((method == 1) .or. (method==2)) then
+elseif ((method==1) .or. (method==2)) then
 
    ! Check if all optional arguments are inputed
    if (present(Xgrid) .and. present(finest) .and. present(ndim)) then
@@ -59,6 +76,7 @@ elseif ((method == 1) .or. (method==2)) then
       write(*,*) "Not all optional arguments are present for AMR!"
       stop
    endif
+
    d_0 = d_l(0)
    d_1 = d_l(1)
 
