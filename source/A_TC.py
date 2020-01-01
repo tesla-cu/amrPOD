@@ -7,19 +7,18 @@
 
 import numpy as np
 
-# ================================================================= #
-# Function to compute the temporal coefficients A in POD using a 
-# standard matrix operation technique and the new algorithm 
-# leveraging AMR repetitions
+# =========================================================================== #
+# Function to compute the temporal coefficients A in POD using a standard 
+# matrix operation technique and the new algorithm leveraging AMR repetitions
 #
 # Inputs:
 # - X      : snapshot matrix
-# - X_grid : companion matrix to snapshot matrix that stores grid 
-#            levels instead of solution values
+# - X_grid : companion matrix to snapshot matrix that stores grid levels 
+#            instead of solution values
 # - Phi    : spatial mode matrix computed using matrix operations 
-# - A      : temporal coefficent matrix computed using matrix 
-#            operations (this is used as a check we did the 
-#            computation right)
+# - A      : temporal coefficent matrix computed using matrix operations to 
+#            use as a check
+#              - if A == False, then we do not check the correctness
 # - d_l    : number of repeated cells for a given level l (called 
 #            c_\ell^d in the paper)
 # - nt     : number of time steps
@@ -101,7 +100,7 @@ def compute_A_TC(X, X_grid, Phi, A, d_l, nt, nspat, finest, wt_art, wt_acc, wt_a
 	d_f1 = d_l[finest-1]
 	im_asn += wt_asn
 	im_art += wt_art
-	im_acc += im_acc
+	im_acc += wt_acc
 	
 	for ii in range(nspat):
 		im_art += wt_art
