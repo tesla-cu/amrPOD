@@ -162,8 +162,9 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest)
 		finest = nlev - 1
 
 		# Specify number of repeats for coarsest and one level
-		d_0 = d_l[0]
-		d_1 = d_l[1]
+		d_0  = d_l[0]
+		d_1  = d_l[1]
+		d_f1 = d_l[finest-1]
 
 		# Iterate on the cells that could be new coarse cells
 		for i in range(0, nspat, d_0):
@@ -207,7 +208,7 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest)
 									G_mat[finest, idx, nl[finest, idx]] = n
 									nl[finest, idx] += 1
 									idx += 1
-									j += d_l[finest-1]
+									j += d_f1
 
 								# If not the finest, we need to check each level 
 								# from 1 to f-1 iteratively
@@ -280,7 +281,7 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest)
 										l_sum += X[j,k] * Psi[k,n]
 
 									# Assign contribution to H
-									for m in range(idx*d_l[finest-1], idx*d_l[finest-1] + d_l[l]):
+									for m in range(idx*d_f1, idx*d_f1 + d_l[l]):
 										H[m, l] = l_sum
 
 								idx += d_l[l + 1]
@@ -294,7 +295,7 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest)
 						idx = 0
 
 						# Compute finest and finest-1 level contribution
-						for j in range(i, i + d_0, d_l[finest-1]):
+						for j in range(i, i + d_0, d_f1):
 
 							# Check if we have any cells at the finest-1 level
 							if nl[finest-1, idx] > 0:
@@ -318,7 +319,7 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest)
 							if nl[finest, idx] > 0:
 
 								# Compute contribution of finest level
-								for k in range(j, j+d_l[finest-1]):
+								for k in range(j, j+d_f1):
 
 									# Initialize temporary variable to store sum of  
 									# l contributions to an element of Phi
@@ -330,7 +331,7 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest)
 										l_sum += X[k,p] * Psi[p,n]
 
 									# Assign contribution to H
-									H[k-j+d_l[finest-1]*idx, finest] = l_sum
+									H[k-j+d_f1*idx, finest] = l_sum
 
 							idx += 1
 

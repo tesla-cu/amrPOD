@@ -7,7 +7,7 @@
 
 import numpy as np
 
-# ================================================================= #
+# =========================================================================== #
 # Function to compute the POD spatial modes in using a standard 
 # matrix operation technique and the new algorithm leveraging AMR
 # repetitions that iteratively finds unique cells.
@@ -94,7 +94,7 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest, 
 
 		Phi_im = np.zeros((nspat, nt))
 		im_asn += wt_asn
-		im_fun += im_fun
+		im_fun += wt_fun
 
 		d_0    = d_l[0]
 		im_acc += wt_acc
@@ -225,7 +225,7 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest, 
 
 		Phi_im = np.zeros((nspat, nt))
 		im_asn += wt_asn
-		im_fun += im_fun
+		im_fun += wt_fun
 
 		nlev   = finest + 1
 		im_art += wt_art
@@ -238,6 +238,11 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest, 
 		d_1 = d_l[1]
 		im_acc += wt_acc
 		im_asn += wt_asn
+
+		d_f1 = d_l[finest-1]
+		im_asn += wt_asn
+		im_art += wt_art
+		im_acc += wt_acc
 
 		for i in range(0, nspat, d_0):
 			im_art += wt_art
@@ -309,9 +314,8 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest, 
 									im_art += wt_art
 									im_asn += wt_asn
 
-									j += d_l[finest-1]
-									im_acc += wt_acc
-									im_art += 2*wt_art
+									j += d_f1
+									im_art += wt_art
 									im_asn += wt_asn
 
 								else:
@@ -435,9 +439,9 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest, 
 										im_art += 2*wt_art
 										im_asn += wt_asn
 
-									im_art += 5*wt_art
-									im_acc += 3*wt_acc
-									for m in range(idx*d_l[finest-1], idx*d_l[finest-1] + d_l[l]):
+									im_art += 3*wt_art
+									im_acc += wt_acc
+									for m in range(idx*d_f1, idx*d_f1 + d_l[l]):
 										im_art += wt_art
 										im_asn += wt_asn
 
@@ -456,9 +460,8 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest, 
 						idx = 0
 						im_asn += wt_asn
 
-						im_art += 2*wt_art
-						im_acc += wt_acc
-						for j in range(i, i + d_0, d_l[finest-1]):
+						im_art += wt_art
+						for j in range(i, i + d_0, d_f1):
 							im_art += wt_art
 							im_asn += wt_asn
 
@@ -503,9 +506,8 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest, 
 							im_acc += wt_acc
 							if nl[finest, idx] > 0:
 
-								im_acc += wt_acc
-								im_art += 2*im_art
-								for k in range(j, j+d_l[finest-1]):
+								im_art += wt_art
+								for k in range(j, j+d_f1):
 									im_art += wt_art
 									im_asn += wt_asn
 
@@ -526,9 +528,9 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest, 
 										im_asn += wt_asn
 										im_art += 2*wt_art
 
-									H[k-j+d_l[finest-1]*idx, finest] = l_sum
-									im_art += 4*wt_art
-									im_acc += 2*wt_acc
+									H[k-j+d_f1*idx, finest] = l_sum
+									im_art += 3*wt_art
+									im_acc += wt_acc
 									im_asn += wt_asn
 
 							idx += 1
