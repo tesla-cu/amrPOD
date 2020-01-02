@@ -42,8 +42,8 @@ def Compute_POD_check(nx, ny, nz, finest, nt, amr_datadir):
 		data = np.fromfile(amr_datadir + 'density%05d.bin' % n)
 
 		# Perform reshaping
-		X[:,n]      = Reshape_AMR(nx, ny, nz, finest, data, 'forward')
-		X_grid[:,n] = Reshape_AMR(nx, ny, nz, finest, grid, 'forward')
+		# X[:,n]      = Reshape_AMR(nx, ny, nz, finest, data, 'forward')
+		# X_grid[:,n] = Reshape_AMR(nx, ny, nz, finest, grid, 'forward')
 
 	# ---------- Compute grid information from X_grid ---------------
 	l_comp  = np.zeros((nlev)) # computed level fractions
