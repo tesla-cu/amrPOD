@@ -1,7 +1,10 @@
+clc; clear; close all;
 
-clc;clear;
+% AMR information
 dim    = 3;
 finest = 1;
+
+% Repetition information
 c_l    = zeros(finest+1, 1);
 d_l    = zeros(finest+1, 1);
 for i = 0:finest
@@ -9,12 +12,18 @@ for i = 0:finest
     d_l(i+1) = (2^dim)^(finest-i);
 end
 
+% =========================================================================
+% Two dimensional reshaping
+% =========================================================================
 if dim == 2
+    % Initialize grid
     grid = zeros(8,4);
     nx = size(grid, 1);
     ny = size(grid, 2);
     grid(1:2, 3:4) = 1;
     grid(5:6, 3:4) = 2;
+    
+    % Reshape into colomn vector
     for i = 1 : numel(c_l)
         nxr  = size(grid, 1);
         nyr  = size(grid, 2);
@@ -25,8 +34,10 @@ if dim == 2
         grid = reshape(grid, [], c);
     end
     
+    % Save column vector
     grid_1D = grid;
     
+    % Reshape into original grid
     for i = numel(c_l)-1 : -1 : 1 
         nxr  = size(grid, 1);
         nyr  = size(grid, 2);
@@ -43,8 +54,12 @@ if dim == 2
     grid = permute(grid, [1 3 2]);
     grid = reshape(grid, ny, nx);
     grid = permute(grid, [2 1]);
-    
-else
+
+% =========================================================================
+% Three dimensional reshaping
+% =========================================================================
+else  
+    % Initialize grid
     grid = zeros(4,8,8);
     nx = size(grid, 1);
     ny = size(grid, 2);
@@ -53,6 +68,7 @@ else
     grid(3:4, 1:2, 1:2) = 1;
     nspat = numel(grid);
     
+    % Reshape into colomn vector
     for i = 1 : numel(c_l)
         c = c_l(i);
         nsize   = size(grid);
@@ -71,8 +87,10 @@ else
         grid = reshape(grid, nrshp_3, c, c);
     end
     
+    % Save column vector
     grid_1D = grid;
     
+    % Reshape into original grid
     for i = numel(c_l)-1 : -1 : 1 
         nxr  = size(grid, 1);
         nyr  = size(grid, 2);
