@@ -5,11 +5,10 @@ nx    = 512;
 ny    = 512;
 nz    = 1;
 nspat = nx*ny*nz;
-% nt    = 10;
-nt    = 101;
+nt    = 10;
 
 % Direction where /code/ lives
-basedir = '/Users/mikemeehan/Research/Papers/2019_POD_AMR/';
+basedir = '../../../';
 
 % Directory where AMR data is stored
 amr_datadir = ['/Users/mikemeehan/Research/InternalResearchPapers/AMR_POD/data/' ...
@@ -19,7 +18,7 @@ amr_datadir = ['/Users/mikemeehan/Research/InternalResearchPapers/AMR_POD/data/'
 datadir = [basedir 'data/'];
 
 % Directory that describes the study we are looking at
-studydir = [datadir 'check_MAT/'];
+studydir = [datadir 'python_vs_matlab/'];
 
 % File information
 file_fmt = '%s%05i.bin';
@@ -28,7 +27,7 @@ var      = 'z_velocity';
 % Load data
 X = zeros(nspat, nt);
 for i = 0 : nt-1
-    file = sprintf([amr_datadir '%s%05i.bin'],var, i);
+    file = sprintf([amr_datadir file_fmt],var, i);
     fid = fopen(file);
     var_data = fread(fid, nspat, 'float64');
     X(:,i+1) = var_data;
@@ -42,6 +41,7 @@ Phi          = X*Psi/sqrt(Lambda);
 A            = X'*Phi;
 
 % Load python data
+X_py   = load([studydir 'X_py.txt']);
 R_py   = load([studydir 'R_py.txt']);
 Phi_py = load([studydir 'Phi_py.txt']);
 A_py   = load([studydir 'A_py.txt']);
