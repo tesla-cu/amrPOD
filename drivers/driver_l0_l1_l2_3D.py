@@ -23,15 +23,15 @@ if __name__ == '__main__':
     gen_grid    = True  # are we generating synthetic data?
     compute_tc  = True  # are we computing the time complexity?
     compute_cpu = False # are we computing the cpu time?
-    nx          = 24   # x spatial points                  
-    ny          = 24   # y spatial points
-    nz          = 24    # z spatial points
+    nx          = 16    # x spatial points
+    ny          = 16    # y spatial points
+    nz          = 32    # z spatial points
     finest      = 3     # finest level of AMR in the domain
-    nsample     = 8    # number of samples for each parameter set
-    nt          = 50     # spanning nt
-    l0_arr      = np.arange(0.0, 10/27, 1/27) # spanning l0
-    l1_arr      = np.arange(0.0, 10/27, 1/27) # spanning l1
-    l2_arr      = np.arange(0.0, 10/27, 1/27) # spanning l2
+    nsample     = 8     # number of samples for each parameter set
+    nt          = 50    # spanning nt
+    l0_arr      = np.arange(0.0, 6/16, 1/16) # spanning l0
+    l1_arr      = np.arange(0.0, 6/16, 1/16) # spanning l1
+    l2_arr      = np.arange(0.0, 6/16, 1/16) # spanning l2
     lcs         = np.zeros((finest+1)) # fraction of grid that stays constant in time
 
     # Direction where /code/ livesc
