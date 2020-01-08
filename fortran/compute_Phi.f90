@@ -25,12 +25,14 @@ integer                                            :: Gval
 integer                                            :: d_0, d_1
 integer                                            :: Xgrid_max
 integer                                            :: lvl, nlev
-integer,          allocatable, dimension(:)        :: d_l
 integer,          allocatable, dimension(:)        :: Gmat1
+integer,          allocatable, dimension(:)        :: d_l
 integer,          allocatable, dimension(:,:)      :: nl2
 double precision, allocatable, dimension(:,:)      :: Hmat2
 integer,          allocatable, dimension(:,:,:)    :: Gmat2
 double precision                                   :: Hsum
+integer,          allocatable, dimension(:)        :: Xgrid_max2
+double precision, allocatable, dimension(:)        :: Phisum2
 
 ! ========================== Standard POD ===========================
 if (method == 0) then
@@ -55,8 +57,7 @@ if (method == 0) then
             Phi(i,m) = Phi(i,m) + temp*Xpod(i,n)
          enddo
       enddo
-   enddo
-   do m=1,nt
+      ! Phi(:,m) = Phi(:,m)/sqrt(Lambda(m))
       temp = sqrt(Lambda(m))
       do i=1,nspat
          Phi(i,m) = Phi(i,m)/temp
@@ -83,50 +84,104 @@ elseif ((method==1) .or. (method==2)) then
    ! ---------- Method 1 --------------------------------------------
    if (method == 1) then
 
-      allocate(Gmat1(d_0))
+      ! Old method
+      ! allocate(Gmat1(d_0))
+      ! do i=1,nspat,d_0
+      !    ! Precompute maximum grid level for each spatial location
+      !    Gmat1 = 0
+      !    jj = 1
+      !    j = i
+      !    do while(jj <= d_0)
+      !       Xgrid_max = Xgrid(j,1)
+      !       do m=2,nt
+      !          if (Xgrid(j,m) > Xgrid_max) then
+      !             Xgrid_max = Xgrid(j,m)
+      !             if (Xgrid_max == finest) then
+      !                exit
+      !             endif
+      !          endif
+      !       enddo
+      !       Gval = d_l(Xgrid_max)
+      !       Gmat1(jj) = Gval
+      !       jj = jj + Gval
+      !       j = j + Gval
+      !    enddo
 
+      !    ! Compute elements of Phi within coarse cell
+      !    do m=1,nt
+      !       jj = 1
+      !       j=i
+      !       do while(jj <= d_0)
+      !          Phisum = 0.
+      !          do n=1,nt
+      !             Phisum = Phisum + Xpod(j,n)*Psi(n,m)
+      !          enddo
+      !          Gval = Gmat1(jj)
+
+      !          ! Take this out
+      !          Phisum = Phisum/sqrt(Lambda(m))
+      !          do k=j,j+Gval-1
+      !             Phi(k,m) = Phisum
+      !          enddo
+      !          ! and do after completion
+      !          jj = jj + Gval
+      !          j = j + Gval
+      !       enddo
+      !    enddo
+      ! enddo
+      ! deallocate(Gmat1)
+
+      ! New method based on LAPACK
+      allocate(Gmat1(d_0))
+      allocate(Xgrid_max2(d_0))
+      allocate(Phisum2(d_0))
+      Phi = 0.
       do i=1,nspat,d_0
          ! Precompute maximum grid level for each spatial location
          Gmat1 = 0
          jj = 1
          j = i
-         do while(jj <= d_0)
-            Xgrid_max = Xgrid(j,1)
-            do m=2,nt
-               if (Xgrid(j,m) > Xgrid_max) then
-                  Xgrid_max = Xgrid(j,m)
-                  if (Xgrid_max == finest) then
-                     exit
-                  endif
+         Xgrid_max2 = 0
+         do m=1,nt
+            do while(jj <= d_0)
+               if (Xgrid(j,m) > Xgrid_max2(jj)) then
+                  Xgrid_max2(jj) = Xgrid(j,m)
                endif
+               Gval = d_l(Xgrid_max2(jj))
+               Gmat1(jj) = Gval
+               jj = jj + Gval
+               j = j + Gval
             enddo
-            Gval = d_l(Xgrid_max)
-            Gmat1(jj) = Gval
-            jj = jj + Gval
-            j = j + Gval
          enddo
 
          ! Compute elements of Phi within coarse cell
          do m=1,nt
-            jj = 1
-            j=i
-            do while(jj <= d_0)
-               Phisum = 0.
-               do n=1,nt
-                  Phisum = Phisum + Xpod(j,n)*Psi(n,m)
+            Phisum2 = 0.
+            do n=1,nt
+               jj = 1
+               j = i
+               temp = Psi(n,m)
+               do while(jj <= d_0)
+                  Phisum2(jj) = Phisum2(jj) + temp*Xpod(j,n)
+                  Gval = Gmat1(jj)
+                  jj = jj + Gval
+                  j = j + Gval
                enddo
+            enddo
+            jj = 1
+            j = i
+            do while(jj <= d_0)
+               temp = Phisum2(jj)/sqrt(Lambda(m))
                Gval = Gmat1(jj)
-
-               Phisum = Phisum/sqrt(Lambda(m))
                do k=j,j+Gval-1
-                  Phi(k,m) = Phisum
+                  Phi(k,m) = temp
                enddo
                jj = jj + Gval
                j = j + Gval
             enddo
          enddo
       enddo
-      deallocate(Gmat1)
+      deallocate(Gmat1, Xgrid_max2, Phisum2)
 
    ! ---------- Method 2 --------------------------------------------
    elseif (method == 2) then
