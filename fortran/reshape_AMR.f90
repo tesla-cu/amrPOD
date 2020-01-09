@@ -129,12 +129,50 @@ if (dir == "f") then
       enddo
       data = data_3Da(:,1,1)
       deallocate(data_3Da)
+
+      ! This is a slight improvement over the old method but only about 10%
+      !   - still needs to be verified as well for all compositions
+
+      ! allocate(data_3Da(nx,ny,nz))
+      ! data_3Da = reshape(data, [nx,ny,nz])
+      ! do i=0,finest
+      !    if (i > 0) then
+      !       deallocate(data_3Da)
+      !       allocate(data_3Da(nxr,nyr,nyr))
+      !       data_3Da = data_3Db
+      !       deallocate(data_3Db)
+      !    endif
+      !    c = c_l(i)
+      !    nxr = size(data_3Da,1)
+      !    nyr = size(data_3Da,2)
+      !    nzr = size(data_3Da,3)
+      !    nrshp1 = nspat/(nzr*nyr*c)
+      !    nrshp2 = nspat/(nzr*c*c)
+      !    nrshp3 = nspat/(c*c)
+
+      !    allocate(data_3Db(nrshp3,c,c))
+
+      !    data_3Db = reshape( & ! Reshape back to 3D                              
+      !               reshape( & ! Permute [1,3,2,4]
+      !               reshape( & ! Reshape next dimension
+      !               reshape( & ! Permute [1,2,4,3]
+      !               reshape( & ! Reshape into higher dimension
+      !               reshape( & ! Permute [3,2,1]
+      !                       data_3Da, [nzr,nyr,nxr],      order=[3,2,1]),      &
+      !                                 [nzr,nyr,c,nrshp1], order=[1,2,3,4]),    &
+      !                                 [nzr,nyr,nrshp1,c], order=[1,2,4,3]),    &
+      !                                 [nzr,c,nrshp2,c],   order=[1,2,3,4]),    &
+      !                                 [nzr,nrshp2,c,c],   order=[1,3,2,4]),    &
+      !                                 [nrshp3,c,c],       order=[1,2,3])
+      ! enddo
+      ! data = data_3Db(:,1,1)
+      ! deallocate(data_3Da, data_3Db)
    endif
 
 ! ======================== Reverse reshaping ========================
 elseif (dir== "r") then
 
-   write(*,*) "doing reverse"
+   write(*,*) "doing reverse. NEED TO VALIDATE."
    if (ndim == 2) then
       allocate(data_2Da(nspat,1))
       data_2Da(:,1) = data
@@ -280,7 +318,7 @@ elseif (dir== "r") then
 
 else
 
-   write(*,*) "must do forward or backward reshape!"
+   write(*,*) "must do forward or reverse reshape!"
    stop
 
 endif
