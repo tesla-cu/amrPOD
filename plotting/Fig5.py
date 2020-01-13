@@ -54,22 +54,22 @@ def Fig5(datadir, imgdir):
     for i in range(5):
 
         if i == 0:
-            ds = yt.load(simdir + 'plt27130', units_override=units_override)
+            ds = yt.load(simdir + 'plt13130', units_override=units_override)
         elif i == 1:
-            ds = yt.load(simdir + 'plt27130', units_override=units_override)
+            ds = yt.load(simdir + 'plt13155', units_override=units_override)
         elif i == 2:
-            ds = yt.load(simdir + 'plt27130', units_override=units_override)
+            ds = yt.load(simdir + 'plt13185', units_override=units_override)
         elif i == 3:
-            ds = yt.load(simdir + 'plt27130', units_override=units_override)
+            ds = yt.load(simdir + 'plt13210', units_override=units_override)
         elif i == 4:
-            ds = yt.load(simdir + 'plt27130', units_override=units_override)
+            ds = yt.load(simdir + 'plt13240', units_override=units_override)
 
         # Top half of figure --------------------------------------------------
 
         sd = yt.SlicePlot(ds,'x','density', origin="native", \
-            center=((0.0,0.0,0.375),'m'), width=(0.75,'m'))
+            center=((0.0,0.0,0.5),'m'), width=(1.0,'m'))
         sd.set_cmap(field='density', cmap='dusk')
-        sd.annotate_grids(linewidth=0.25, min_level=1)
+        sd.annotate_grids(linewidth=0.25)
         sd.set_axes_unit('cm')
         sd.set_xlabel('')
         sd.set_ylabel('$z$ [cm]')
@@ -87,9 +87,9 @@ def Fig5(datadir, imgdir):
         sd._setup_plots()
 
         # Set details after redrawing
-        sd.plots['density'].axes.set_xticks([-30,-15,0,15,30])
+        sd.plots['density'].axes.set_xticks([-40,-20,0,20,40])
         sd.plots['density'].axes.set_xticklabels([])
-        sd.plots['density'].axes.set_yticks([0,15,30,45,60])
+        sd.plots['density'].axes.set_yticks([0,20,40,60,80])
         if i == 0:
             sd.plots['density'].axes.set_title(r'$t=0$')
         elif i == 1:
@@ -105,7 +105,7 @@ def Fig5(datadir, imgdir):
 
         # Bottom half of figure -----------------------------------------------
         sg = yt.SlicePlot(ds,'x','grid_level', origin="native", \
-            center=((0.0,0.0,0.375),'m'), width=(0.75,'m'))
+            center=((0.0,0.0,0.5),'m'), width=(1.0,'m'))
         sg.set_cmap(field='grid_level', cmap=cmap)
         sg.set_axes_unit('cm')
         sg.set_xlabel('$x$ [cm]')
@@ -113,8 +113,8 @@ def Fig5(datadir, imgdir):
         sg.set_font_size(8)
         sg.set_minorticks('all', 'off')
         sg.set_log('grid_level',False)
-        sg.set_zlim('grid_level', 0.5, 4.5)
-        sg.set_colorbar_label(field='grid_level',label='$\ell$')
+        sg.set_zlim('grid_level', -0.5, 3.5)
+        sg.set_colorbar_label(field='grid_level',label='Grid Level $\ell$')
 
         # Redraw on combined figure
         plot = sg.plots['grid_level']
@@ -124,15 +124,15 @@ def Fig5(datadir, imgdir):
         sg._setup_plots()
 
         # Set details after redrawing
-        sg.plots['grid_level'].axes.set_xticks([-30,-15,0,15,30])
+        sg.plots['grid_level'].axes.set_xticks([-40,-20,0,20,40])
         sg.plots['grid_level'].axes.set_xticklabels(\
-            ['-30','-15','0','15','30'])
-        sg.plots['grid_level'].axes.set_yticks([0,15,30,45,60])
+            ['-40','-20','0','20','40'])
+        sg.plots['grid_level'].axes.set_yticks([0,20,40,60,80])
         # sg.plots['grid_level'].cb.set_ticks(np.linspace(0.5,3.5,4))
-        sg.plots['grid_level'].cb.set_ticks(np.linspace(1,4,4))
+        sg.plots['grid_level'].cb.set_ticks(np.linspace(0,3,4))
         sg.plots['grid_level'].cb.set_ticklabels(['0','1','2','3'])
-        sg.plots['grid_level'].cb.ax.tick_params(length=2, direction='in')
-        sg.plots['grid_level'].cb.ax.set_ylim(0.5,4.5)
+        sg.plots['grid_level'].cb.ax.tick_params(length=0, direction='in')
+        sg.plots['grid_level'].cb.ax.set_ylim(-0.5,3.5)
 
     # Save figure
     fig.set_size_inches(6.5,2.75,forward=True)
