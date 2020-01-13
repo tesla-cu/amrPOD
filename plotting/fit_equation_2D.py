@@ -1,4 +1,3 @@
-
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -149,7 +148,6 @@ def fit_equation_2D(datadir, imgdir):
                 (l0_1D,l1_1D,l2_1D), ratio_1D)
             print('best_vals: {}'.format(best_vals))
             print('error: {}'.format(np.sqrt(np.diag(covar))))
-
         else:
             best_vals, covar = curve_fit(fit_linear_equation, \
                 (l0_1D,l1_1D,l2_1D), ratio_1D)
