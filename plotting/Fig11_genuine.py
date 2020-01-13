@@ -5,17 +5,17 @@ import matplotlib.pyplot as plt
  
 from mpl_toolkits.axes_grid1 import AxesGrid
 
-def Fig5(datadir, imgdir):
+def Fig11_genuine(datadir, imgdir):
 
     yt.funcs.mylog.setLevel(50)
 
-    print('making figure 5 ...')
+    print('making figure 11 ...')
 
     # Set up figure
     fig = plt.figure()
 
     # Directories storing simulation and synthetic data
-    simdir = datadir + 'AMR_sim/'
+    simdir = datadir + 'AMR_gen/'
 
     # Units from PeleLM simulation
     units_override = {"length_unit": (1.0, "m"),
@@ -136,7 +136,7 @@ def Fig5(datadir, imgdir):
 
     # Save figure
     fig.set_size_inches(6.5,2.75,forward=True)
-    plt.savefig(imgdir + 'fig5.png', dpi=300)
+    plt.savefig(imgdir + 'Fig11_genuine.png', dpi=300)
     
 
-    print('\tdone with figure 5')
+    print('\tdone with figure 11')

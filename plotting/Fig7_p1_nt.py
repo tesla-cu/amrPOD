@@ -2,9 +2,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import AxesGrid
 
-def Fig1(datadir, imgdir):
+def Fig7_p1_nt(datadir, imgdir):
 
-    print('making figure 1 ...')
+    print('making figure 7 ...')
 
     # Set up figure
     fig = plt.figure()
@@ -173,7 +173,7 @@ def Fig1(datadir, imgdir):
 
     # Save figure
     fig.set_size_inches(6.5,3.4,forward=True)
-    plt.savefig(imgdir + 'fig1.png', dpi=300)
+    plt.savefig(imgdir + 'Fig7_p1_nt.png', dpi=300)
     
 
-    print('\tdone with figure 1')
+    print('\tdone with figure 7')

@@ -3,9 +3,9 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import AxesGrid
 
-def Fig5b(datadir, imgdir):
+def Fig12_pl_nt(datadir, imgdir):
 
-    print('making figure 5b ...')
+    print('making figure 12 ...')
 
     # Set up figure
     fig = plt.figure()
@@ -18,8 +18,8 @@ def Fig5b(datadir, imgdir):
     mrks = ['o', 's', '^']
 
     # Set up data directories
-    f1dir = datadir + 'AMR_sim/f1_3D/'
-    f2dir = datadir + 'AMR_sim/f2_3D/'
+    f1dir = datadir + 'AMR_gen/f1_3D/'
+    f2dir = datadir + 'AMR_gen/f2_3D/'
 
     # Data information
     ntmin = 10
@@ -91,6 +91,6 @@ def Fig5b(datadir, imgdir):
 
     # Save figure -------------------------------------------------------------
     fig.set_size_inches(4.5, 2.0,forward=True)
-    plt.savefig(imgdir + 'fig5b.png', dpi=300)    
+    plt.savefig(imgdir + 'Fig12_pl_nt.png', dpi=300)    
 
-    print('\tdone with figure 5b')
+    print('\tdone with figure 12')

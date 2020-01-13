@@ -33,9 +33,9 @@ def fit_quadratic_equation(l, l0sq_coeff, l1sq_coeff, l2sq_coeff, \
 # =========================================================================== #
 # Figure 4
 # =========================================================================== #
-def Fig4(datadir, imgdir):
+def Fig10_l2_error(datadir, imgdir):
 
-    print('making figure 4 ...')
+    print('making figure 10 ...')
 
     # Set up figure
     fig = plt.figure()
@@ -234,6 +234,6 @@ def Fig4(datadir, imgdir):
 
     # print('saving image ...')
     fig.set_size_inches(6.5,3.2,forward=True) # figure size must be set here
-    plt.savefig(imgdir + 'fig4.png', dpi=300)
+    plt.savefig(imgdir + 'Fig10_l2_error.png', dpi=300)
 
-    print('\tdone with figure 4')
+    print('\tdone with figure 10')

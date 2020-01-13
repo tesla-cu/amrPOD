@@ -6,9 +6,9 @@ from scipy import interpolate
 
 from scipy.interpolate import RegularGridInterpolator as rgi
 
-def Fig3(datadir, imgdir):
+def Fig9_p1m_p0m(datadir, imgdir):
 
-    print('making figure 3 ...')
+    print('making figure 9 ...')
 
     # Set up figure
     fig = plt.figure()
@@ -110,8 +110,8 @@ def Fig3(datadir, imgdir):
 
     # Save image
     fig.set_size_inches(6.5,1.8,forward=True) # figure size must be set here
-    plt.savefig(imgdir + 'fig3.png', dpi=300)
+    plt.savefig(imgdir + 'Fig9_p1m_p0m.png', dpi=300)
 
 
 
-    print('\tdone with figure 3')
+    print('\tdone with figure 9')

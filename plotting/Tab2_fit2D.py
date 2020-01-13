@@ -40,7 +40,7 @@ def fit_quadratic_equation(l, l0sq_coeff, l1sq_coeff, l2sq_coeff, \
            2*l0l1_coeff*l0*l1 + 2*l0l2_coeff*l0*l2 + 2*l1l2_coeff*l1*l2
 
 
-def fit_equation_2D(datadir, imgdir):
+def Tab2_fit2D(datadir, imgdir):
 
     print('fitting equations for 2D data ...')
 
@@ -86,7 +86,7 @@ def fit_equation_2D(datadir, imgdir):
     L2 = 1 - L1 - L0
 
     # File to store best fit values
-    best_fit_vals_2D = open(imgdir + '/best_fit_vals_2D.txt', 'w')
+    best_fit_vals_2D = open(imgdir + '/Tab2_fit2D.txt', 'w')
 
     print('===================================================' \
           '===================================================')
@@ -170,3 +170,4 @@ def fit_equation_2D(datadir, imgdir):
 
     best_fit_vals_2D.close()
 
+    print('\tdone fitting 2D data')

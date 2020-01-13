@@ -8,16 +8,16 @@ def comp_avg_rms(arr):
     rms = np.std(arr - avg)
     return avg, rms
 
-def Fig6(datadir, imgdir):
+def Fig13_CPU(datadir, imgdir):
 
-    print('making figure 6 ...')
+    print('making figure 13 ...')
 
     # Set up figure
     fig = plt.figure()
 
     # Set up data directories
-    f1dir = datadir + 'AMR_sim/f1_3D/'
-    f2dir = datadir + 'AMR_sim/f2_3D/'
+    f1dir = datadir + 'AMR_gen/f1_3D/'
+    f2dir = datadir + 'AMR_gen/f2_3D/'
 
     # Data information
     ntmin = 10
@@ -222,6 +222,6 @@ def Fig6(datadir, imgdir):
 
     # Save figure -------------------------------------------------------------
     fig.set_size_inches(6.5,3.75,forward=True)
-    plt.savefig(imgdir + 'fig6.png', dpi=300)    
+    plt.savefig(imgdir + 'Fig13_CPU.png', dpi=300)    
 
-    print('\tdone with figure 6')
+    print('\tdone with figure 13')

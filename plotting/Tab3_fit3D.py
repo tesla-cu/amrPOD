@@ -45,7 +45,7 @@ def fit_quadratic_equation(l, l0sq_coeff, l1sq_coeff, l2sq_coeff, l3sq_coeff, \
            2*l1l2_coeff*l1*l2 + 2*l1l3_coeff*l1*l3 + 2*l2l3_coeff*l2*l3
 
 
-def fit_equation_3D(datadir, imgdir):
+def Tab3_fit3D(datadir, imgdir):
 
     print('fitting equations for 3D data ...')
 
@@ -53,12 +53,8 @@ def fit_equation_3D(datadir, imgdir):
     fig = plt.figure()
 
     # Load data
-    # npydir_l  = datadir + 'l0_l1_l2_3D/npy_files/'
-    # npydir_lc = datadir + 'lc0l0_lc1l1_lc2l2_3D/npy_files/'
-    # npydir_l  = datadir + 'lc0l0_lc1l1_lc2l2_3D_small24/npy_files/'
-    # npydir_lc = datadir + 'lc0l0_lc1l1_lc2l2_3D_small24/npy_files/'
-    npydir_l  = datadir + 'lc0l0_lc1l1_lc2l2_3D_small16/npy_files/'
-    npydir_lc = datadir + 'lc0l0_lc1l1_lc2l2_3D_small16/npy_files/'
+    npydir_l  = datadir + 'l0_l1_l2_3D/npy_files/'
+    npydir_lc = datadir + 'lc0l0_lc1l1_lc2l2_3D/npy_files/'
 
     TC_R_avg_imp   = np.load(npydir_l + "/TC_R_avg_imp.npy")
     TC_R_avg_unalt = np.load(npydir_l + "/TC_R_avg_unalt.npy")
@@ -119,7 +115,7 @@ def fit_equation_3D(datadir, imgdir):
     L3 = 1 - L2 - L1 - L0
 
     # File to store best fit values
-    best_fit_vals_3D = open(imgdir + '/best_fit_vals_3D.txt', 'w')
+    best_fit_vals_3D = open(imgdir + '/Tab3_fit3D.txt', 'w')
 
     print('===================================================' \
           '===================================================')
@@ -212,3 +208,4 @@ def fit_equation_3D(datadir, imgdir):
 
     best_fit_vals_3D.close()
 
+    print('\tdone fitting 3D data')
