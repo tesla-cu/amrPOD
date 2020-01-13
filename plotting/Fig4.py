@@ -8,11 +8,11 @@ from scipy.interpolate import RegularGridInterpolator as rgi
 from scipy.optimize import curve_fit
 
 # =========================================================================== #
-# Equation to fit:
-#
-#   l0_coeff*l0 + l1_coeff*l1 + l2_coeff*l2
+# Equation to fit:                                                            #
+#                                                                             #
+#   l0_coeff*l0 + l1_coeff*l1 + l2_coeff*l2                                   #
 # =========================================================================== #
-def fit_equation_linear(l, l0_coeff, l1_coeff, l2_coeff):
+def fit_linear_equation(l, l0_coeff, l1_coeff, l2_coeff):
     l0,l1,l2 = l
     return l0_coeff*l0 + \
            l1_coeff*l1 + \
@@ -21,10 +21,10 @@ def fit_equation_linear(l, l0_coeff, l1_coeff, l2_coeff):
 # =========================================================================== #
 # Equation to fit:                                                            #
 #                                                                             #
-#   l0sq_coeff*l0^2  + l1sq_coeff*l1^2  + l2sq_coeff*l2^2 + ...               #
+#   l0sq_coeff*l0^2  + l1sq_coeff*l1^2  + l2sq_coeff*l2^2                     #
 #   l0l1_coeff*l0*l1 + l0l2_coeff*l0*l2 + l1l2_coeff*l2^2                     #
 # =========================================================================== #
-def fit_equation_quadratic(l, l0sq_coeff, l1sq_coeff, l2sq_coeff, \
+def fit_quadratic_equation(l, l0sq_coeff, l1sq_coeff, l2sq_coeff, \
                               l0l1_coeff, l0l2_coeff, l1l2_coeff):
     l0,l1,l2 = l
     return   l0sq_coeff*l0**2 +   l1sq_coeff*l1**2 +   l2sq_coeff*l2**2 + \
@@ -157,11 +157,10 @@ def Fig4(datadir, imgdir):
         if i==2:
             ax.set_ylabel(r'$p_1$', labelpad=-3.5)
         elif i==1 or i==3:
-            ax.set_ylabel(r'$p_1 = p_0^m$', labelpad=-3.5)
+            ax.set_ylabel(r'$p_1 = p_1^m$', labelpad=-3.5)
 
 
         # Bottom half of figure -----------------------------------------------
-        
         ax = grid2[i].axes
 
         l0_1D    = np.reshape(L0,    (-1))
@@ -169,35 +168,29 @@ def Fig4(datadir, imgdir):
         l2_1D    = np.reshape(L2,    (-1))
         ratio_1D = np.reshape(ratio, (-1))
 
-        # best_vals, covar = \
-        #     curve_fit(fit_equation_quadratic,(l0_1D,l1_1D,l2_1D), ratio_1D)
+        best_vals, covar = \
+            curve_fit(fit_linear_equation,   (l0_1D,l1_1D,l2_1D), ratio_1D)
 
-        # print('best_vals: {}'.format(best_vals))
-        # print('error: {}'.format(np.sqrt(np.diag(covar))))
-
-        # best_vals, covar = \
-        #     curve_fit(fit_equation_linear,   (l0_1D,l1_1D,l2_1D), ratio_1D)
-
-        # print('best_vals: {}'.format(best_vals))
-        # print('error: {}'.format(np.sqrt(np.diag(covar))))
+        print('best_vals: {}'.format(best_vals))
+        print('error: {}'.format(np.sqrt(np.diag(covar))))
 
         ratio_fit = np.zeros((len(ratio_1D)))
         if i==0:
             best_vals, covar = \
-                curve_fit(fit_equation_quadratic,(l0_1D,l1_1D,l2_1D), ratio_1D)
+                curve_fit(fit_quadratic_equation,(l0_1D,l1_1D,l2_1D), ratio_1D)
 
             for j in range(len(ratio_1D)):
-                ratio_fit[j] = fit_equation_quadratic(\
+                ratio_fit[j] = fit_quadratic_equation(\
                     (l0_1D[j], l1_1D[j], l2_1D[j]), \
                     best_vals[0], best_vals[1], best_vals[2], \
                     best_vals[3], best_vals[4], best_vals[5])
 
         elif i==1 or i==2 or i==3:
             best_vals, covar = \
-                curve_fit(fit_equation_linear,   (l0_1D,l1_1D,l2_1D), ratio_1D)
+                curve_fit(fit_linear_equation,   (l0_1D,l1_1D,l2_1D), ratio_1D)
 
             for j in range(len(ratio_1D)):
-                ratio_fit[j] = fit_equation_linear(\
+                ratio_fit[j] = fit_linear_equation(\
                     (l0_1D[j], l1_1D[j], l2_1D[j]), \
                     best_vals[0], best_vals[1], best_vals[2])
 
@@ -205,14 +198,7 @@ def Fig4(datadir, imgdir):
         # print('error: {}'.format(np.sqrt(np.diag(covar))))
 
         ratio_fit = np.reshape(ratio_fit, ratio.shape)
-
         error = np.log(np.abs(ratio_fit-ratio)/ratio)
-        # max_error = np.max(error)
-        # min_error = np.min(error)
-        # if np.isinf(min_error):
-        #     min
-        # print(min_error)
-
 
         im = ax.contourf(L0, L1, error, 100, origin='lower',\
             extent=[l0min,l0max,l1min,l1max], cmap='cool_r')
@@ -228,57 +214,26 @@ def Fig4(datadir, imgdir):
         ax.text(0.52, 0.51, '%0.1f'%clims[0], ha='left', va='bottom')
         ax.text(0.52,-0.015, '%0.1f'%clims[1], ha='left', va='top')
 
-
         # Label inforrmation
         ax.set_xticks(np.linspace(1/8,3/8,3))
         ax.set_yticks(np.linspace(1/8,3/8,3))
         ax.set_xticklabels(['1/8','2/8','3/8'])
         ax.set_yticklabels([]) # add text later
         if i==0:
-            ax.set_xlabel(r'$p_1$')
+            ax.set_xlabel(r'$p_0$')
             ax.set_ylabel(r'$p_1$', labelpad=20)
             ax.text(-0.02, 1/8, '1/8', ha='right', va='center')
             ax.text(-0.02, 2/8, '2/8', ha='right', va='center')
             ax.text(-0.02, 3/8, '3/8', ha='right', va='center')
         if i==2:
-            ax.set_xlabel(r'$p_1$')
+            ax.set_xlabel(r'$p_0$')
             ax.set_ylabel(r'$p_1$', labelpad=-3.5)
         elif i==1 or i==3:
-            ax.set_xlabel(r'$p_1 = p_0^m$')
-            ax.set_ylabel(r'$p_1 = p_0^m$', labelpad=-3.5)
-
-        
-
-        # Get data along each compression ratio line
-        # f = rgi((l2, l1), ratio, method='linear')
-        # fr6  = f(xyr6)
-        # fr8  = f(xyr8)
-        # fr10 = f(xyr10)
-        # fr12 = f(xyr12)
-
-        # ax.plot(xr6,  fr6,  'm')
-        # ax.plot(xr8,  fr8,  'b')
-        # ax.plot(xr10, fr10, 'g')
-        # ax.plot(xr12, fr12, 'y')
-        # ax.grid('on')
-
-
-
-        # ax.set_xticks([ntmin,(ntmax+ntmin)/2,ntmax])
-        # ax.set_yticks([l1min,(l1max+l1min)/2,l1max])
-        # ax.set_xticks(np.linspace(1/8,3/8,3))
-        # ax.set_yticks(np.linspace(1/8,3/8,3))
-        # ax.set_xticklabels(['1/8','2/8','3/8'])
-        # ax.set_yticklabels(['1/8','2/8','3/8'])
-        # ax.set_xlabel('$\ell_2$')
-        # ax.set_ylabel('$\ell_1$')
-        # ax.set_xlim(0,0.5)
-
+            ax.set_xlabel(r'$p_0 = p_0^m$')
+            ax.set_ylabel(r'$p_1 = p_1^m$', labelpad=-3.5)
 
     # print('saving image ...')
     fig.set_size_inches(6.5,3.2,forward=True) # figure size must be set here
     plt.savefig(imgdir + 'fig4.png', dpi=300)
-
-    
 
     print('\tdone with figure 4')
