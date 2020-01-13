@@ -168,4 +168,4 @@ def FigReshape(imgdir):
 
     # gs.tight_layout(fig, rect=[0,0,1,1])
     fig.set_size_inches(6.5,3.25,forward=True)
-    plt.savefig(imgdir + 'fig_reshape.png', dpi=300)
+    plt.savefig(imgdir + 'fig_reshape.png', dpi=300, pad_inches=0.01, bbox_inches='tight')
