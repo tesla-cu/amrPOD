@@ -8,7 +8,6 @@ def comp_avg_rms(arr):
     rms = np.std(arr - avg)
     return avg, rms
 
-
 def Fig6(datadir, imgdir):
 
     print('making figure 6 ...')
@@ -22,7 +21,7 @@ def Fig6(datadir, imgdir):
 
     # Data information
     ntmin = 10
-    ntmax = 60
+    ntmax = 80
     ntinc = 10
 
     nt = np.arange(ntmin, ntmax+ntinc, ntinc)
@@ -95,9 +94,10 @@ def Fig6(datadir, imgdir):
     
     # Label information
     ax.set_xticks(nt)
-    ax.set_xticklabels(['10','20','30','40','50','60'])
+    ax.set_xticklabels(['10','20','','40','','60','','80'])
     ax.set_xlabel(r'$n_t$')
     ax.set_ylabel(r'$\overline{T}$ [CPU (s)]')
+    ax.set_xlim(10,80)
     ax.legend(loc=4, frameon=True, facecolor='white', framealpha=1.0, \
         bbox_to_anchor=(1.1,-0.1))
 
@@ -119,9 +119,10 @@ def Fig6(datadir, imgdir):
     
     # Label information
     ax.set_xticks(nt)
-    ax.set_xticklabels(['10','20','30','40','50','60'])
+    ax.set_xticklabels(['10','20','','40','','60','','80'])
     ax.set_xlabel(r'$n_t$')
     ax.set_ylabel(r'$\overline{T}$ [CPU (s)]')
+    ax.set_xlim(10,80)
 
     # Plot Phi CPU times for f1 -----------------------------------------------
     ax = grid[2].axes
@@ -145,9 +146,10 @@ def Fig6(datadir, imgdir):
     
     # Label information
     ax.set_xticks(nt)
-    ax.set_xticklabels(['10','20','30','40','50','60'])
+    ax.set_xticklabels(['10','20','','40','','60','','80'])
     ax.set_xlabel(r'$n_t$')
     ax.set_ylabel(r'$\overline{T}$ [CPU (s)]')
+    ax.set_xlim(10,80)
     ax.legend(loc=4, frameon=True, facecolor='white', framealpha=1.0, \
         bbox_to_anchor=(1.1,-0.1))
 
@@ -173,9 +175,10 @@ def Fig6(datadir, imgdir):
     
     # Label information
     ax.set_xticks(nt)
-    ax.set_xticklabels(['10','20','30','40','50','60'])
+    ax.set_xticklabels(['10','20','','40','','60','','80'])
     ax.set_xlabel(r'$n_t$')
     ax.set_ylabel(r'$\overline{T}$ [CPU (s)]')
+    ax.set_xlim(10,80)
 
     # Plot A CPU times for f1 -------------------------------------------------
     ax = grid[4].axes
@@ -191,9 +194,10 @@ def Fig6(datadir, imgdir):
     
     # Label information
     ax.set_xticks(nt)
-    ax.set_xticklabels(['10','20','30','40','50','60'])
+    ax.set_xticklabels(['10','20','','40','','60','','80'])
     ax.set_xlabel(r'$n_t$')
     ax.set_ylabel(r'$\overline{T}$ [CPU (s)]')
+    ax.set_xlim(10,80)
     ax.legend(loc=4, frameon=True, facecolor='white', framealpha=1.0, \
         bbox_to_anchor=(1.1,-0.1))
 
@@ -211,9 +215,10 @@ def Fig6(datadir, imgdir):
     
     # Label information
     ax.set_xticks(nt)
-    ax.set_xticklabels(['10','20','30','40','50','60'])
+    ax.set_xticklabels(['10','20','','40','','60','','80'])
     ax.set_xlabel(r'$n_t$')
     ax.set_ylabel(r'$\overline{T}$ [CPU (s)]')
+    ax.set_xlim(10,80)
 
     # Save figure -------------------------------------------------------------
     fig.set_size_inches(6.5,3.75,forward=True)
