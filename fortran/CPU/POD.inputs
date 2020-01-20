@@ -5,13 +5,13 @@
   ! nx = 512
   ! ny = 512
   ! nz = 1
-  ! nx = 256
-  ! ny = 256
-  ! nz = 256
-  nx = 128
-  ny = 128
-  nz = 128
-  itime = 0, 2
+  nx = 256
+  ny = 256
+  nz = 256
+  ! nx = 128
+  ! ny = 128
+  ! nz = 128
+  itime = 0, 9
 
   ! ix = 1, 128
   ! iy = 1, 128
@@ -24,8 +24,8 @@
 
   ! file_fmt = '%s%05d.bin'
   ! datadir = '/Users/mikemeehan/Research/InternalResearchPapers/AMR_POD/data/slice/x0.000-0.000_y-1.000-1.000_z0.000-2.000_t40.0000-42.0000/'
-  ! datadir = '/Users/mikemeehan/Research/Papers/2019_POD_AMR/data/AMR_sim/f2/'
-  datadir = '/Users/mikemeehan/Research/Papers/2019_POD_AMR/data/AMR_sim/f1/'
+  datadir = '/Users/mikemeehan/Research/Papers/2019_POD_AMR/data/AMR_sim/f2/'
+  ! datadir = '/Users/mikemeehan/Research/Papers/2019_POD_AMR/data/AMR_sim/f1/'
   ! datadir = './'
   datatyp = 'float64'
   dataorder = 'c'
@@ -51,7 +51,7 @@
 
 &AMR_POD_inputs
   
-  finest = 1
+  finest = 2
 
 
 /

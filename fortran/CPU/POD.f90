@@ -623,7 +623,7 @@ deallocate(Rpod)
 
 
 ! ---------- Compute Phi --------------------------------------------
-allocate(Phi (nvar*nspat,nt))
+allocate(Phi(nvar*nspat,nt))
 
 
 write(*,*)
