@@ -21,8 +21,8 @@
 !
 ! To create an executable, at the terminal, run:
 !
-!    gfortran -O0 -g -fcheck=all -fbacktrace -o POD.ex POD.f90 -L. -llapack -lrefblas
-!    gfortran -O3 -o POD.ex POD.f90 -L. -llapack -lrefblas 
+!    gfortran -O0 -g -fcheck=all -fbacktrace -o POD.ex POD.f90 -L.. -llapack -lrefblas
+!    gfortran -O3 -o POD.ex POD.f90 -L.. -llapack -lrefblas 
 !
 ! For more timing info:
 !    gfortran -pg -O3 -o POD.ex POD.f90 -L. -llapack -lrefblas 
@@ -33,11 +33,10 @@
 !
 
 
-include 'reshape_AMR.f90'
-include 'compute_R.f90'
-include 'compute_eig.f90'
-include 'compute_Phi.f90'
-include 'compute_A.f90'
+include 'rshp_AMR.f90'
+include 'comp_R.f90'
+include 'comp_Phi.f90'
+include 'comp_A.f90'
 
 program POD
 
