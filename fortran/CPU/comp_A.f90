@@ -1,33 +1,47 @@
+! =============================================================================
+! Description:
+!
+!     This module computes:
+!
+!         A = X^T * Phi
+!     
+!     where X and Phi are of dimension (nspat x nt). This module supports 
+!     skipping operations with supplementary variables (AMR POD).
+! =============================================================================
+
 module comp_A
 contains
 
 subroutine compute_A(Xpod, Phi, nspat, nt, Apod, method, Xgrid, finest, ndim)
 implicit none
 
-! ---------- General variables --------------------------------------
-integer :: i, j, m, n
-double precision :: Asum
-! ---------- Standard POD variables ---------------------------------
+! =============================================================================
+! Allocate variables
+! =============================================================================
+
+! General ---------------------------------------------------------------------
+integer, intent(in) :: method     ! standard - 0, AMR - 1
+integer             :: i, j, m, n ! indices
+
+! Standard POD ----------------------------------------------------------------
 integer                              , intent(in)  :: nspat
 integer                              , intent(in)  :: nt
-double precision, dimension(nspat,nt), intent(in)  :: Xpod, Phi
-double precision, dimension(nt,nt)   , intent(out) :: Apod
-integer                              , intent(in)  :: method
-! ---------- AMR POD variables --------------------------------------
-! integer, optional, dimension(nspat,nt) :: Xgrid
-! integer, optional                      :: finest
-! integer, optional, dimension(0:finest) :: d_l
-! integer :: dval
+double precision, dimension(nspat,nt), intent(in)  :: Xpod, Phi ! X and Phi
+double precision, dimension(nt,nt)   , intent(out) :: Apod      ! A 
+double precision                                   :: Asum      ! temporary sum
+
+! AMR POD ---------------------------------------------------------------------
 integer, optional, dimension(nspat,nt), intent(in) :: Xgrid
 integer, optional,                      intent(in) :: finest
 integer, optional,                      intent(in) :: ndim
-integer                                            :: dval
 integer                                            :: d_f1
 integer                                            :: Xgrid_max
 integer, allocatable, dimension(:)                 :: d_l
 integer, allocatable, dimension(:)                 :: Gmat
 
-! ========================== Standard POD ===========================
+! =============================================================================
+! Standard POD 
+! =============================================================================
 if (method == 0) then
    do m=1,nt
       do n=1,nt
@@ -39,7 +53,9 @@ if (method == 0) then
       enddo
    enddo
 
-! ============================= AMR POD =============================
+! =============================================================================
+! AMR POD 
+! =============================================================================
 elseif (method == 1) then
 
    ! Check if all optional arguments are inputed
@@ -57,6 +73,7 @@ elseif (method == 1) then
    d_f1 = d_l(finest-1)
 
    ! Precompute maximum grid level for each spatial location
+
    ! i = 1
    ! do while(i <= nspat)
    !    Xgrid_max = Xgrid(i,1)
@@ -127,5 +144,5 @@ elseif (method == 1) then
 endif
 
 end subroutine compute_A
-
 end module comp_A
+! =============================================================================

@@ -1,19 +1,36 @@
+! =============================================================================
+! Description:
+!
+!     This module computes:
+!
+!         A = X^T * X
+!     
+!     where X is of dimension (nspat x nt). This module supports skipping 
+!     operations with supplementary variables (AMR POD).
+! =============================================================================
+
 module comp_R
 contains
 
 subroutine compute_R(Xpod, nspat, nt, Rpod, method, Xgrid, finest, ndim)
 implicit none
 
-! ---------- General variables --------------------------------------
-integer :: i, j, m, n
-double precision :: Rsum
-! ---------- Standard POD variables ---------------------------------
-integer                              , intent(in)  :: nspat
-integer                              , intent(in)  :: nt
+! =============================================================================
+! Allocate variables
+! =============================================================================
+
+! General variables -----------------------------------------------------------
+integer, intent(in) :: method     ! standard - 0, AMR - 1
+integer             :: i, j, m, n ! indices
+double precision    :: Rsum
+
+! Standard POD ----------------------------------------------------------------
+integer,                               intent(in)  :: nspat
+integer,                               intent(in)  :: nt
 double precision, dimension(nspat,nt), intent(in)  :: Xpod
-double precision, dimension(nt,nt)   , intent(out) :: Rpod
-integer                              , intent(in)  :: method
-! ---------- AMR POD variables --------------------------------------
+double precision, dimension(nt,nt),    intent(out) :: Rpod
+
+! AMR POD variables -----------------------------------------------------------
 integer, optional, dimension(nspat,nt), intent(in) :: Xgrid
 integer, optional,                      intent(in) :: finest
 integer, optional,                      intent(in) :: ndim
@@ -21,7 +38,9 @@ integer                                            :: dval
 integer                                            :: d_f1
 integer, allocatable, dimension(:)                 :: d_l
 
-! ========================== Standard POD ===========================
+! =============================================================================
+! Standard POD 
+! =============================================================================
 if (method == 0) then
    do n=1,nt
       do m=1,n
@@ -34,7 +53,9 @@ if (method == 0) then
       enddo
    enddo
 
-! ============================= AMR POD =============================
+! =============================================================================
+! AMR POD 
+! =============================================================================
 elseif (method == 1) then
 
    ! Check if all optional arguments are inputed
@@ -54,6 +75,8 @@ elseif (method == 1) then
       do m=1,n
          Rsum= 0.
          i = 1
+
+         ! Compute diagonal elements of R
          if (m==n) then
             do while(i <= nspat)
                if (Xgrid(i,m) == finest) then
@@ -67,6 +90,8 @@ elseif (method == 1) then
                   i    = i + dval
                endif
             end do
+
+         ! Compute off-diagonal elements of R
          else
             do while(i <= nspat)
                if ((Xgrid(i,m) == finest) .or. (Xgrid(i,n) == finest)) then
@@ -94,5 +119,5 @@ elseif (method == 1) then
 endif
 
 end subroutine compute_R
-
 end module comp_R
+! =============================================================================

@@ -1,22 +1,41 @@
+! =============================================================================
+! Description:
+!
+!     This module computes:
+!
+!         Phi = X * Psi
+!     
+!     where X is of dimension (nspat x nt) and Psi is of dimension (nt x nt). 
+!     This module supports skipping operations with supplementary variables 
+!     (AMR POD).
+! =============================================================================
+
 module comp_Phi
 contains
 
-subroutine compute_Phi(Xpod, Psi, Lambda, nspat, nt, Phi, method, Xgrid, finest, ndim)
+subroutine compute_Phi(Xpod, Psi, Lambda, nspat, nt, Phi, method, Xgrid,       &
+   finest, ndim)
 implicit none
 
-! ---------- General variables --------------------------------------
-integer :: i, j, jj, k, l, m, n, p
-double precision :: Phisum, Lsum
-! ---------- Standard POD variables ---------------------------------
+! =============================================================================
+! Allocate variables
+! =============================================================================
+
+! General ---------------------------------------------------------------------
+integer, intent(in) :: method   ! standard - 0, AMR M1 - 1, AMR M2 - 2
+integer             :: i, j, jj, k, l, m, n, p
+
+! Standard POD ----------------------------------------------------------------
 integer,                               intent(in)  :: nspat
 integer,                               intent(in)  :: nt
 double precision, dimension(nspat,nt), intent(in)  :: Xpod
 double precision, dimension(nt,nt),    intent(in)  :: Psi
 double precision, dimension(nt),       intent(in)  :: Lambda
 double precision, dimension(nspat,nt), intent(out) :: Phi
-integer,                               intent(in)  :: method
 double precision                                   :: temp
-! ---------- AMR POD variables --------------------------------------
+double precision                                   :: Phisum
+
+! AMR POD ---------------------------------------------------------------------
 integer, optional, dimension(nspat,nt), intent(in) :: Xgrid
 integer, optional,                      intent(in) :: finest
 integer, optional,                      intent(in) :: ndim
@@ -33,9 +52,12 @@ integer,          allocatable, dimension(:,:,:)    :: Gmat2
 double precision                                   :: Hsum
 integer,          allocatable, dimension(:)        :: Xgrid_max2
 double precision, allocatable, dimension(:)        :: Phisum2
-double precision, allocatable, dimension(:)        :: Lsum2
 
-! ========================== Standard POD ===========================
+double precision :: Lsum
+
+! =============================================================================
+! Standard POD 
+! =============================================================================
 if (method == 0) then
 
    ! Old method
@@ -65,7 +87,9 @@ if (method == 0) then
       enddo
    enddo
 
-! ============================= AMR POD =============================
+! =============================================================================
+! AMR POD 
+! =============================================================================
 elseif ((method==1) .or. (method==2)) then
 
    ! Check if all optional arguments are inputed
@@ -82,7 +106,7 @@ elseif ((method==1) .or. (method==2)) then
    d_0 = d_l(0)
    d_1 = d_l(1)
 
-   ! ---------- Method 1 --------------------------------------------
+   ! Method 1 -----------------------------------------------------------------
    if (method == 1) then
 
       ! Old method
@@ -190,7 +214,7 @@ elseif ((method==1) .or. (method==2)) then
       enddo
       deallocate(Gmat1, Xgrid_max2, Phisum2)
 
-   ! ---------- Method 2 --------------------------------------------
+   ! Method 2 -----------------------------------------------------------------
    elseif (method == 2) then
 
       ! allocate(Gmat2(0:finest, d_1, nt))
@@ -323,7 +347,6 @@ elseif ((method==1) .or. (method==2)) then
       allocate(Gmat2(nt, d_1, 0:finest))
       allocate(nl2(d_1, 0:finest))
       allocate(Hmat2(d_0,0:finest))
-      allocate(Lsum2(d_0))
 
       d_f1 = d_l(finest-1)
 
@@ -446,7 +469,8 @@ elseif ((method==1) .or. (method==2)) then
                            p = Gmat2(m,jj,finest)
                            temp = Psi(p,n)
                            do k=j,j+d_f1-1
-                              Hmat2(k-i+1,finest) = Hmat2(k-i+1,finest) + temp*Xpod(k,p)
+                              Hmat2(k-i+1,finest) = Hmat2(k-i+1,finest) +      &
+                                 temp*Xpod(k,p)
                            enddo
                         enddo
                      endif
@@ -518,5 +542,5 @@ elseif ((method==1) .or. (method==2)) then
 endif
 
 end subroutine compute_Phi
-
 end module comp_Phi
+! =============================================================================
