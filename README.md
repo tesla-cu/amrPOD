@@ -26,7 +26,7 @@ If you are interested in spanning new parameter spaces, simply copy one of the D
 
 If you would like to compute CPU time, use code in `fortran/CPU/`. Compile lines are at the top of `POD.f90`.
 
-If you would like to compute POD as fast and efficiently as possible, use code in `fortran/parallel/`. Compile lines are at the top of `POD.f90`. This code is a hydridization MPI/OMP code for HPC use and alleviates memory issues by partial loading.
+If you would like to compute POD as fast and efficiently as possible, use code in `fortran/parallel/`. Compile lines are at the top of `POD.f90`. This code serves as a fast serial code and can be used as a hydridized MPI/OMP code for HPC use. Memory issues are avoided by partial loading.
 
 ## Citation
 CITATION. COPY amrex.
