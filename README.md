@@ -1,7 +1,7 @@
 # Efficient Algorithm to Compute POD on AMR Grids
 This repo hosts code to compute proper orthogonal decomposition (POD) on a set of grid that utilized adaptive mesh refinement and evaluate the efficiency of the algorithm compared to the standard algorithm. 
 
-To evaluate the efficiecy of the algorithm, we provide a variety of parameters sweeps in FOLDER which use the python source code to count the number of operations and outputs the data into a new folder `data/` that sits one level up from these code directories. This is particular useful to see how the AMR algorithm works (all documented code is in files with `_CPU.py`) and to develop new algorithms in a user friendly environment.
+To evaluate the efficiency of the algorithm, we provide a variety of parameters sweeps in FOLDER which use the python source code to count the number of operations and outputs the data into a new folder `data/` that sits one level up from these code directories. This is particular useful to see how the AMR algorithm works (all documented code is in files with `_CPU.py`) and to develop new algorithms in a user friendly environment.
 
 To actually compute POD, we recommend using the Fortran version found in `fortran/parallel/` which computes POD in an efficient, scalable manner which also can bypass memory issues since storing all data in RAM can be quite costly. The code here can easily compute POD using the standard or AMR algorithm, so it is not restricted to only AMR data.
 
