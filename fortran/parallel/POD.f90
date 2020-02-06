@@ -39,9 +39,9 @@ include 'comp_A.f90'
 
 program POD
 
-use comp_R
-use comp_A
-use comp_Phi
+use comp_R_omp
+use comp_A_omp
+use comp_Phi_omp
 use rshp_AMR
 
 implicit none
@@ -98,8 +98,8 @@ double precision, allocatable, dimension(:)   :: pm_comp ! computed p^m
 ! Timing ----------------------------------------------------------------------
 integer                            :: nsamp      ! number of samples of CPU
 real                               :: Rshp_CPU   ! CPU time for reshaping
-real,    allocatable, dimension(:) :: R_CPU      ! CPU time for A
-real,    allocatable, dimension(:) :: Phi_CPU    ! CPU time for A
+real,    allocatable, dimension(:) :: R_CPU      ! CPU time for R
+real,    allocatable, dimension(:) :: Phi_CPU    ! CPU time for Phi
 real,    allocatable, dimension(:) :: A_CPU      ! CPU time for A
 integer                            :: cr         ! clock rate
 double precision                   :: crr        ! real clock rate
@@ -108,6 +108,8 @@ integer, allocatable, dimension(:) :: cpu0, cpuf ! init and final CPU times
 integer                            :: hrs, mins  ! hours, minutes
 double precision                   :: secs       ! seconds
 character(len=10)                  :: clock_time ! time of day
+
+! MPI 
 
 ! Namelists - groups of variables to be read from inputs
 namelist /POD_inputs/ nx, ny, nz, nsamp, itime, datafmt, datadir, var
@@ -312,41 +314,33 @@ write(*,*)
 
 ! R with standard algorithm
 write(*,*) "computing R using standard operations ..."
-do i=1,nsamp
-   call system_clock(cpu0(i))
-   call compute_R(Xpod, nspat, nt, Rpod, 0)
-   call system_clock(cpuf(i))
-enddo
+call system_clock(cpu0(1))
+call compute_R_omp(Xpod, nspat, nt, Rpod, 0)
+call system_clock(cpuf(1))
 
 ! Write out CPU time for R
-open(newunit=fid, file=trim(CPUdir)//'R_CPU_standard.txt', form='formatted')
-R_CPU = real(cpuf - cpu0)/crr
-do i=1,nsamp
-   write(*,*) "    cpu time ", R_CPU(i), " seconds"
-   write(fid, CFMT) R_CPU(i)
-enddo
-close(fid)
-
-! do i=1,4
-!    write(*,*) Rpod(i,1:4)
+! open(newunit=fid, file=trim(CPUdir)//'R_CPU_standard.txt', form='formatted')
+! R_CPU = real(cpuf - cpu0)/crr
+!    write(*,*) "    cpu time ", R_CPU(i), " seconds"
+!    write(fid, CFMT) R_CPU(i)
 ! enddo
+! close(fid)
+
 
 ! R with AMR algorithm
 write(*,*) "computing R utilizing AMR ..."
-do i=1,nsamp
-   call system_clock(cpu0(i))
-   call compute_R(Xpod, nspat, nt, Rpod, 1, Xgrid, finest, ndim)
-   call system_clock(cpuf(i))
-enddo
+call system_clock(cpu0(1))
+call compute_R_omp(Xpod, nspat, nt, Rpod, 1, Xgrid, finest, ndim)
+call system_clock(cpuf(1))
 
 ! Write out CPU time for R
-open(newunit=fid, file=trim(CPUdir)//'R_CPU_AMR.txt', form='formatted')
-R_CPU = real(cpuf - cpu0)/crr
-do i=1,nsamp
-   write(*,*) "    cpu time ", R_CPU(i), " seconds"
-   write(fid, CFMT) R_CPU(i)
-enddo
-close(fid)
+! open(newunit=fid, file=trim(CPUdir)//'R_CPU_AMR.txt', form='formatted')
+
+! do i=1,nsamp
+!    write(*,*) "    cpu time ", R_CPU(i), " seconds"
+!    write(fid, CFMT) R_CPU(i)
+! enddo
+! close(fid)
 
 write(*,*)
 
@@ -372,20 +366,18 @@ Psi = Rpod
 
 ! Phi with standard algorithm
 write(*,*) "computing Phi using standard algorithm ..."
-do i=1,nsamp
-   call system_clock(cpu0(i))
-   call compute_Phi(Xpod, Psi, Lam, nspat, nt, Phi, 0)
-   call system_clock(cpuf(i))
-enddo 
+call system_clock(cpu0(1))
+call compute_Phi_omp(Xpod, Psi, Lam, nspat, nt, Phi, 0)
+call system_clock(cpuf(1))
 
 ! Write out CPU time for Phi
-open(newunit=fid, file=trim(CPUdir)//'Phi_CPU_standard.txt', form='formatted')
-Phi_CPU = real(cpuf - cpu0)/crr
-do i=1,nsamp
-   write(*,*) "    cpu time ", Phi_CPU(i), " seconds"
-   write(fid, CFMT) Phi_CPU(i)
-enddo
-close(fid)
+! open(newunit=fid, file=trim(CPUdir)//'Phi_CPU_standard.txt', form='formatted')
+! Phi_CPU = real(cpuf - cpu0)/crr
+! do i=1,nsamp
+!    write(*,*) "    cpu time ", Phi_CPU(i), " seconds"
+!    write(fid, CFMT) Phi_CPU(i)
+! enddo
+! close(fid)
 
 ! do i=1,4
 !    write(*,*) Phi(i,1:4)
@@ -393,20 +385,18 @@ close(fid)
 
 ! Phi with AMR algorithm, method 1
 write(*,*) "computing Phi utilizing AMR, method 1 ..."
-do i=1,nsamp
-   call system_clock(cpu0(i))
-   call compute_Phi(Xpod, Psi, Lam, nspat, nt, Phi, 1, Xgrid, finest, ndim)
-   call system_clock(cpuf(i))
-enddo
+call system_clock(cpu0(1))
+call compute_Phi_omp(Xpod, Psi, Lam, nspat, nt, Phi, 1, Xgrid, finest, ndim)
+call system_clock(cpuf(1))
 
 ! Write out CPU time for Phi
-open(newunit=fid, file=trim(CPUdir)//'Phi_CPU_AMR1.txt', form='formatted')
-Phi_CPU = real(cpuf - cpu0)/crr
-do i=1,nsamp
-   write(*,*) "    cpu time ", Phi_CPU(i), " seconds"
-   write(fid, CFMT) Phi_CPU(i)
-enddo
-close(fid)
+! open(newunit=fid, file=trim(CPUdir)//'Phi_CPU_AMR1.txt', form='formatted')
+! Phi_CPU = real(cpuf - cpu0)/crr
+! do i=1,nsamp
+!    write(*,*) "    cpu time ", Phi_CPU(i), " seconds"
+!    write(fid, CFMT) Phi_CPU(i)
+! enddo
+! close(fid)
 
 ! do i=1,4
 !    write(*,*) Phi(i,1:4)
@@ -414,20 +404,18 @@ close(fid)
 
 ! Phi with AMR algorithm, method 1
 write(*,*) "computing Phi utilizing AMR, method 2 ..."
-do i=1,nsamp
-   call system_clock(cpu0(i))
-   call compute_Phi(Xpod, Psi, Lam, nspat, nt, Phi, 2, Xgrid, finest, ndim)
-   call system_clock(cpuf(i))
-enddo
+call system_clock(cpu0(1))
+call compute_Phi_omp(Xpod, Psi, Lam, nspat, nt, Phi, 2, Xgrid, finest, ndim)
+call system_clock(cpuf(1))
 
 ! Write out CPU time for Phi
-open(newunit=fid, file=trim(CPUdir)//'Phi_CPU_AMR2.txt', form='formatted')
-Phi_CPU = real(cpuf - cpu0)/crr
-do i=1,nsamp
-   write(*,*) "    cpu time ", Phi_CPU(i), " seconds"
-   write(fid, CFMT) Phi_CPU(i)
-enddo
-close(fid)
+! open(newunit=fid, file=trim(CPUdir)//'Phi_CPU_AMR2.txt', form='formatted')
+! Phi_CPU = real(cpuf - cpu0)/crr
+! do i=1,nsamp
+!    write(*,*) "    cpu time ", Phi_CPU(i), " seconds"
+!    write(fid, CFMT) Phi_CPU(i)
+! enddo
+! close(fid)
 
 ! do i=1,4
 !    write(*,*) Phi(i,1:4)
@@ -439,20 +427,18 @@ write(*,*)
 
 ! A with standard algorithm
 write(*,*) "computing A using standard algorithm ..."
-do i=1,nsamp
-   call system_clock(cpu0(i))
-   call compute_A(Xpod, Phi, nspat, nt, Apod, 0)
-   call system_clock(cpuf(i))
-enddo
+call system_clock(cpu0(1))
+call compute_A_omp(Xpod, Phi, nspat, nt, Apod, 0)
+call system_clock(cpuf(1))
 
 ! Write out CPU time for A
-open(newunit=fid, file=trim(CPUdir)//'A_CPU_standard.txt', form='formatted')
-A_CPU = real(cpuf - cpu0)/crr
-do i=1,nsamp
-   write(*,*) "    cpu time ", A_CPU(i), " seconds"
-   write(fid, CFMT) A_CPU(i)
-enddo
-close(fid)
+! open(newunit=fid, file=trim(CPUdir)//'A_CPU_standard.txt', form='formatted')
+! A_CPU = real(cpuf - cpu0)/crr
+! do i=1,nsamp
+!    write(*,*) "    cpu time ", A_CPU(i), " seconds"
+!    write(fid, CFMT) A_CPU(i)
+! enddo
+! close(fid)
 
 ! do i=1,4
 !    write(*,*) Apod(i,1:4)
@@ -460,20 +446,18 @@ close(fid)
 
 ! A with AMR algorithm
 write(*,*) "computing A utilizing AMR ..."
-do i=1,nsamp
-   call system_clock(cpu0(i))
-   call compute_A(Xpod, Phi, nspat, nt, Apod, 1, Xgrid, finest, ndim)
-   call system_clock(cpuf(i))
-enddo
+call system_clock(cpu0(1))
+call compute_A_omp(Xpod, Phi, nspat, nt, Apod, 1, Xgrid, finest, ndim)
+call system_clock(cpuf(1))
 
 ! Write out CPU time for A
-open(newunit=fid, file=trim(CPUdir)//'A_CPU_AMR.txt', form='formatted')
-A_CPU = real(cpuf - cpu0)/crr
-do i=1,nsamp
-   write(*,*) "    cpu time ", A_CPU(i), " seconds"
-   write(fid, CFMT) A_CPU(i)
-enddo
-close(fid)
+! open(newunit=fid, file=trim(CPUdir)//'A_CPU_AMR.txt', form='formatted')
+! A_CPU = real(cpuf - cpu0)/crr
+! do i=1,nsamp
+!    write(*,*) "    cpu time ", A_CPU(i), " seconds"
+!    write(fid, CFMT) A_CPU(i)
+! enddo
+! close(fid)
 
 ! do i=1,4
 !    write(*,*) Apod(i,1:4)

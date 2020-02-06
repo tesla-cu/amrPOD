@@ -9,10 +9,13 @@
 !     operations with supplementary variables (AMR POD).
 ! =============================================================================
 
-module comp_R
+module comp_R_omp
 contains
 
-subroutine compute_R(Xpod, nspat, nt, Rpod, method, Xgrid, finest, ndim)
+subroutine compute_R_omp(Xpod, nspat, nt, Rpod, method, Xgrid, finest, ndim)
+
+use omp_lib
+
 implicit none
 
 ! =============================================================================
@@ -44,10 +47,7 @@ integer, allocatable, dimension(:)                 :: d_l
 if (method == 0) then
    do n=1,nt
       do m=1,n
-         Rsum= 0.
-         do i=1,nspat
-            Rsum = Rsum + Xpod(i,m)*Xpod(i,n)
-         enddo
+         Rsum = dot_product(Xpod(:,n), Xpod(:,m))
          Rpod(m,n) = Rsum
          Rpod(n,m) = Rsum
       enddo
@@ -118,6 +118,6 @@ elseif (method == 1) then
    deallocate(d_l)
 endif
 
-end subroutine compute_R
-end module comp_R
+end subroutine compute_R_omp
+end module comp_R_omp
 ! =============================================================================

@@ -9,10 +9,10 @@
 !     skipping operations with supplementary variables (AMR POD).
 ! =============================================================================
 
-module comp_A
+module comp_A_omp
 contains
 
-subroutine compute_A(Xpod, Phi, nspat, nt, Apod, method, Xgrid, finest, ndim)
+subroutine compute_A_omp(Xpod, Phi, nspat, nt, Apod, method, Xgrid, finest, ndim)
 implicit none
 
 ! =============================================================================
@@ -143,6 +143,6 @@ elseif (method == 1) then
    deallocate(Gmat, d_l)
 endif
 
-end subroutine compute_A
-end module comp_A
+end subroutine compute_A_omp
+end module comp_A_omp
 ! =============================================================================

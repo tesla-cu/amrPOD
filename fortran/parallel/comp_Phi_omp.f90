@@ -10,10 +10,10 @@
 !     (AMR POD).
 ! =============================================================================
 
-module comp_Phi
+module comp_Phi_omp
 contains
 
-subroutine compute_Phi(Xpod, Psi, Lambda, nspat, nt, Phi, method, Xgrid,       &
+subroutine compute_Phi_omp(Xpod, Psi, Lambda, nspat, nt, Phi, method, Xgrid,       &
    finest, ndim)
 implicit none
 
@@ -541,6 +541,6 @@ elseif ((method==1) .or. (method==2)) then
    deallocate(d_l)
 endif
 
-end subroutine compute_Phi
-end module comp_Phi
+end subroutine compute_Phi_omp
+end module comp_Phi_omp
 ! =============================================================================
