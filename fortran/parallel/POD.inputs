@@ -1,0 +1,22 @@
+&POD_inputs
+  ! Data domensions
+  nx = 128
+  ny = 128
+  nz = 128
+
+  ! Start and end indices of time
+  itime = 0, 4
+
+  ! Numer of samples of CPU time
+  nsamp = 8
+
+  ! Data directory storing binary files
+  datadir = './'
+
+  ! Variable to compute POD
+  var = 'z_velocity'
+/
+&AMR_POD_inputs
+  ! Finest level of AMR
+  finest = 1
+/
