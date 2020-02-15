@@ -1,8 +1,6 @@
 module rshp_AMR
 contains
 
-
-
 subroutine reshape_AMR(nx, ny, nz, finest, data, direction)
 implicit none
 
@@ -172,7 +170,6 @@ if (dir == "f") then
 ! ======================== Reverse reshaping ========================
 elseif (dir== "r") then
 
-   write(*,*) "doing reverse. NEED TO VALIDATE."
    if (ndim == 2) then
       allocate(data_2Da(nspat,1))
       data_2Da(:,1) = data
@@ -231,8 +228,6 @@ elseif (dir== "r") then
       data = reshape(data_2Da, [nspat])
       deallocate(data_2Da)
    elseif (ndim == 3) then
-      write(*,*) "NOT DONE!!!!!!!!"
-      stop
 
       allocate(data_3Da(nspat,1,1))
       data_3Da(:,1,1) = data
@@ -322,7 +317,6 @@ else
    stop
 
 endif
-
 
 end subroutine reshape_AMR
 

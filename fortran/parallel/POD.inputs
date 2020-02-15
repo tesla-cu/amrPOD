@@ -1,4 +1,7 @@
+! =============================================================================
+! General POD variable
 &POD_inputs
+
   ! Data domensions
   nx = 128
   ny = 128
@@ -7,16 +10,38 @@
   ! Start and end indices of time
   itime = 0, 4
 
-  ! Numer of samples of CPU time
-  nsamp = 8
-
   ! Data directory storing binary files
-  datadir = './'
+  datadir = '/Users/mikemeehan/Research/Papers/2019_POD_AMR/data/AMR_gen/f1_3D/'
 
-  ! Variable to compute POD
-  var = 'z_velocity'
+  ! Format of file names
+  ! Note: must be 4 sections - datadir, variable, number, extension
+  filefmt = '(a,a,I5.5,a)'
+
+  ! Number of variables for POD
+  nvar = 1
+
+  ! Algorithm to use for each operation. Usage:
+  !   * -1 = machine choose between standard or AMR (but right now means both)
+  !   *  0 = standard algorithm
+  !   *  1 = AMR for R and A, method 1 for Phi
+  !   *  2 = not valid for R or A, method 2 for Phi
+  Ralg   = -1
+  Phialg = -1
+  Aalg   = -1
 /
+! =============================================================================
+
+! =============================================================================
+! Variables to compute POD
+&variables
+  vars = 'z_velocity'
+/
+! =============================================================================
+
+! =============================================================================
+! Variables for fast computation utilizing AMR
 &AMR_POD_inputs
   ! Finest level of AMR
-  finest = 1
+  ! finest = 0 ! compute this now so not needed
 /
+! =============================================================================

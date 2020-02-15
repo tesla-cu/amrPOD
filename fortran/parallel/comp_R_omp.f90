@@ -45,6 +45,8 @@ integer, allocatable, dimension(:)                 :: d_l
 ! Standard POD 
 ! =============================================================================
 if (method == 0) then
+
+   !$omp do private(m, Rsum)
    do n=1,nt
       do m=1,n
          Rsum = dot_product(Xpod(:,n), Xpod(:,m))
@@ -52,6 +54,7 @@ if (method == 0) then
          Rpod(n,m) = Rsum
       enddo
    enddo
+   !$omp end do
 
 ! =============================================================================
 ! AMR POD 
@@ -71,6 +74,7 @@ elseif (method == 1) then
 
    d_f1 = d_l(finest-1)
 
+   !$omp do private(i, j, m, Rsum)
    do n=1,nt
       do m=1,n
          Rsum= 0.
@@ -114,6 +118,7 @@ elseif (method == 1) then
          Rpod(n,m) = Rsum
       enddo
    enddo
+   !$omp end do
 
    deallocate(d_l)
 endif

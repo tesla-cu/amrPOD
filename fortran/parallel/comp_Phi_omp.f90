@@ -60,32 +60,16 @@ double precision :: Lsum
 ! =============================================================================
 if (method == 0) then
 
-   ! Old method
-   ! do i=1,nspat
-   !    do m=1,nt
-   !       Phisum= 0.
-   !       do n=1,nt
-   !          Phisum = Phisum + Xpod(i,n)*Psi(n,m)
-   !       enddo
-   !       Phi(i,m) = Phisum/sqrt(Lambda(m))
-   !    enddo
-   ! enddo
-
    ! New method based on LAPACK
    Phi = 0.
+   !$omp do private(i, n, temp)
    do m=1,nt
       do n=1,nt
-         temp = Psi(n,m)
-         do i=1,nspat
-            Phi(i,m) = Phi(i,m) + temp*Xpod(i,n)
-         enddo
+         Phi(:,m) = Phi(:,m) + Psi(n,m)*Xpod(:,n)
       enddo
-      ! Phi(:,m) = Phi(:,m)/sqrt(Lambda(m))
-      temp = sqrt(Lambda(m))
-      do i=1,nspat
-         Phi(i,m) = Phi(i,m)/temp
-      enddo
+      Phi(:,m) = Phi(:,m)/sqrt(Lambda(m))
    enddo
+   !$omp end do
 
 ! =============================================================================
 ! AMR POD 
@@ -109,58 +93,12 @@ elseif ((method==1) .or. (method==2)) then
    ! Method 1 -----------------------------------------------------------------
    if (method == 1) then
 
-      ! Old method
-      ! allocate(Gmat1(d_0))
-      ! do i=1,nspat,d_0
-      !    ! Precompute maximum grid level for each spatial location
-      !    Gmat1 = 0
-      !    jj = 1
-      !    j = i
-      !    do while(jj <= d_0)
-      !       Xgrid_max = Xgrid(j,1)
-      !       do m=2,nt
-      !          if (Xgrid(j,m) > Xgrid_max) then
-      !             Xgrid_max = Xgrid(j,m)
-      !             if (Xgrid_max == finest) then
-      !                exit
-      !             endif
-      !          endif
-      !       enddo
-      !       Gval = d_l(Xgrid_max)
-      !       Gmat1(jj) = Gval
-      !       jj = jj + Gval
-      !       j = j + Gval
-      !    enddo
-
-      !    ! Compute elements of Phi within coarse cell
-      !    do m=1,nt
-      !       jj = 1
-      !       j=i
-      !       do while(jj <= d_0)
-      !          Phisum = 0.
-      !          do n=1,nt
-      !             Phisum = Phisum + Xpod(j,n)*Psi(n,m)
-      !          enddo
-      !          Gval = Gmat1(jj)
-
-      !          ! Take this out
-      !          Phisum = Phisum/sqrt(Lambda(m))
-      !          do k=j,j+Gval-1
-      !             Phi(k,m) = Phisum
-      !          enddo
-      !          ! and do after completion
-      !          jj = jj + Gval
-      !          j = j + Gval
-      !       enddo
-      !    enddo
-      ! enddo
-      ! deallocate(Gmat1)
-
       ! New method based on LAPACK
       allocate(Gmat1(d_0))
       allocate(Xgrid_max2(d_0))
       allocate(Phisum2(d_0))
       Phi = 0.
+      !$omp do private(i, j, jj, m, Gval, Gmat1, Phisum2, temp, Xgrid_max2)
       do i=1,nspat,d_0
          ! Precompute maximum grid level for each spatial location
          Gmat1 = 0
@@ -212,6 +150,7 @@ elseif ((method==1) .or. (method==2)) then
             enddo
          enddo
       enddo
+      !$omp end do
       deallocate(Gmat1, Xgrid_max2, Phisum2)
 
    ! Method 2 -----------------------------------------------------------------
@@ -349,7 +288,8 @@ elseif ((method==1) .or. (method==2)) then
       allocate(Hmat2(d_0,0:finest))
 
       d_f1 = d_l(finest-1)
-
+      !$omp do private(i, j, jj, l, lvl, Lsum, k, m, n, nl2, p, Gval, Gmat2, &
+      !$omp            Hmat2, Phisum2, temp, Xgrid_max2)
       do i=1,nspat,d_0
          Gmat2 = 0
          nl2 = 0
@@ -392,7 +332,6 @@ elseif ((method==1) .or. (method==2)) then
          ! Compute elements of H
          do n=1,nt
             Hmat2 = 0.
-            ! Can't really swap this
             if (nl2(1,0) > 0) then
                Lsum = 0.
                do m=1,nl2(1,0)
@@ -534,6 +473,7 @@ elseif ((method==1) .or. (method==2)) then
             enddo
          enddo
       enddo
+      !$omp end do
       deallocate(Gmat2, nl2, Hmat2)
 
    endif

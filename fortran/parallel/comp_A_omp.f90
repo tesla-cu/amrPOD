@@ -43,15 +43,13 @@ integer, allocatable, dimension(:)                 :: Gmat
 ! Standard POD 
 ! =============================================================================
 if (method == 0) then
+   !$omp do collapse(2)
    do m=1,nt
       do n=1,nt
-         Asum= 0.
-         do i=1,nspat
-            Asum = Asum + Xpod(i,m)*Phi(i,n)
-         enddo
-         Apod(m,n) = Asum
+         Apod(m,n) = dot_product(Xpod(:,m), Phi(:,n))
       enddo
    enddo
+   !$omp end do
 
 ! =============================================================================
 ! AMR POD 
@@ -92,14 +90,16 @@ elseif (method == 1) then
    i = 1
    do while(i <= nspat)
       Xgrid_max = Xgrid(i,1)
+      !$omp do
       do m=2,nt
          if (Xgrid(i,m) > Xgrid_max) then
             Xgrid_max = Xgrid(i,m)
-            if (Xgrid_max == finest) then
-               exit
-            endif
+            ! if (Xgrid_max == finest) then
+            !    exit
+            ! endif
          endif
       enddo
+      !$omp end do
       if (Xgrid_max == finest) then
          Gmat(i) = 1
          i = i + d_f1
@@ -120,15 +120,14 @@ elseif (method == 1) then
    ! enddo
 
    ! Compute A with proper weighting
+   !$omp do collapse(2) private(i, Asum)
    do m=1,nt
       do n=1,nt
          Asum = 0.
          i = 1
          do while(i <= nspat)
             if (Gmat(i) == 1) then
-               do j=i,i+d_f1-1
-                  Asum = Asum + Xpod(j,m)*Phi(j,n)
-               enddo
+               Asum = Asum + dot_product(Xpod(i:i+d_f1-1,m), Phi(i:i+d_f1-1,n))
                i = i + d_f1
             else
                Asum = Asum + dble(Gmat(i))*Xpod(i,m)*Phi(i,n)
@@ -139,6 +138,7 @@ elseif (method == 1) then
          Apod(m,n) = Asum
       enddo
    enddo
+   !$omp end do
 
    deallocate(Gmat, d_l)
 endif
