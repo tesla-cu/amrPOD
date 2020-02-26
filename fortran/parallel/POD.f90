@@ -675,7 +675,7 @@ do v=1,nvar
       cpu0 = MPI_Wtime()
       call MPI_File_open(MPI_COMM_WORLD, filename, MPI_MODE_WRONLY + MPI_MODE_CREATE, MPI_INFO_NULL, mpifid, mpierr)
       call MPI_File_set_view(mpifid, mpidisp, MPI_DOUBLE, MPI_DOUBLE, 'native', MPI_INFO_NULL, mpierr)
-      call MPI_File_write_at_all(mpifid, mpioff, Xcol, nspp, MPI_DOUBLE, mpistat, mpierr)
+      call MPI_File_write_at_all(mpifid, mpioff, Phi(istrt:iend,n), nspp, MPI_DOUBLE, mpistat, mpierr)
       call MPI_File_close(mpifid, mpierr)
       cpuf = MPI_Wtime()
 
