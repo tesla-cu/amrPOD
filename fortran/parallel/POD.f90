@@ -22,12 +22,8 @@
 !
 ! To create an executable, at the terminal, run:
 !
-!    gfortran -O0 -g -fopenmp -fcheck=all -fbacktrace -o POD.ex POD.f90 -L.. -llapack -lrefblas
-!    gfortran -O3 -o POD.ex POD.f90 -L.. -llapack -lrefblas 
-!
-! For more timing info:
-!    gfortran -pg -O3 -o POD.ex POD.f90 -L. -llapack -lrefblas 
-!    gprof POD.ex > POD.stats
+!    mpifort -O0 -g -fopenmp -fcheck=all -fbacktrace -o POD.ex POD.f90 -L.. -llapack -lrefblas
+!    mpifort -O3 -fopenmp -o POD.ex POD.f90 -L.. -llapack -lrefblas 
 ! 
 ! =============================================================================
 ! Begin 
@@ -264,8 +260,8 @@ endif
 ! Check that nspat is evenly divisible by the number of MPI processors
 if (abs(mod(dble(nz), dble(nproc))) > 1.e-8) then
    if (rank == 0) then
-      write(*,'(a)') "the number of z spatial points is not evenly divisible "// &
-                     "by the number of MPI processors"
+      write(*,'(a)') "the number of z spatial points is not evenly divisible"//&
+                     " by the number of MPI processors"
       write(*,'(a,I10,a,I4,a,F10.3)') "nspat = ",nspat," / nproc = ",nproc,    &
                                       "  ---->  ",dble(nspat)/dble(nproc)
    endif
@@ -396,7 +392,7 @@ enddo
 
 ! Write out CPU for reading and reshaping
 if (rank == 0) then
-   write(fcpu, '(a,'//CFMT//')') "read:", read_CPU
+   write(fcpu, '(a,'//CFMT//')') "read:           ", read_CPU
    if (do_amr) then
       write(fcpu, '(a,'//CFMT//')') "forward reshape:", Rshp_CPU
    endif
@@ -481,7 +477,7 @@ if (Ralg == -1 .or. Ralg == 0) then
    ! Write out CPU time for R
    if (rank == 0) then
       R_CPU = cpuf - cpu0
-      write(fcpu, '(a,'//CFMT//')') "R standard: ", R_CPU
+      write(fcpu, '(a,'//CFMT//')') "R standard:     ", R_CPU
       do i=1,4
          write(*,*) Rpod(i,1:4)
       enddo
@@ -502,7 +498,7 @@ if (Ralg == -1 .or. Ralg == 1) then
    ! Write out CPU time for R
    if (rank == 0) then
       R_CPU = cpuf - cpu0
-      write(fcpu, '(a,'//CFMT//')') "R AMR: ", R_CPU
+      write(fcpu, '(a,'//CFMT//')') "R AMR:          ", R_CPU
       do i=1,4
          write(*,*) Rpod(i,1:4)
       enddo
@@ -535,7 +531,7 @@ deallocate(opt_work)
 
 if (rank == 0) then
    Psi_CPU = cpuf - cpu0
-   write(fcpu, '(a,'//CFMT//')') "Psi AMR: ", Psi_CPU
+   write(fcpu, '(a,'//CFMT//')') "Psi:            ", Psi_CPU
 endif
 Psi = Rpod
 
@@ -552,7 +548,7 @@ if (Phialg == -1 .or. Phialg == 0) then
 
    if (rank == 0) then
       Phi_CPU = cpuf - cpu0
-      write(fcpu, '(a,'//CFMT//')') "Phi standard: ", Phi_CPU
+      write(fcpu, '(a,'//CFMT//')') "Phi standard:   ", Phi_CPU
       do i=1,4
          write(*,*) Phi(i,1:4)
       enddo
@@ -570,7 +566,7 @@ if (Phialg == -1 .or. Phialg == 1) then
 
    if (rank == 0) then
       Phi_CPU = cpuf - cpu0
-      write(fcpu, '(a,'//CFMT//')') "Phi AMR 1: ", Phi_CPU
+      write(fcpu, '(a,'//CFMT//')') "Phi AMR 1:      ", Phi_CPU
       do i=1,4
          write(*,*) Phi(i,1:4)
       enddo
@@ -588,7 +584,7 @@ if (Phialg == -1 .or. Phialg == 2) then
 
    if (rank == 0) then
       Phi_CPU = cpuf - cpu0
-      write(fcpu, '(a,'//CFMT//')') "Phi AMR 2: ", Phi_CPU
+      write(fcpu, '(a,'//CFMT//')') "Phi AMR 2:      ", Phi_CPU
       do i=1,4
          write(*,*) Phi(i,1:4)
       enddo
@@ -612,7 +608,7 @@ if (Aalg == -1 .or. Aalg == 0) then
 
    if (rank == 0) then
       A_CPU = cpuf - cpu0
-      write(fcpu, '(a,'//CFMT//')') "A standard: ", A_CPU
+      write(fcpu, '(a,'//CFMT//')') "A standard:     ", A_CPU
       do i=1,4
          write(*,*) Apod(i,1:4)
       enddo
@@ -630,7 +626,7 @@ if (Aalg == -1 .or. Aalg == 1) then
 
    if (rank == 0) then
       A_CPU = cpuf - cpu0
-      write(fcpu, '(a,'//CFMT//')') "A AMR: ", A_CPU
+      write(fcpu, '(a,'//CFMT//')') "A AMR:          ", A_CPU
       do i=1,4
          write(*,*) Apod(i,1:4)
       enddo
@@ -673,7 +669,7 @@ do v=1,nvar
 
    ! Write POD spatial modes
    do n=1,nt
-      write(filename,filefmt) trim(PODdir), 'POD_'//trim(var), itime(1)+n-1,  &
+      write(filename,filefmt) trim(PODdir), 'POD_'//trim(var), itime(1)+n-1,   &
          '.bin'
 
       cpu0 = MPI_Wtime()
@@ -690,7 +686,7 @@ enddo
 ! Write data for temporal coefficients
 if (rank == 0) then
    write(filename,filefmt) trim(PODdir), 'temporal_coefficients.bin'
-   open(newunit=fid, file=trim(filename), action='write', access='stream',      &
+   open(newunit=fid, file=trim(filename), action='write', access='stream',     &
       form='unformatted', status='replace')
    cpu0 = MPI_Wtime()
    write(fid) Apod
@@ -702,7 +698,7 @@ endif
 
 ! Write out CPU for writing and reshaping
 if (rank == 0) then
-   write(fcpu, '(a,'//CFMT//')') "write: ", write_CPU
+   write(fcpu, '(a,'//CFMT//')') "write:          ", write_CPU
    if (do_amr) then
       write(fcpu, '(a,'//CFMT//')') "reverse reshape:", Rshp_CPU
    endif
@@ -717,9 +713,9 @@ if (rank == 0) close(fcpu)
 call date_and_time(time=clock_time)
 
 wtime = MPI_Wtime() - wtime
-hrs  = int(wtime/3600.)
-mins = int(mod(wtime, 3600.)/60.)
-secs = wtime - hrs*3600. - mins*60.
+hrs   = int(wtime/3600.)
+mins  = int(mod(wtime, 3600.)/60.)
+secs  = wtime - hrs*3600. - mins*60.
 
 if (rank == 0) then
    write(*,'(a)') '------------------------------------------------'//         &
