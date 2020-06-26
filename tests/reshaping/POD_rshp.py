@@ -16,7 +16,6 @@ from Phi_TC  import compute_Phi_TC
 from A_CPU   import compute_A_CPU
 from A_TC    import compute_A_TC
 
-# ========== Main function ==========================================
 if __name__ == '__main__':
 
     print('starting script to perform POD on AMR grids ...')
