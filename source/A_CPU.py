@@ -8,10 +8,9 @@
 import numpy as np
 import time
 
-# ================================================================= #
-# Function to compute the temporal coefficients A in POD using a 
-# standard matrix operation technique and the new algorithm 
-# leveraging AMR repetitions
+# =========================================================================== #
+# Function to compute the temporal coefficients A in POD using a  standard 
+# matrix operation technique and the new algorithm leveraging AMR repetitions
 #
 # Inputs:
 # - X      : snapshot matrix
@@ -19,8 +18,8 @@ import time
 #            levels instead of solution values
 # - Phi    : spatial mode matrix computed using matrix operations 
 # - A      : temporal coefficent matrix computed using matrix 
-#            operations (this is used as a check we did the 
-#            computation right)
+#            operations 
+#              - if A == False, then we do not check the correctness
 # - d_l    : number of repeated cells for a given level l (called 
 #            c_\ell^d in the paper)
 # - nt     : number of time steps
@@ -30,16 +29,18 @@ import time
 # Outputs:
 # - time_im : CPU time to compute A using implemented algorithm
 # - time_un : CPU time to compute A using unaltered algorithm
-# ================================================================= #
+# =========================================================================== #
 def compute_A_CPU(X, X_grid, Phi, A, d_l, nt, nspat, finest):
 
-	# ========== Unaltered Computation ============================ #
+	# =========================================================================
+	# Unaltered Computation 
+	# =========================================================================
 
 	# Initialize timer
 	tic = time.time()
 
 	# Initialize A matrix for unaltered computation
-	A_un = np.zeros((nt, nt))
+	A_un = np.empty((nt, nt))
 
 	# Compute A matrix with unaltered algorithm
 	for m in range(nt):     # iterate over nt rows
@@ -59,16 +60,18 @@ def compute_A_CPU(X, X_grid, Phi, A, d_l, nt, nspat, finest):
 	# Compute total cpu time
 	time_un = time.time() - tic
 
-	# ========== Implemented Computation ========================== #
+	# =========================================================================
+	# Implemented Computation
+	# =========================================================================
 
 	# Initialize timer
 	tic = time.time()
 
 	# Initialize A matrix for computation of implemented algorithm
-	A_im = np.zeros((nt, nt))
+	A_im = np.empty((nt, nt))
 
 	# Initialize matrix to store maximum grid level
-	G = np.zeros((nspat), dtype=int)
+	G = np.empty((nspat), dtype=int)
 
 	d_f1 = d_l[finest-1]
 
@@ -133,7 +136,9 @@ def compute_A_CPU(X, X_grid, Phi, A, d_l, nt, nspat, finest):
 	# Compute total cpu time
 	time_im = time.time() - tic
 
-	# ========== Check Correctness of Matrices ==================== #
+	# =========================================================================
+	# Check Correctness of Matrices
+	# =========================================================================
 	
 	# Check if we should check for correctness
 	if type(A) != bool:

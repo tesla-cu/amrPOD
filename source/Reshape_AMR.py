@@ -8,9 +8,9 @@
 import numpy as np
 import sys
 
-# ================================================================= #
-# Function to reshape AMR data that forces repeated cells to stay
-# continguous when reshaped into a 1D array.
+# =========================================================================== #
+# Function to reshape AMR data that forces repeated cells to stay continguous 
+# when reshaped into a 1D array.
 #
 # Inputs:
 # - nx        : number of cells in x direction
@@ -19,17 +19,15 @@ import sys
 # - finest    : finest AMR grid level
 # - data      : 1D array of data simply reshaped
 # - direction : either 'forward' or 'reverse'
-#               - forward - put simply reshaped into strategically
-#                           reshaped
-#               - reverse - put strategically reshaped into simply
-#                           reshaped
+#               - forward - put simply reshaped into strategically reshaped
+#               - reverse - put strategically reshaped into simply reshaped
 #
 # Outputs:
 # - data : 1D array with repeated cells now contiguous
-# ================================================================= #
+# =========================================================================== #
 def Reshape_AMR(nx, ny, nz, finest, data, direction):
 
-	# ---------- Helpful quantities derived from user inputs --------
+	# Helpful quantities derived from user inputs -----------------------------
 	nspat = nx*ny*nz    
 	nlev  = finest + 1
 	ndim  = 0            # num dimensions
@@ -42,13 +40,15 @@ def Reshape_AMR(nx, ny, nz, finest, data, direction):
 	for i in range(nlev):
 		c_l[i]    = 2**(finest-i)
 
-	# ========== Forward direction reshaping ========================
+	# =========================================================================
+	# Forward direction reshaping 
+	# =========================================================================
 	if direction[0].lower() == 'f':
 
 		# Reshape data back into original form 
 		data = np.reshape(data, [nx, ny, nz])
 
-		# ---------- Perform reshaping procedure --------------------
+		# Perform reshaping procedure -----------------------------------------
 
 		# 1D, no reshaping required
 		if ndim == 1:
@@ -80,15 +80,15 @@ def Reshape_AMR(nx, ny, nz, finest, data, direction):
 				data_1D = np.reshape(  data_1D, ( c,  c, -1))
 
 
-	# ========== Reverse direction reshaping ========================
+	# =========================================================================
+	# Reverse direction reshaping 
+	# =========================================================================
 	elif direction[0].lower() == 'r':
 
-		# Create array that specifies a dimension of reshape
-		# c_lr       = np.zeros((nlev), dtype=int) # c_l in reverse
-		# c_lr[0:-1] = c_l[-2::-1] # reversed elements of c_l excluding last
-		# c_lr[-1]   = nx          # last iteration must be nx
+		# Create array that of reversed elements of c_l excluding last
+		c_lr = c_l[-2::-1] 
 
-		c_lr = c_l[-2::-1] # reversed elements of c_l excluding last
+		# Perform reshaping procedure -----------------------------------------
 
 		# 1D, no reshaping required
 		if ndim == 1:
@@ -145,7 +145,7 @@ def Reshape_AMR(nx, ny, nz, finest, data, direction):
 		print("Reshaping direction must be either 'forward' or 'reverse'!")
 		sys.exit()
 
-	# ---------- Return newly reshaped data -------------------------
+	# Return newly reshaped data ----------------------------------------------
 	return np.squeeze(data_1D)
 
 

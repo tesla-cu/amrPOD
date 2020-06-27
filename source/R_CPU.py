@@ -8,17 +8,16 @@
 import numpy as np
 import time
 
-# ================================================================= #
-# Function to compute the covariance R in POD using a standard 
-# matrix operation technique and the new algorithm leveraging AMR
-# repetitions
+# =========================================================================== #
+# Function to compute the covariance R in POD using a standard matrix 
+# operation technique and the new algorithm leveraging AMR repetitions
 #
 # Inputs:
 # - X      : snapshot matrix
 # - X_grid : companion matrix to snapshot matrix that stores grid 
 #            levels instead of solution values
 # - R      : covariance matrix computed using matrix operations 
-#            (this is used as a check we did the computation right)
+#              - if R == False, then we do not check the correctness
 # - d_l    : number of repeated cells for a given level l (called 
 #            c_\ell^d in the paper)
 # - nt     : number of time steps
@@ -27,16 +26,18 @@ import time
 # Outputs:
 # - time_im : CPU time to compute R using implemented algorithm
 # - time_un : CPU time to compute R using unaltered algorithm
-# ================================================================= #
+# =========================================================================== #
 def compute_R_CPU(X, X_grid, R, d_l, nt, nspat, finest):
 
-	# ========== Unaltered Computation ============================ #
+	# =========================================================================
+	# Unaltered Computation 
+	# =========================================================================
 
 	# Initialize timer
 	tic  = time.time()
 
 	# Initialize R matrix for unaltered computation  
-	R_un = np.zeros((nt, nt))
+	R_un = np.empty((nt, nt))
 
 	# Compute R matrix with unaltered algorithm
 	for m in range(nt):      # iterate over nt rows
@@ -57,13 +58,15 @@ def compute_R_CPU(X, X_grid, R, d_l, nt, nspat, finest):
 	# Compute total cpu time
 	time_un = time.time() - tic
 
-	# ========== Implemented Computation ========================== #
+	# =========================================================================
+	# Implemented Computation 
+	# =========================================================================
 
 	# Initialize timer
 	tic   = time.time()
 
 	# Initialize R matrix for computation of implemented algorithm
-	R_im = np.zeros((nt, nt))
+	R_im = np.empty((nt, nt))
 
 	d_f1 = d_l[finest-1]
 
@@ -131,7 +134,9 @@ def compute_R_CPU(X, X_grid, R, d_l, nt, nspat, finest):
 	# Compute total cpu time
 	time_im = time.time() - tic
 
-	# ========== Check Correctness of Matrices ==================== #
+	# =========================================================================
+	# Check Correctness of Matrices 
+	# =========================================================================
 
 	# Check if we should check for correctness
 	if type(R) != bool:

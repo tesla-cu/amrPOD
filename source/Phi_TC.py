@@ -8,9 +8,9 @@
 import numpy as np
 
 # =========================================================================== #
-# Function to compute the POD spatial modes in using a standard 
-# matrix operation technique and the new algorithm leveraging AMR
-# repetitions that iteratively finds unique cells.
+# Function to compute the POD spatial modes in using a standard  matrix 
+# operation technique and the new algorithm leveraging AMR repetitions that
+# iteratively finds unique cells.
 #
 # Inputs:
 # - X      : snapshot matrix
@@ -21,7 +21,7 @@ import numpy as np
 # - method : integer (1 or 2) specifying the method to use for the 
 #            new algorithm
 # - Phi    : spatial mode matrix computed using matrix operations 
-#            (this is used as a check we did the computation right)
+#              - if Phi == False, then we do not check the correctness
 # - d_l    : number of repeated cells for a given level l (called 
 #            c_\ell^d in the paper)
 # - nt     : number of time steps
@@ -36,10 +36,11 @@ import numpy as np
 # Outputs:
 # - im : num operations to compute Phi using implemented algorithm
 # - un : num operations to compute Phi using unaltered algorithm
-# ================================================================= #
-def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest, wt_art, wt_acc, wt_asn, wt_log, wt_fun):
+# =========================================================================== #
+def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest,\
+                   wt_art, wt_acc, wt_asn, wt_log, wt_fun):
 
-	# ========== Initialize Operation Counts ====================== #
+	# Initialize Operation Counts ---------------------------------------------
 
 	# Unaltered Algorithm
 	un     = 0 # Total operation counts
@@ -56,9 +57,11 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest, 
 	im_log = 0 # Logical operations
 	im_fun = 0 # Function call
 
-	# ========== Unaltered Computation ============================ #
+	# =========================================================================
+	# Unaltered Computation
+	# =========================================================================
 
-	Phi_un = np.zeros((nspat,nt))
+	Phi_un = np.empty((nspat,nt))
 	un_asn += wt_asn
 	un_fun += wt_fun
 
@@ -88,11 +91,13 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest, 
 			un_asn      += wt_asn
 			un_fun      += wt_fun
 	
-	# ========== Implemented Computation - Method 1 =============== #
+	# =========================================================================
+	# Implemented Computation - Method 1
+	# =========================================================================
 
 	if method == 1:
 
-		Phi_im = np.zeros((nspat, nt))
+		Phi_im = np.empty((nspat, nt))
 		im_asn += wt_asn
 		im_fun += wt_fun
 
@@ -219,11 +224,13 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest, 
 					else:
 						break
 
-	# ========== Implemented Computation - Method 2 =============== #
+	# =========================================================================
+	# Implemented Computation - Method 2 
+	# =========================================================================
 
 	elif method == 2:
 
-		Phi_im = np.zeros((nspat, nt))
+		Phi_im = np.empty((nspat, nt))
 		im_asn += wt_asn
 		im_fun += wt_fun
 
@@ -319,33 +326,25 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest, 
 									im_asn += wt_asn
 
 								else:
-									for l in range(1,finest): 
-										im_art += wt_art
-										im_asn += wt_asn
+									G_mat[lvl, idx, nl[lvl, idx]] = n
+									im_acc += 2*wt_acc
+									im_asn += wt_asn
 
-										im_log += wt_log
-										if lvl == l:
+									nl[lvl, idx] += 1
+									im_acc += wt_acc
+									im_art += wt_art
+									im_asn += wt_asn
 
-											G_mat[l, idx, nl[l, idx]] = n
-											im_acc += 2*wt_acc
-											im_asn += wt_asn
+									idx += d_l[lvl+1]
+									im_art += 2*wt_art
+									im_acc += wt_acc
+									im_asn += wt_asn
 
-											nl[l, idx] += 1
-											im_acc += wt_acc
-											im_art += wt_art
-											im_asn += wt_asn
+									j += d_l[lvl]
+									im_acc += wt_acc
+									im_art += wt_art
+									im_asn += wt_asn
 
-											idx += d_l[l+1]
-											im_art += 2*wt_art
-											im_acc += wt_acc
-											im_asn += wt_asn
-
-											j += d_l[l]
-											im_acc += wt_acc
-											im_art += wt_art
-											im_asn += wt_asn
-
-											break
 							else:
 								break
 
@@ -588,7 +587,9 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest, 
 					im_asn += wt_asn
 					im_fun += wt_fun
 
-	# ========== Check Correctness of Matrices ==================== #
+	# =========================================================================
+	# Check Correctness of Matrices
+	# =========================================================================
 
 	# Check if we should check for correctness
 	if type(Phi) != bool:
@@ -607,9 +608,9 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest, 
 		else:
 			print('The unaltered Phi is incorrect')
 
-	# ========== Sum operations from im and un =================== #
-
+	# Sum operations from im and un 
 	un = un_asn + un_acc + un_art + un_fun
 	im = un_art + im_acc + im_asn + im_fun + im_log
 
+	# Return op counts of implemented and unaltered algorithm
 	return im, un 

@@ -8,10 +8,9 @@
 import numpy as np
 import time
 
-# ================================================================= #
-# Function to compute the POD spatial modes in using a standard 
-# matrix operation technique and the new algorithm leveraging AMR
-# repetitions
+# =========================================================================== #
+# Function to compute the POD spatial modes in using a standard  matrix 
+# operation technique and the new algorithm leveraging AMR repetitions
 #
 # Inputs:
 # - X      : snapshot matrix
@@ -22,7 +21,7 @@ import time
 # - method : integer (1 or 2) specifying the method to use for the 
 #            new algorithm
 # - Phi    : spatial mode matrix computed using matrix operations 
-#            (this is used as a check we did the computation right)
+#              - if Phi == False, then we do not check the correctness
 # - d_l    : number of repeated cells for a given level l (called 
 #            c_\ell^d in the paper)
 # - nt     : number of time steps
@@ -32,16 +31,18 @@ import time
 # Outputs:
 # - time_im : CPU time to compute Phi using implemented algorithm
 # - time_un : CPU time to compute Phi using unaltered algorithm
-# ================================================================= #
+# =========================================================================== #
 def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest):
 
-	# ========== Unaltered Computation ============================ #
+	# =========================================================================
+	# Unaltered Computation 
+	# =========================================================================
 
 	# Initialize timer
 	tic = time.time()
 
 	# Initialize Phi matrix for unaltered computation
-	Phi_un = np.zeros((nspat,nt))
+	Phi_un = np.empty((nspat,nt))
 
 	# Compute Phi matrix with unaltered algorithm
 	for i in range(nspat):  # iterate through rows of Phi
@@ -61,7 +62,9 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest)
 	# Compute total cpu time
 	time_un = time.time() - tic
 	
-	# ========== Implemented Computation - Method 1 =============== #
+	# =========================================================================
+	# Implemented Computation - Method 1
+	# =========================================================================
 
 	if method == 1:
 
@@ -69,7 +72,7 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest)
 		tic = time.time()
 
 		# Initialize Phi matrix for implemented computation
-		Phi_im = np.zeros((nspat, nt))
+		Phi_im = np.empty((nspat, nt))
 
 		# Define number of repetitions for a coarse cell
 		d_0 = d_l[0]
@@ -147,7 +150,9 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest)
 		# Compute total cpu time
 		time_im = time.time() - tic
 
-	# ========== Implemented Computation - Method 2 =============== #
+	# =========================================================================
+	# Implemented Computation - Method 2
+	# =========================================================================
 
 	elif method == 2:
 
@@ -155,7 +160,7 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest)
 		tic = time.time()
 
 		# Initialize Phi matrix for implemented computation
-		Phi_im = np.zeros((nspat, nt))
+		Phi_im = np.empty((nspat, nt))
 
 		# Determine number of levels and finest
 		nlev  = len(d_l)
@@ -213,15 +218,11 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest)
 								# If not the finest, we need to check each level 
 								# from 1 to f-1 iteratively
 								else:
-									for l in range(1,finest): # note not looking at highest level
-										# If the lvl is the current level, tabulate it and skip 
-										# and don't check higher levels
-										if lvl == l:
-											G_mat[l, idx, nl[l, idx]] = n
-											nl[l, idx] += 1
-											idx += d_l[l+1]
-											j += d_l[l]
-											break
+									# Tabulate the current level
+									G_mat[lvl, idx, nl[lvl, idx]] = n
+									nl[lvl, idx] += 1
+									idx += d_l[lvl+1]
+									j += d_l[lvl]
 							else:
 								break
 
@@ -370,8 +371,10 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest)
 
 		# Compute total cpu time
 		time_im = time.time() - tic
-	
-	# ========== Check Correctness of Matrices ==================== #
+
+	# =========================================================================
+	# Check Correctness of Matrices
+	# =========================================================================
 	
 	# Check if we should check for correctness
 	if type(Phi) != bool:
@@ -390,6 +393,7 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest)
 		else:
 			print('The unaltered Phi is incorrect')
 
+	# Return CPU time of implemented and unaltered algorithm
 	return time_im, time_un
 
 

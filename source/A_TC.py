@@ -33,10 +33,11 @@ import numpy as np
 # Outputs:
 # - im : num of operations to compute A using implemented algorithm
 # - un : num of operations to compute A using unaltered algorithm
-# ================================================================= #
-def compute_A_TC(X, X_grid, Phi, A, d_l, nt, nspat, finest, wt_art, wt_acc, wt_asn, wt_log, wt_fun):
+# =========================================================================== #
+def compute_A_TC(X, X_grid, Phi, A, d_l, nt, nspat, finest, \
+	             wt_art, wt_acc, wt_asn, wt_log, wt_fun):
 
-	# ========== Initialize Operation Counts ====================== #
+	# Initialize Operation Counts ---------------------------------------------
 
 	# Unaltered Algorithm
 	un     = 0 # Total operation counts
@@ -53,10 +54,11 @@ def compute_A_TC(X, X_grid, Phi, A, d_l, nt, nspat, finest, wt_art, wt_acc, wt_a
 	im_log = 0 # Logical operations
 	im_fun = 0 # Function call
 
+	# =========================================================================
+	# Unaltered Computation
+	# =========================================================================
 
-	# ========== Unaltered Computation ============================ #
-
-	A_un = np.zeros((nt, nt))
+	A_un = np.empty((nt, nt))
 	un_asn += wt_asn
 	un_fun += wt_fun
 
@@ -86,11 +88,11 @@ def compute_A_TC(X, X_grid, Phi, A, d_l, nt, nspat, finest, wt_art, wt_acc, wt_a
 
 	# ========== Implemented Computation ========================== #
 
-	A_im   =  np.zeros((nt, nt))
+	A_im   =  np.empty((nt, nt))
 	im_asn += wt_asn
 	im_fun += wt_fun
 
-	G      =  np.zeros((nspat), dtype=int)
+	G      =  np.empty((nspat), dtype=int)
 	im_asn += wt_asn
 	im_fun += wt_fun
 
@@ -208,7 +210,9 @@ def compute_A_TC(X, X_grid, Phi, A, d_l, nt, nspat, finest, wt_art, wt_acc, wt_a
 			im_acc    += wt_acc
 			im_asn    += wt_asn
 
-	# ========== Check Correctness of Matrices ==================== #
+	# =========================================================================
+	# Check Correctness of Matrices
+	# =========================================================================
 
 	# Check if we should check for correctness
 	if type(A) != bool:
@@ -227,8 +231,7 @@ def compute_A_TC(X, X_grid, Phi, A, d_l, nt, nspat, finest, wt_art, wt_acc, wt_a
 		else:
 			print('The unaltered A is incorrect')
 
-	# ========== Sum operations from im and un =================== #
-
+	# Sum operations from im and un 
 	un = un_asn + un_acc + un_art + un_fun
 	im = im_asn + im_acc + im_art + im_fun + im_log
 

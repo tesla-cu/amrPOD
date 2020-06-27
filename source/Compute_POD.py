@@ -7,48 +7,70 @@ from Reshape_AMR import Reshape_AMR
 
 from R_CPU   import compute_R_CPU
 from R_TC    import compute_R_TC
-# from R_CPU_V2   import compute_R_CPU
-# from R_TC_V2    import compute_R_TC
 
 from Phi_CPU import compute_Phi_CPU
 from Phi_TC  import compute_Phi_TC
 
 from A_CPU   import compute_A_CPU
 from A_TC    import compute_A_TC
-# from A_CPU_V2   import compute_A_CPU
-# from A_TC_V2    import compute_A_TC
 
+# =========================================================================== #
+# Function to generate data on the computational cost to compute POD
+#
+# Inputs:
+# - gen_grid    : are we generating the grid 
+# - nx          : number of cells in the x direction
+# - ny          : number of cells in the y direction
+# - nz          : number of cells in the z direction
+# - finest      : finest level of AMR
+# - l_fracs     : array of the fraction of the domain at a particular level
+# - lc_fracs    : array of the fraction of the domain at a particular level that 
+#                 is held constant
+# - nt          : number of time steps
+# - TC_CPU      : are we doing operation counts (TC) or CPU time (CPU)
+# - amr_datadir : directory storing AMR data if we aren't generating it
+#
+# Outputs:
+# - R_imp    : either TC or CPU of implemented algorithm to compute R
+# - R_unalt  : either TC or CPU of unaltered algorithm to compute R
+# - P1_imp   : either TC or CPU of implemented algorithm to compute Phi, M1
+# - P1_unalt : either TC or CPU of unaltered algorithm to compute Phi, M1
+# - P2_imp   : either TC or CPU of implemented algorithm to compute Phi, M2
+# - P2_unalt : either TC or CPU of unaltered algorithm to compute Phi, M2
+# - A_imp    : either TC or CPU of implemented algorithm to compute A
+# - A_unalt  : either TC or CPU of unaltered algorithm to compute A
+# =========================================================================== #
 def Compute_POD(gen_grid, nx, ny, nz, finest, l_fracs, lc_fracs, nt, \
 	TC_CPU='CPU', amr_datadir=None):
  
-	nspat = nx*ny*nz    
-	nlev  = finest + 1
-	c_l   = np.zeros((nlev), dtype=int)
-	d_l   = np.zeros((nlev), dtype=int)
-
-	# ---------- Helpful quantities derived from user inputs --------
+	# Helpful quantities derived from user inputs -----------------------------
+	nspat = nx*ny*nz   # number of spatial points
+	nlev  = finest + 1 # number of AMR levels
 	ndim  = 0          # num dimensions
 	if nx > 1: ndim += 1 
 	if ny > 1: ndim += 1 
 	if nz > 1: ndim += 1
 	levels = np.arange(0, nlev)
 	
+	c_l   = np.empty((nlev), dtype=int) # num reps in one dimension
+	d_l   = np.empty((nlev), dtype=int) # num reps in all dimensions
 	for i in range(nlev):
 		c_l[i]    = 2**(finest-i)
 		d_l[i]    = (2**ndim)**(finest-i)
 
-	# ---------- Define operation weighting for counting ------------
+	# Define operation weighting for counting ---------------------------------
 	wt_art    = 1       # Arithmetic
 	wt_acc    = 1       # Memory accessing
 	wt_asn    = 1       # Variable assignment
 	wt_log    = 1       # Logical test
 	wt_fun    = 1       # Function call
 
-	# ---------- Load or generate data ------------------------------
-	X      = np.zeros((nspat,nt))
-	X_grid = np.zeros((nspat,nt), dtype=int)
-	for n in range(nt):
+	# Load or generate data ---------------------------------------------------
+	X      = np.empty((nspat,nt))
+	X_grid = np.empty((nspat,nt), dtype=int)
 
+	# Iterate over each snapshot
+	for n in range(nt):
 		if gen_grid:
 			grid = GenGrid(nx, ny, nz, c_l, d_l, l_fracs, lc_fracs)
 			data = grid + 1.5
@@ -60,7 +82,7 @@ def Compute_POD(gen_grid, nx, ny, nz, finest, l_fracs, lc_fracs, nt, \
 		X[:,n]      = Reshape_AMR(nx, ny, nz, finest, data, 'forward')
 		X_grid[:,n] = Reshape_AMR(nx, ny, nz, finest, grid, 'forward')
 
-	# ---------- Compute grid information from X_grid ---------------
+	# Compute grid information from X_grid ------------------------------------
 	l_comp  = np.zeros((nlev)) # computed level fractions
 	lc_comp = np.zeros((nlev)) # computed level constant fractions
 
@@ -84,43 +106,48 @@ def Compute_POD(gen_grid, nx, ny, nz, finest, l_fracs, lc_fracs, nt, \
 	lc_comp = lc_comp/nspat
 	# print("lc_comp = ", lc_comp)
 
-	# ---------- Initialize dummy matrices ---------------
+	# Initialize dummy matrices
 	Psi    = np.ones((nt,nt))
 	Lambda = np.ones((nt,nt))
 	Phi    = np.ones((nspat,nt))
 
-	# ---------- Compute time complexity of each operation ----------
+	# =========================================================================
+	# Begin POD operations
+	# =========================================================================
+
+	# Compute time complexity of each operation
 	if TC_CPU == 'TC':
 
-		R_imp,  R_unalt  = compute_R_TC  (X, X_grid,                 False, d_l, nt, nspat, finest, \
-			wt_art, wt_acc, wt_asn, wt_log, wt_fun)
+		R_imp,  R_unalt  = compute_R_TC  (X, X_grid,                 False, \
+			d_l, nt, nspat, finest, wt_art, wt_acc, wt_asn, wt_log, wt_fun)
 
-		P1_imp, P1_unalt = compute_Phi_TC(X, X_grid, Psi, Lambda, 1, False, d_l, nt, nspat, finest, \
-			wt_art, wt_acc, wt_asn, wt_log, wt_fun)
+		P1_imp, P1_unalt = compute_Phi_TC(X, X_grid, Psi, Lambda, 1, False, \
+			d_l, nt, nspat, finest, wt_art, wt_acc, wt_asn, wt_log, wt_fun)
 
-		P2_imp, P2_unalt = compute_Phi_TC(X, X_grid, Psi, Lambda, 2, False, d_l, nt, nspat, finest, \
-			wt_art, wt_acc, wt_asn, wt_log, wt_fun)
+		P2_imp, P2_unalt = compute_Phi_TC(X, X_grid, Psi, Lambda, 2, False, \
+			d_l, nt, nspat, finest, wt_art, wt_acc, wt_asn, wt_log, wt_fun)
 
-		A_imp,  A_unalt  = compute_A_TC  (X, X_grid, Phi,            False, d_l, nt, nspat, finest, \
-			wt_art, wt_acc, wt_asn, wt_log, wt_fun)
+		A_imp,  A_unalt  = compute_A_TC  (X, X_grid, Phi,            False, \
+			d_l, nt, nspat, finest, wt_art, wt_acc, wt_asn, wt_log, wt_fun)
 
-	# ---------- Compute CPU time of each operation -----------------
+	# Compute CPU time of each operation
 	elif TC_CPU == 'CPU':
 
-		R_imp,  R_unalt  = compute_R_CPU  (X, X_grid,                 False, d_l, nt, nspat, finest)
-		P1_imp, P1_unalt = compute_Phi_CPU(X, X_grid, Psi, Lambda, 1, False, d_l, nt, nspat, finest)
-		P2_imp, P2_unalt = compute_Phi_CPU(X, X_grid, Psi, Lambda, 2, False, d_l, nt, nspat, finest)
-		A_imp,  A_unalt  = compute_A_CPU  (X, X_grid, Phi,            False, d_l, nt, nspat, finest)
+		R_imp,  R_unalt  = compute_R_CPU  (X, X_grid,                 False, \
+			d_l, nt, nspat, finest)
+
+		P1_imp, P1_unalt = compute_Phi_CPU(X, X_grid, Psi, Lambda, 1, False, \
+			d_l, nt, nspat, finest)
+
+		P2_imp, P2_unalt = compute_Phi_CPU(X, X_grid, Psi, Lambda, 2, False, \
+			d_l, nt, nspat, finest)
+
+		A_imp,  A_unalt  = compute_A_CPU  (X, X_grid, Phi,            False, \
+			d_l, nt, nspat, finest)
 
 	else:
 		print("Input must be either 'CPU' or 'TC'")
 		sys.exit()
-
-	# ---------- Reshape back to original shape ---------------------
-
-	# Iterate through all snapshots
-	for n in range(nt):
-		Phi[:,n] = Reshape_AMR(nx, ny, nz, finest, Phi[:,n], 'reverse')
 
 	return R_imp, R_unalt, P1_imp, P1_unalt, P2_imp, P2_unalt, A_imp, A_unalt
 

@@ -7,17 +7,16 @@
 
 import numpy as np
 
-# ================================================================= #
-# Function to compute the covariance R in POD using a standard 
-# matrix operation technique and the new algorithm leveraging AMR
-# repetitions
+# =========================================================================== #
+# Function to compute the covariance R in POD using a standard matrix 
+# operation technique and the new algorithm leveraging AMR repetitions
 #
 # Inputs:
 # - X      : snapshot matrix
 # - X_grid : companion matrix to snapshot matrix that stores grid 
 #            levels instead of solution values
 # - R      : covariance matrix computed using matrix operations 
-#            (this is used as a check we did the computation right)
+#              - if R == False, then we do not check the correctness
 # - d_l    : number of repeated cells for a given level l (called 
 #            c_\ell^d in the paper)
 # - nt     : number of time steps
@@ -31,10 +30,11 @@ import numpy as np
 # Outputs:
 # - im : num of operations to compute R using implemented algorithm
 # - un : num of operations to compute R using unaltered algorithm
-# ================================================================= #
-def compute_R_TC(X, X_grid, R, d_l, nt, nspat, finest, wt_art, wt_acc, wt_asn, wt_log, wt_fun):
+# =========================================================================== #
+def compute_R_TC(X, X_grid, R, d_l, nt, nspat, finest, \
+	             wt_art, wt_acc, wt_asn, wt_log, wt_fun):
 
-	# ========== Initialize Operation Counts ====================== #
+	# Initialize Operation Counts ---------------------------------------------
 
 	# Unaltered Algorithm
 	un     = 0 # Total operation counts
@@ -51,9 +51,11 @@ def compute_R_TC(X, X_grid, R, d_l, nt, nspat, finest, wt_art, wt_acc, wt_asn, w
 	im_log = 0 # Logical operations
 	im_fun = 0 # Function call
 
-	# ========== Unaltered Computation ============================ #
+	# =========================================================================
+	# Unaltered Computation 
+	# =========================================================================
 
-	R_un = np.zeros((nt, nt))
+	R_un = np.empty((nt, nt))
 	un_asn += wt_asn
 	un_fun += wt_fun
 
@@ -86,9 +88,11 @@ def compute_R_TC(X, X_grid, R, d_l, nt, nspat, finest, wt_art, wt_acc, wt_asn, w
 			un_acc += wt_acc
 			un_asn += wt_asn
 
-	# ========== Implemented Computation ========================== #
+	# =========================================================================
+	# Implemented Computation 
+	# =========================================================================
 
-	R_im = np.zeros((nt, nt))
+	R_im = np.empty((nt, nt))
 	im_asn += wt_asn
 	im_fun += wt_fun
 
@@ -216,7 +220,9 @@ def compute_R_TC(X, X_grid, R, d_l, nt, nspat, finest, wt_art, wt_acc, wt_asn, w
 			im_acc    += wt_acc
 			im_asn    += wt_asn
 
-	# ========== Check Correctness of Matrices ==================== #
+	# =========================================================================
+	# Check Correctness of Matrices
+	# =========================================================================
 
 	# Check if we should check for correctness
 	if type(R) != bool:
@@ -235,8 +241,7 @@ def compute_R_TC(X, X_grid, R, d_l, nt, nspat, finest, wt_art, wt_acc, wt_asn, w
 		else:
 			print('The unaltered R is incorrect')
 
-	# ========== Sum operations from im and un =================== #
-
+	# Sum operations from im and un 
 	un = un_asn + un_acc + un_art + un_fun
 	im = im_asn + im_acc + im_art + im_fun + im_log
 
