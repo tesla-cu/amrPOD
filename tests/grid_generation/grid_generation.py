@@ -1,26 +1,28 @@
 import numpy as np
 import os
 import sys
-sys.path.insert(1, '../source/')
+sys.path.insert(1, '../../source/')
 from GenGrid import GenGrid
 
-# ========== Main function ==========================================
+# =============================================================================
+# Main function 
+# =============================================================================
 if __name__ == '__main__':
 
     print('starting script to write synthetic AMR grids ...')
 
-    # ---------- User defined inputs --------------------------------
-    nx     = 24                   # x spatial points                  
-    ny     = 24                   # y spatial points
-    nz     = 24                   # z spatial points
-    finest = 3                    # finest level of AMR in the domain
-    nt     = 50                   # spanning nt
-    ls     = np.array([15/27, 1/27, 1/27, 10/27]) # amount of l0 and l1
+    # User defined inputs -----------------------------------------------------
+    nx     = 64  # x spatial points                  
+    ny     = 32  # y spatial points
+    nz     = 16  # z spatial points
+    finest = 3   # finest level of AMR in the domain
+    nt     = 10  # number of time steps
+    ls     = np.array([1/4, 1/4, 1/4, 1/4]) # amount of l0 and l1
     # lcs    = np.array([1/4, 1/4]) # amount of lc0 and lc1
     lcs    = np.zeros((finest+1)) # amount of lc0 and lc1
 
     # Direction where /code/ lives
-    basedir = '../../'
+    basedir = '../../../'
 
     # Directory where we want to store data
     datadir = basedir + 'data/'
@@ -32,28 +34,27 @@ if __name__ == '__main__':
     if not os.path.exists(checkdir):
         os.mkdir(checkdir)
 
-    # ---------- Helpful quantities derived from user inputs --------
-    nlev = finest + 1
-    c_l  = np.zeros((nlev), dtype=int)
-    d_l  = np.zeros((nlev), dtype=int)
-
+    # Helpful quantities derived from user inputs -----------------------------
+    nlev  = finest + 1
     ndim  = 0          # num dimensions
     if nx > 1: ndim += 1 
     if ny > 1: ndim += 1 
     if nz > 1: ndim += 1
     nspat = nx*ny*nz
     
+    c_l  = np.empty((nlev), dtype=int)
+    d_l  = np.empty((nlev), dtype=int)
     for i in range(nlev):
         c_l[i] = 2**(finest-i)
         d_l[i] = (2**ndim)**(finest-i)
 
-    # ---------- Generate data ----------------------------------------
-    X_grid = np.zeros((nspat, nt), dtype=int)
+    # Generate data -----------------------------------------------------------
+    X_grid = np.empty((nspat, nt), dtype=int)
     for n in range(nt):
         grid = GenGrid(nx, ny, nz, c_l, d_l, ls, lcs)
         X_grid[:,n] = np.reshape(grid, (-1))
 
-    # ---------- Compute grid information from X_grid ---------------
+    # Compute grid information from X_grid ------------------------------------
     l_comp  = np.zeros((nlev)) # computed level fractions
     lc_comp = np.zeros((nlev)) # computed level constant fractions
 
@@ -77,10 +78,11 @@ if __name__ == '__main__':
     lc_comp = lc_comp/nspat
     print("lc_comp = ", lc_comp)
 
-    # Get error amounts
-    l_err  = (ls  - l_comp) /ls
-    lc_err = (lcs - lc_comp)/lcs
+    # Get error amounts -------------------------------------------------------
+    l_err  = ls  - l_comp
+    lc_err = lcs - lc_comp
 
+    # Output grid data --------------------------------------------------------
     sim_info = open(checkdir + '/sim_info.txt', 'w')
     sim_info.write("finest:   %i\n" % finest)
     sim_info.write("nt:       %i\n" % nt)
