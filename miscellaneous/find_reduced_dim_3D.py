@@ -150,26 +150,3 @@ def find_reduced_dim_3D(datadir, imgdir):
 
         print('==============================================================')
 
-
-
-
-
-    # print('saving image ...')
-    fig.set_size_inches(6.5,3.25,forward=True) # figure size must be set here
-    # plt.savefig(imgdir + 'fig3.png', dpi=300)
-
-
-    # img = np.transpose(np.divide(num, den))
-    # img = np.divide(num, den)
-    # Xaxis, Yaxis = np.meshgrid(xaxis, yaxis, copy=False, indexing='ij')
-    # cont_levs = 100
-    # xmin = np.min(xaxis)
-    # xmax = np.max(xaxis)
-    # ymin = np.min(yaxis)
-    # ymax = np.max(yaxis)
-
-
-    # fig = plt.figure(clear=True)
-    # ax = fig.add_subplot(1,1,1)
-
-
