@@ -222,6 +222,6 @@ def Fig13_CPU(datadir, imgdir):
 
     # Save figure -------------------------------------------------------------
     fig.set_size_inches(6.5,3.75,forward=True)
-    plt.savefig(imgdir + 'Fig13_CPU.png', dpi=300)    
+    plt.savefig(imgdir + 'Fig13_CPU.png', dpi=600)    
 
     print('\tdone with figure 13')

@@ -134,12 +134,12 @@ def Fig10_l2_error(datadir, imgdir):
 
         im = ax.contourf(L0, L1, ratio, 100, origin='lower', \
             extent=[l0min,l0max,l1min,l1max], cmap='bwr', \
-            vmin=0.3, vmax=1.7)
+            vmin=0.35, vmax=1.65)
 
         # Colorbar information
         cbar = ax.cax.colorbar(im, format='%0.1f')
         ax.cax.set_ylabel(r'$\overline{T}_a/T_s$ [ops]')
-        cbar.ax.set_ylim(0.32,1.27)
+        cbar.ax.set_ylim(0.35,1.35)
         cbar.ax.set_yticks(np.linspace(0.4,1.2,5))
 
 
@@ -234,6 +234,6 @@ def Fig10_l2_error(datadir, imgdir):
 
     # print('saving image ...')
     fig.set_size_inches(6.5,3.2,forward=True) # figure size must be set here
-    plt.savefig(imgdir + 'Fig10_l2_error.png', dpi=300)
+    plt.savefig(imgdir + 'Fig10_l2_error.png', dpi=600)
 
     print('\tdone with figure 10')

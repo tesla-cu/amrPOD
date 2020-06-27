@@ -187,6 +187,6 @@ def Fig8_p1_nt_3D(datadir, imgdir):
 
     # Save figure
     fig.set_size_inches(6.5,3.2,forward=True)
-    plt.savefig(imgdir + 'Fig8_p1_nt_3D.png', dpi=300)    
+    plt.savefig(imgdir + 'Fig8_p1_nt_3D.png', dpi=600)    
 
     print('\tdone with figure 8')

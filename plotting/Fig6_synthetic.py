@@ -65,6 +65,6 @@ def Fig6_synthetic(datadir, imgdir):
 
     # Save image
     fig.set_size_inches(6.5,1.7,forward=True) # figure size must be set here
-    plt.savefig(imgdir + 'Fig6_synthetic.png', dpi=300)
+    plt.savefig(imgdir + 'Fig6_synthetic.png', dpi=600)
 
     print('\tdone with figure 6')

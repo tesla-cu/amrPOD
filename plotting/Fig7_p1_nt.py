@@ -158,8 +158,8 @@ def Fig7_p1_nt(datadir, imgdir):
         cbar = ax.cax.colorbar(im)
         ax.cax.set_ylabel(r'RMS$({T}_a)/\overline{T}_a \times 10^3$ (ops)')
         cbar.ax.set_ylim(0,8)
-        cbar.ax.set_yticks(np.linspace(0,8,5))
-        cbar.ax.set_yticklabels(['0.0','2.0','4.0','6.0','8.0'])
+        cbar.ax.set_yticks(np.linspace(0,7.5,4))
+        cbar.ax.set_yticklabels(['0.0','2.5','5.0','7.5'])
 
 
         # Label information
@@ -173,7 +173,7 @@ def Fig7_p1_nt(datadir, imgdir):
 
     # Save figure
     fig.set_size_inches(6.5,3.4,forward=True)
-    plt.savefig(imgdir + 'Fig7_p1_nt.png', dpi=300)
+    plt.savefig(imgdir + 'Fig7_p1_nt.png', dpi=600)
     
 
     print('\tdone with figure 7')

@@ -168,8 +168,7 @@ def Fig1_reshape(imgdir):
                 circ = plt.Circle((0, 221.5-i), d, color='k', clip_on=False)
                 ax.add_patch(circ)
 
-    # gs.tight_layout(fig, rect=[0,0,1,1])
     fig.set_size_inches(6.5,3.25,forward=True)
-    plt.savefig(imgdir + 'Fig1_reshape.png', dpi=300, pad_inches=0.01, bbox_inches='tight')
+    plt.savefig(imgdir + 'Fig1_reshape.png', dpi=600, pad_inches=0.01, bbox_inches='tight')
 
     print('\tdone with figure 1')

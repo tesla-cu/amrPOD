@@ -92,25 +92,25 @@ def Fig9_p1m_p0m(datadir, imgdir):
         # Display contoured image
         im = ax.contourf(Lc0, Lc1, ratio, 100, origin='lower', \
             extent=[lc0min,lc0max,lc1min,lc1max], cmap='bwr', \
-            vmin=-0.08, vmax=0.08)
+            vmin=-0.09, vmax=0.09)
 
         # Colorbar information
         cbar = ax.cax.colorbar(im, format='%0.0e')
         ax.cax.set_ylabel(r'$\log(\overline{T}_a/T_s)$ [ops]')
-        cbar.ax.set_ylim(-0.065,0.065)
-        cbar.ax.set_yticks(np.linspace(-0.06,0.06,5))
-        # cbar.ax.set_yticklabels(['$$','-0.1','0.0','0.1'])
+        cbar.ax.set_ylim(-0.09,0.09)
+        cbar.ax.set_yticks(np.linspace(-0.08,0.08,5))
+        cbar.ax.set_yticklabels(['-0.08','-0.04','0.00','0.04','0.08'])
 
         ax.set_xticks(np.linspace(1/8,3/8,3))
         ax.set_yticks(np.linspace(1/8,3/8,3))
         ax.set_xticklabels(['1/8','2/8','3/8'])
         ax.set_yticklabels(['1/8','2/8','3/8'])
-        ax.set_xlabel(r'$p_0^m$')
-        ax.set_ylabel(r'$p_1^m$')
+        ax.set_xlabel(r'$\tilde{p}_0^m$')
+        ax.set_ylabel(r'$\tilde{p}_1^m$')
 
     # Save image
     fig.set_size_inches(6.5,1.8,forward=True) # figure size must be set here
-    plt.savefig(imgdir + 'Fig9_p1m_p0m.png', dpi=300)
+    plt.savefig(imgdir + 'Fig9_p1m_p0m.png', dpi=600)
 
 
 
