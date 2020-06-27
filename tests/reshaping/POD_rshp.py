@@ -20,22 +20,22 @@ if __name__ == '__main__':
 
     print('starting script to perform POD on AMR grids ...')
 
-    # =========================================================================
-    # User defined inputs 
-    # =========================================================================
-
+    # User defined inputs -----------------------------------------------------
     nx          = 128   # x spatial points                  
     ny          = 128   # y spatial points
     nz          = 64    # z spatial points
-    finest      = 5     # finest level of AMR in the domain
     nt          = 5     # spanning nt
+    finest      = 5     # finest level of AMR in the domain
     ls          = np.array([4/16, 4/16, 2/16, 2/16, 2/16, 2/16])
     lcs         = np.array([1/16, 1/16, 0/16, 0/16, 0/16, 2/16]) 
+    # finest      = 3     # finest level of AMR in the domain
+    # ls          = np.array([6/16, 4/16, 4/16, 2/16])
+    # lcs         = np.array([2/16, 1/16, 0/16, 0/16]) 
 
     # Direction where /code/ livesc
-    basedir = '../../'
+    basedir = '../../../'
 
-    # Directory where we was to store data on speed up
+    # Directory where we want to store data on speed up
     datadir = basedir + 'data/'
     if not os.path.exists(datadir):
         os.mkdir(datadir)
@@ -45,11 +45,7 @@ if __name__ == '__main__':
     if not os.path.exists(studydir):
         os.mkdir(studydir)
 
-    # =========================================================================
-    # Begin POD computation
-    # =========================================================================
-
-    # Helpful quantities derived from user inputs
+    # Helpful quantities derived from user inputs -----------------------------
     nspat = nx*ny*nz    
     nlev  = finest + 1
     ndim  = 0            # num dimensions
@@ -65,7 +61,7 @@ if __name__ == '__main__':
         c_l[i]    = 2**(finest-i)
         d_l[i]    = (2**ndim)**(finest-i)
 
-    # Generate data
+    # Generate data ----------------------------------------------------------
     X      = np.zeros((nspat,nt))
     X_grid = np.zeros((nspat,nt), dtype=int)
     for n in range(nt):
@@ -82,9 +78,7 @@ if __name__ == '__main__':
         X_grid[:,n] = grid_1D
         X[:,n]      = data_1D
 
-    # -------------------------------------------------------------------------
-    # Compute grid information from X_grid
-    # -------------------------------------------------------------------------
+    # Compute grid information from X_grid ------------------------------------
     l_comp  = np.zeros((nlev)) # computed level fractions
     lc_comp = np.zeros((nlev)) # computed level constant fractions
 
@@ -103,9 +97,9 @@ if __name__ == '__main__':
     lc_comp = lc_comp/nspat
     print("lc_comp = ", lc_comp)
 
-    # -------------------------------------------------------------------------
+    # =========================================================================
     # Calculate POD without reshaping procedure
-    # -------------------------------------------------------------------------
+    # =========================================================================
     X_tp        = np.transpose(X)
     R_nr        = np.matmul(X_tp, X)
     Lambda, Psi = LA.eig(R_nr)
@@ -117,9 +111,9 @@ if __name__ == '__main__':
     A_nr        = np.matmul(X_tp, Phi_nr)
     Lambda      = np.diag(Lambda) # make this a matrix
 
-    # -------------------------------------------------------------------------
-    # Calculate POD without reshaping procedure
-    # -------------------------------------------------------------------------
+    # =========================================================================
+    # Calculate POD with reshaping procedure
+    # =========================================================================
 
     # Perform reshaping
     for n in range(nt):
