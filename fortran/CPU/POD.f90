@@ -14,10 +14,10 @@
 !    - Finalize computation
 !
 ! This program user defined inputs from "POD.inputs" to specify the domain 
-! dimensions, location of data, format of data, location to dump CPU times, 
-! number of samples of CPU time, variable to compute POD on, start and end of
-! time indices, and the finest resolution. This program computes the CPU time 
-! for each of the POD operations and the reshaping time in the AMR algorithm. 
+! dimensions, location of data, format of data, number of samples of CPU time, 
+! variable to compute POD on, start and end of time indices, and the finest 
+! resolution. This program computes the CPU time for each of the POD operations
+! and the reshaping time in the AMR algorithm. 
 !
 ! To create an executable, at the terminal, run:
 !
@@ -25,6 +25,7 @@
 !    gfortran -O3 -o POD.ex POD.f90 -L.. -llapack -lrefblas 
 !
 ! For more timing info:
+!
 !    gfortran -pg -O3 -o POD.ex POD.f90 -L. -llapack -lrefblas 
 !    gprof POD.ex > POD.stats
 ! 
@@ -327,9 +328,9 @@ do i=1,nsamp
 enddo
 close(fid)
 
-! do i=1,4
-!    write(*,*) Rpod(i,1:4)
-! enddo
+do i=1,4
+   write(*,*) Rpod(i,1:4)
+enddo
 
 ! R with AMR algorithm
 write(*,*) "computing R utilizing AMR ..."
@@ -347,6 +348,10 @@ do i=1,nsamp
    write(fid, CFMT) R_CPU(i)
 enddo
 close(fid)
+
+do i=1,4
+   write(*,*) Rpod(i,1:4)
+enddo
 
 write(*,*)
 
@@ -387,9 +392,9 @@ do i=1,nsamp
 enddo
 close(fid)
 
-! do i=1,4
-!    write(*,*) Phi(i,1:4)
-! enddo
+do i=1,4
+   write(*,*) Phi(i,1:4)
+enddo
 
 ! Phi with AMR algorithm, method 1
 write(*,*) "computing Phi utilizing AMR, method 1 ..."
@@ -408,9 +413,9 @@ do i=1,nsamp
 enddo
 close(fid)
 
-! do i=1,4
-!    write(*,*) Phi(i,1:4)
-! enddo
+do i=1,4
+   write(*,*) Phi(i,1:4)
+enddo
 
 ! Phi with AMR algorithm, method 1
 write(*,*) "computing Phi utilizing AMR, method 2 ..."
@@ -429,9 +434,9 @@ do i=1,nsamp
 enddo
 close(fid)
 
-! do i=1,4
-!    write(*,*) Phi(i,1:4)
-! enddo
+do i=1,4
+   write(*,*) Phi(i,1:4)
+enddo
 
 write(*,*)
 
@@ -454,9 +459,9 @@ do i=1,nsamp
 enddo
 close(fid)
 
-! do i=1,4
-!    write(*,*) Apod(i,1:4)
-! enddo
+do i=1,4
+   write(*,*) Apod(i,1:4)
+enddo
 
 ! A with AMR algorithm
 write(*,*) "computing A utilizing AMR ..."
@@ -475,9 +480,9 @@ do i=1,nsamp
 enddo
 close(fid)
 
-! do i=1,4
-!    write(*,*) Apod(i,1:4)
-! enddo
+do i=1,4
+   write(*,*) Apod(i,1:4)
+enddo
 
 ! =============================================================================
 ! Finalize computation
