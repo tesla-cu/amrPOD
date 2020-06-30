@@ -2,7 +2,7 @@
   ! Data domensions
   nx = 128
   ny = 128
-  nz = 128
+  nz = 64
 
   ! Start and end indices of time
   itime = 0, 4
@@ -11,12 +11,12 @@
   nsamp = 8
 
   ! Data directory storing binary files
-  datadir = './'
+  datadir = '../../../data/AMR_fortran_test/'
 
   ! Variable to compute POD
-  var = 'z_velocity'
+  var = 'grid_level'
 /
 &AMR_POD_inputs
   ! Finest level of AMR
-  finest = 1
+  finest = 3
 /

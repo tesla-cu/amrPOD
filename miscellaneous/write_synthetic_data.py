@@ -15,13 +15,16 @@ if __name__ == '__main__':
     # User defined inputs -----------------------------------------------------
 
     # Grid information
-    nx     = 64                   # x spatial points                  
-    ny     = 64                   # y spatial points
-    nz     = 1                    # z spatial points
-    finest = 1                    # finest level of AMR in the domain
-    nt     = 5                    # spanning nt
-    ls     = np.array([1/2, 1/2]) # amount of l0, l1, ...
-    lcs    = np.array([1/4, 1/4]) # amount of lc0, lc1, ...
+    nx     = 128                   # x spatial points                  
+    ny     = 128                   # y spatial points
+    nz     = 64                    # z spatial points
+    nt     = 5                     # spanning nt
+    # finest = 1                    # finest level of AMR in the domain
+    # ls     = np.array([1/2, 1/2]) # amount of l0, l1, ...
+    # lcs    = np.array([1/4, 1/4]) # amount of lc0, lc1, ...
+    finest = 3                    # finest level of AMR in the domain
+    ls     = np.array([1/2, 1/4, 1/8, 1/8]) # amount of l0, l1, ...
+    lcs    = np.array([1/4, 1/8, 0/8, 0/8]) # amount of lc0, lc1, ...
 
     # Direction where /code/ lives
     basedir = '../../'
@@ -32,7 +35,7 @@ if __name__ == '__main__':
         os.mkdir(datadir)
 
     # Directory where we will write grid level data
-    amr_datadir = datadir + 'AMR_syn/'
+    amr_datadir = datadir + 'AMR_fortran_test/'
     if not os.path.exists(amr_datadir):
         os.mkdir(amr_datadir)
 
@@ -53,7 +56,7 @@ if __name__ == '__main__':
     # Generate data -----------------------------------------------------------
     for n in range(nt):
         grid = GenGrid(nx, ny, nz, c_l, d_l, ls, lcs)
-        # grid = np.transpose(grid, (2, 1, 0)) # need to load into fortran
+        grid = np.transpose(grid, (2, 1, 0)) # need to load into fortran
         grid.tofile(amr_datadir + 'grid_level%05d.bin' % n)
 
     sim_info = open(amr_datadir + '/sim_info.txt', 'w')
