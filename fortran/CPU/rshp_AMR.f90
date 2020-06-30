@@ -1,38 +1,33 @@
 module rshp_AMR
 contains
 
-
-
 subroutine reshape_AMR(nx, ny, nz, finest, data, direction)
 implicit none
 
-! ---------- Arguments ----------------------------------------------
-integer                              , intent(in)     :: nx, ny, nz
-integer                              , intent(in)     :: finest
+! Arguments -------------------------------------------------------------------
+integer,                               intent(in)     :: nx, ny, nz
+integer,                               intent(in)     :: finest
 double precision, dimension(nx*ny*nz), intent(inout)  :: data
-character(len=*)                     , intent(in)  :: direction
-! ---------- General variables --------------------------------------
-integer :: i, c
-integer :: nspat
-integer :: ndim
-integer :: nxr, nyr, nzr
-integer :: nrshp1, nrshp2, nrshp3 ! integers used for reshape
+character(len=*),                      intent(in)     :: direction
 
-integer :: nx1, ny1, nz1, nx2, ny2, nz2
-integer :: i1, j1, k1, i2, j2, k2, ii
+! General variables -----------------------------------------------------------
+character(len=1) :: dir ! shortened direction
+integer          :: c
+integer          :: nspat, ndim
+integer          :: nx1, ny1, nz1, nx2, ny2, nz2
+integer          :: i, ii, i1, j1, k1, i2, j2, k2
 
-character(len=1)                          :: dir ! shortened direction
-integer,              dimension(0:finest) :: c_l
+integer,                       dimension(0:finest) :: c_l
 double precision, allocatable, dimension(:)        :: data_1D
 double precision, allocatable, dimension(:,:)      :: data_2Da
 double precision, allocatable, dimension(:,:)      :: data_2Db
 double precision, allocatable, dimension(:,:,:)    :: data_3Da
 double precision, allocatable, dimension(:,:,:)    :: data_3Db
-double precision, allocatable, dimension(:,:,:,:)  :: data_4Da
-double precision, allocatable, dimension(:,:,:,:)  :: data_4Db
 
+! =============================================================================
+! Quantities derived from user inputs
+! =============================================================================
 
-! =============== Quantities derived from user inputs ===============
 nspat = nx*ny*nz
 ndim = 0
 if (nx > 1) ndim = ndim + 1
@@ -49,10 +44,12 @@ else
    dir = direction(1:1)
 endif
 
-! ======================== Forward reshaping ========================
+! =============================================================================
+! Forward reshaping
+! =============================================================================
 if (dir == "f") then
 
-   ! ---------- Two dimensions
+   ! Two dimensions -----------------------------------------------------------
    if (ndim == 2) then
 
       allocate(data_2Da(nx,ny))
@@ -87,7 +84,7 @@ if (dir == "f") then
       data = data_2Da(:,1)
       deallocate(data_2Da)
 
-   ! ---------- Three dimensions
+   ! Three dimensions ---------------------------------------------------------
    elseif (ndim == 3) then
 
       allocate(data_3Da(nx,ny,nz))
@@ -131,9 +128,12 @@ if (dir == "f") then
 
    endif
 
-! ======================== Reverse reshaping ========================
+! =============================================================================
+! Reverse reshaping
+! =============================================================================
 elseif (dir== "r") then
 
+   ! Two dimensions -----------------------------------------------------------
    if (ndim == 2) then
 
       allocate(data_2Da(nspat,1))
@@ -174,14 +174,15 @@ elseif (dir== "r") then
       data = reshape(data_2Da, [nspat])
       deallocate(data_2Da)
 
+   ! Three dimensions -----------------------------------------------------------
    elseif (ndim == 3) then
 
       allocate(data_3Da(nspat,1,1))
       data_3Da(:,1,1) = data
       do i=finest-1,-1,-1
-         nxr = size(data_3Da,1)
-         nyr = size(data_3Da,2)
-         nzr = size(data_3Da,3)
+         nx1 = size(data_3Da,1)
+         ny1 = size(data_3Da,2)
+         nz1 = size(data_3Da,3)
          if (i >= 0) then
             c = c_l(i)
             nx2 = nspat/(c*c)
@@ -228,7 +229,6 @@ else
    stop
 
 endif
-
 
 end subroutine reshape_AMR
 
