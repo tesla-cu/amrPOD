@@ -1,7 +1,7 @@
 # Efficient Algorithm to Compute POD on AMR Grids
 This repository hosts code to compute proper orthogonal decomposition (POD) on a set of grid that utilized adaptive mesh refinement (AMR) and evaluate the efficiency of the algorithm compared to the standard algorithm. We have provided a detailed description of the code and how to use it below. 
 
-We expect the following directory structure:
+In order to use the code, we expect the following directory structure:
   * `POD_AMR/`
     * `code/`
       * contains all the code in this repository
