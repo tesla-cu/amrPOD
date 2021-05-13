@@ -6,6 +6,7 @@
 # ================================================= #
 
 import numpy as np
+from numba import njit
 
 # =========================================================================== #
 # Function to compute the POD spatial modes in using a standard  matrix 
@@ -37,6 +38,7 @@ import numpy as np
 # - im : num operations to compute Phi using implemented algorithm
 # - un : num operations to compute Phi using unaltered algorithm
 # =========================================================================== #
+@njit
 def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest,\
                    wt_art, wt_acc, wt_asn, wt_log, wt_fun):
 
@@ -109,7 +111,7 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest,\
 			im_art += wt_art
 			im_asn += wt_asn
 
-			G 	   = np.zeros((d_0), dtype=int)
+			G 	   = np.zeros((d_0))
 			im_asn += wt_asn
 			im_fun += wt_fun
 
@@ -194,7 +196,7 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest,\
 							im_art  += 2*wt_art
 							im_asn  += wt_asn
 
-						g_val  = G[idx]
+						g_val  = int(G[idx])
 						im_acc += wt_acc
 						im_asn += wt_asn
 
@@ -255,11 +257,11 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest,\
 			im_art += wt_art
 			im_asn += wt_asn
 
-			G_mat  = np.zeros((nlev, d_1, nt), dtype=int)
+			G_mat  = np.zeros((nlev, d_1, nt))
 			im_asn += wt_asn
 			im_fun += wt_fun
 
-			nl     = np.zeros((nlev, d_1), dtype=int)
+			nl     = np.zeros((nlev, d_1))
 			im_asn += wt_asn
 			im_fun += wt_fun
 
@@ -274,7 +276,7 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest,\
 				im_log += wt_log
 				if lvl == 0:
 
-					G_mat[0,0,nl[0,0]] = n
+					G_mat[0,0,int(nl[0,0])] = n
 					im_acc += 2*wt_acc
 					im_asn += wt_asn
 
@@ -308,7 +310,7 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest,\
 								im_log += wt_log
 								if lvl == finest:
 
-									G_mat[finest, idx, nl[finest, idx]] = n
+									G_mat[finest, idx, int(nl[finest, idx])] = n
 									im_acc += 2*wt_acc
 									im_asn += wt_asn
 
@@ -326,7 +328,7 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest,\
 									im_asn += wt_asn
 
 								else:
-									G_mat[lvl, idx, nl[lvl, idx]] = n
+									G_mat[lvl, idx, int(nl[lvl, idx])] = n
 									im_acc += 2*wt_acc
 									im_asn += wt_asn
 
@@ -349,7 +351,7 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest,\
 								break
 
 					else:
-						G_mat[1,0,nl[1,0]] = n
+						G_mat[1,0,int(nl[1,0])] = n
 						im_acc += 2*wt_acc
 						im_asn += wt_asn
 
@@ -379,7 +381,7 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest,\
 						im_art += wt_art
 						im_asn += wt_asn
 
-						k      = G_mat[0,0,m]
+						k      = int(G_mat[0,0,m])
 						im_acc += wt_acc
 						im_asn += wt_asn
 
@@ -429,7 +431,7 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest,\
 										im_art += wt_art
 										im_asn += wt_asn
 
-										k = G_mat[l, idx, m]
+										k = int(G_mat[l, idx, m])
 										im_acc += wt_acc
 										im_asn += wt_asn
 
@@ -477,11 +479,11 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest,\
 								im_asn += wt_asn
 
 								im_acc += wt_acc
-								for m in range(nl[l, idx]):
+								for m in range(int(nl[l, idx])):
 									im_art += wt_art
 									im_asn += wt_asn
 
-									k = G_mat[l, idx, m]
+									k = int(G_mat[l, idx, m])
 									im_acc += wt_acc
 									im_asn += wt_asn
 
@@ -514,11 +516,11 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest,\
 									im_asn += wt_asn
 
 									im_acc += wt_acc
-									for m in range(nl[finest, idx]):
+									for m in range(int(nl[finest, idx])):
 										im_art += wt_art
 										im_asn += wt_asn
 
-										p = G_mat[finest, idx, m]
+										p = int(G_mat[finest, idx, m])
 										im_acc += wt_acc
 										im_asn += wt_asn
 
@@ -547,11 +549,11 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest,\
 							im_asn += wt_asn
 
 							im_acc += wt_acc
-							for m in range(nl[1,0]):
+							for m in range(int(nl[1,0])):
 								im_art += wt_art
 								im_asn += wt_asn
 
-								p      = G_mat[1, 0, m]
+								p      = int(G_mat[1, 0, m])
 								im_acc += wt_acc
 								im_asn += wt_asn
 
@@ -595,8 +597,8 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest,\
 	if Phi is not None:
 
 		# Compute relative error for each cell
-		err_im = np.max(abs(np.subtract(Phi_im, Phi)) / abs(Phi))
-		err_un = np.max(abs(np.subtract(Phi_un, Phi)) / abs(Phi))
+		err_im = np.max(np.abs(np.subtract(Phi_im, Phi)) / np.abs(Phi))
+		err_un = np.max(np.abs(np.subtract(Phi_un, Phi)) / np.abs(Phi))
 
 		if err_im < 1e-6:
 			print('The implemented Phi is correct')

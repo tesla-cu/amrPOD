@@ -6,6 +6,7 @@
 # ================================================= #
 
 import numpy as np
+from numba import njit
 
 # =========================================================================== #
 # Function to compute the temporal coefficients A in POD using a standard 
@@ -34,6 +35,7 @@ import numpy as np
 # - im : num of operations to compute A using implemented algorithm
 # - un : num of operations to compute A using unaltered algorithm
 # =========================================================================== #
+@njit
 def compute_A_TC(X, X_grid, Phi, A, d_l, nt, nspat, finest, \
 	             wt_art, wt_acc, wt_asn, wt_log, wt_fun):
 
@@ -92,14 +94,14 @@ def compute_A_TC(X, X_grid, Phi, A, d_l, nt, nspat, finest, \
 	im_asn += wt_asn
 	im_fun += wt_fun
 
-	G      =  np.empty((nspat), dtype=int)
+	G      =  np.empty((nspat))
 	im_asn += wt_asn
 	im_fun += wt_fun
 
 	i       = 0
 	im_asn += wt_asn
 
-	d_f1 = d_l[finest-1]
+	d_f1 = int(d_l[finest-1])
 	im_asn += wt_asn
 	im_art += wt_art
 	im_acc += wt_acc
@@ -145,7 +147,7 @@ def compute_A_TC(X, X_grid, Phi, A, d_l, nt, nspat, finest, \
 				im_acc += 2*wt_acc
 				im_asn += wt_asn
 
-				i      += G[i]
+				i      += int(G[i])
 				im_art += wt_art
 				im_acc += wt_acc
 				im_asn += wt_asn
@@ -198,7 +200,7 @@ def compute_A_TC(X, X_grid, Phi, A, d_l, nt, nspat, finest, \
 						im_art += 3*wt_art
 						im_asn += wt_asn
 
-						i      += G[i]
+						i      += int(G[i])
 						im_acc += wt_acc
 						im_asn += wt_asn
 						im_art += wt_art
@@ -218,8 +220,8 @@ def compute_A_TC(X, X_grid, Phi, A, d_l, nt, nspat, finest, \
 	if A is not None:
 
 		# Compute relative error for each cell
-		err_im = np.max(abs(np.subtract(A_im, A)) / abs(A))
-		err_un = np.max(abs(np.subtract(A_un, A)) / abs(A))
+		err_im = np.max(np.abs(np.subtract(A_im, A)) / np.abs(A))
+		err_un = np.max(np.abs(np.subtract(A_un, A)) / np.abs(A))
 
 		if err_im < 1e-6:
 			print('The implemented A is correct')

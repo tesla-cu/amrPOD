@@ -6,6 +6,7 @@
 # ================================================= #
 
 import numpy as np
+from numba import njit, objmode
 import time
 
 # =========================================================================== #
@@ -30,6 +31,7 @@ import time
 # - time_im : CPU time to compute A using implemented algorithm
 # - time_un : CPU time to compute A using unaltered algorithm
 # =========================================================================== #
+@njit
 def compute_A_CPU(X, X_grid, Phi, A, d_l, nt, nspat, finest):
 
 	# =========================================================================
@@ -37,7 +39,8 @@ def compute_A_CPU(X, X_grid, Phi, A, d_l, nt, nspat, finest):
 	# =========================================================================
 
 	# Initialize timer
-	tic = time.time()
+	with objmode(tic='f8'):
+		tic = time.time()
 
 	# Initialize A matrix for unaltered computation
 	A_un = np.empty((nt, nt))
@@ -58,22 +61,24 @@ def compute_A_CPU(X, X_grid, Phi, A, d_l, nt, nspat, finest):
 			A_un[m,n] = a_sum
 
 	# Compute total cpu time
-	time_un = time.time() - tic
+	with objmode(time_un='f8'):
+		time_un = time.time() - tic
 
 	# =========================================================================
 	# Implemented Computation
 	# =========================================================================
 
 	# Initialize timer
-	tic = time.time()
+	with objmode(tic='f8'):
+		tic = time.time()
 
 	# Initialize A matrix for computation of implemented algorithm
 	A_im = np.empty((nt, nt))
 
 	# Initialize matrix to store maximum grid level
-	G = np.empty((nspat), dtype=int)
+	G = np.empty((nspat))
 
-	d_f1 = d_l[finest-1]
+	d_f1 = int(d_l[finest-1])
 
 	# Initialize index of spatial location
 	i = 0
@@ -102,7 +107,7 @@ def compute_A_CPU(X, X_grid, Phi, A, d_l, nt, nspat, finest):
 				i    += d_f1
 			else:
 				G[i] =  d_l[X_grid_max] # get # of repeats
-				i    += G[i]            # skip cells that are repeated
+				i    += int(G[i])            # skip cells that are repeated
 		else:
 			break
 
@@ -126,7 +131,7 @@ def compute_A_CPU(X, X_grid, Phi, A, d_l, nt, nspat, finest):
 						i += d_f1
 					else:
 						a_sum += G[i]*X[i,m]*Phi[i,n] # weight computation
-						i += G[i]                     # skip repeats
+						i += int(G[i])                     # skip repeats
 				else:
 					break
 
@@ -134,7 +139,8 @@ def compute_A_CPU(X, X_grid, Phi, A, d_l, nt, nspat, finest):
 			A_im[m,n] = a_sum
 
 	# Compute total cpu time
-	time_im = time.time() - tic
+	with objmode(time_im='f8'):
+		time_im = time.time() - tic
 
 	# =========================================================================
 	# Check Correctness of Matrices
@@ -144,8 +150,8 @@ def compute_A_CPU(X, X_grid, Phi, A, d_l, nt, nspat, finest):
 	if A is not None:
 
 		# Compute relative error for each cell
-		err_im = np.max(abs(np.subtract(A_im, A)) / abs(A))
-		err_un = np.max(abs(np.subtract(A_un, A)) / abs(A))
+		err_im = np.max(np.abs(np.subtract(A_im, A)) / np.abs(A))
+		err_un = np.max(np.abs(np.subtract(A_un, A)) / np.abs(A))
 
 		if err_im < 1e-6:
 			print('The implemented A is correct')

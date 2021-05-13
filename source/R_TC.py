@@ -6,6 +6,7 @@
 # ================================================= #
 
 import numpy as np
+from numba import njit
 
 # =========================================================================== #
 # Function to compute the covariance R in POD using a standard matrix 
@@ -31,6 +32,7 @@ import numpy as np
 # - im : num of operations to compute R using implemented algorithm
 # - un : num of operations to compute R using unaltered algorithm
 # =========================================================================== #
+@njit
 def compute_R_TC(X, X_grid, R, d_l, nt, nspat, finest, \
 	             wt_art, wt_acc, wt_asn, wt_log, wt_fun):
 
@@ -228,8 +230,8 @@ def compute_R_TC(X, X_grid, R, d_l, nt, nspat, finest, \
 	if R is not None:
 	
 		# Compute relative error for each cell
-		err_im = np.max(abs(np.subtract(R_im, R)) / abs(R))
-		err_un = np.max(abs(np.subtract(R_un, R)) / abs(R))
+		err_im = np.max(np.abs(np.subtract(R_im, R)) / np.abs(R))
+		err_un = np.max(np.abs(np.subtract(R_un, R)) / np.abs(R))
 
 		if err_im < 1e-6:
 			print('The implemented R is correct')

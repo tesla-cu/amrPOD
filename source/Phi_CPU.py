@@ -6,6 +6,7 @@
 # ================================================= #
 
 import numpy as np
+from numba import njit, objmode
 import time
 
 # =========================================================================== #
@@ -32,6 +33,7 @@ import time
 # - time_im : CPU time to compute Phi using implemented algorithm
 # - time_un : CPU time to compute Phi using unaltered algorithm
 # =========================================================================== #
+@njit
 def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest):
 
 	# =========================================================================
@@ -39,7 +41,8 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest)
 	# =========================================================================
 
 	# Initialize timer
-	tic = time.time()
+	with objmode(tic='f8'):
+		tic  = time.time()
 
 	# Initialize Phi matrix for unaltered computation
 	Phi_un = np.empty((nspat,nt))
@@ -60,7 +63,8 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest)
 			Phi_un[i,m] = phi_sum/np.sqrt(Lambda[m,m])
 
 	# Compute total cpu time
-	time_un = time.time() - tic
+	with objmode(time_un='f8'):
+		time_un = time.time() - tic
 	
 	# =========================================================================
 	# Implemented Computation - Method 1
@@ -69,7 +73,8 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest)
 	if method == 1:
 
 		# Initialize timer
-		tic = time.time()
+		with objmode(tic='f8'):
+			tic  = time.time()
 
 		# Initialize Phi matrix for implemented computation
 		Phi_im = np.empty((nspat, nt))
@@ -82,7 +87,7 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest)
 
 			# Initialize matrix to store the maximum grid level at 
 			# a particular cell location
-			G = np.zeros((d_0), dtype=int)
+			G = np.zeros((d_0))
 
 			idx = 0 # index used for iterating within a coarse cell
 			j = i   # index of global matrix
@@ -131,7 +136,7 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest)
 						for n in range(nt):
 							phi_sum += X[j,n] * Psi[n,m]
 
-						g_val = G[idx] # # of repetitions of cell
+						g_val = int(G[idx]) # # of repetitions of cell
 						
 
 						# Assign value of Phi after dividing by sqrt(lamb_ii)
@@ -148,7 +153,8 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest)
 					else:
 						break
 		# Compute total cpu time
-		time_im = time.time() - tic
+		with objmode(time_im='f8'):
+			time_im = time.time() - tic
 
 	# =========================================================================
 	# Implemented Computation - Method 2
@@ -157,7 +163,8 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest)
 	elif method == 2:
 
 		# Initialize timer
-		tic = time.time()
+		with objmode(tic='f8'):
+			tic  = time.time()
 
 		# Initialize Phi matrix for implemented computation
 		Phi_im = np.empty((nspat, nt))
@@ -176,8 +183,8 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest)
 
 			# Initialize matrices to store locations of each level and
 			# the number of levels
-			G_mat = np.zeros((nlev, d_1, nt), dtype=int)
-			nl    = np.zeros((nlev, d_1),     dtype=int)
+			G_mat = np.zeros((nlev, d_1, nt))
+			nl    = np.zeros((nlev, d_1))
 
 			# Iterate over columns of X (different times)
 			for n in range(nt):
@@ -188,7 +195,7 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest)
 				# Determine if the lvl is the coarsest, if so, 
 				# add this cell to G and add another value to nl
 				if lvl == 0:
-					G_mat[0,0,nl[0,0]] = n
+					G_mat[0,0,int(nl[0,0])] = n
 					nl[0,0] += 1
 					
 				else:
@@ -210,7 +217,7 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest)
 								# of d_l we don't look where all finest would be
 								if lvl == finest:
 									# Tabulate cell and skip corresponding number
-									G_mat[finest, idx, nl[finest, idx]] = n
+									G_mat[finest, idx, int(nl[finest, idx])] = n
 									nl[finest, idx] += 1
 									idx += 1
 									j += d_f1
@@ -219,7 +226,7 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest)
 								# from 1 to f-1 iteratively
 								else:
 									# Tabulate the current level
-									G_mat[lvl, idx, nl[lvl, idx]] = n
+									G_mat[lvl, idx, int(nl[lvl, idx])] = n
 									nl[lvl, idx] += 1
 									idx += d_l[lvl+1]
 									j += d_l[lvl]
@@ -229,7 +236,7 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest)
 					# If not, this cell must be a level one so we 
 					# add it to the counts
 					else:
-						G_mat[1,0,nl[1,0]] = n
+						G_mat[1,0,int(nl[1,0])] = n
 						nl[1,0] += 1
 
 			# Compute values of Phi for the elements contained in 
@@ -247,8 +254,8 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest)
 					l_sum = 0
 
 					# Compute contributions of l=0 cells
-					for m in range(nl[0,0]):
-						k = G_mat[0,0,m]
+					for m in range(int(nl[0,0])):
+						k = int(G_mat[0,0,m])
 						l_sum += X[i,k] * Psi[k,n]
 
 					# Assign this l=0 contribution to H to be summed
@@ -277,8 +284,8 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest)
 									l_sum = 0
 
 									# Compute contribution of current level
-									for m in range(nl[l, idx]):
-										k = G_mat[l, idx, m]
+									for m in range(int(nl[l, idx])):
+										k = int(G_mat[l, idx, m])
 										l_sum += X[j,k] * Psi[k,n]
 
 									# Assign contribution to H
@@ -308,8 +315,8 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest)
 								l_sum = 0
 
 								# Compute contribution of current level
-								for m in range(nl[l, idx]):
-									k = G_mat[l, idx, m]
+								for m in range(int(nl[l, idx])):
+									k = int(G_mat[l, idx, m])
 									l_sum += X[j,k] * Psi[k,n]
 
 								# Assign contribution to H
@@ -327,8 +334,8 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest)
 									l_sum = 0
 
 									# Compute contribution of current level
-									for m in range(nl[finest, idx]):
-										p = G_mat[finest, idx, m]
+									for m in range(int(nl[finest, idx])):
+										p = int(G_mat[finest, idx, m])
 										l_sum += X[k,p] * Psi[p,n]
 
 									# Assign contribution to H
@@ -347,8 +354,8 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest)
 
 							# Compute a particular contribution of
 							# l=1 forr an element of Phi
-							for m in range(nl[1,0]):
-								p = G_mat[1, 0, m]
+							for m in range(int(nl[1,0])):
+								p = int(G_mat[1, 0, m])
 								l_sum += X[k,p] * Psi[p,n]
 
 							# Assign this l=1 contribution to H to be
@@ -370,7 +377,8 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest)
 					Phi_im[m+i, n] = H_sum/np.sqrt(Lambda[n,n])
 
 		# Compute total cpu time
-		time_im = time.time() - tic
+		with objmode(time_im='f8'):
+			time_im = time.time() - tic
 
 	# =========================================================================
 	# Check Correctness of Matrices
@@ -380,8 +388,8 @@ def compute_Phi_CPU(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest)
 	if Phi is not None:
 
 		# Compute relative error for each cell
-		err_im = np.max(abs(np.subtract(Phi_im, Phi)) / abs(Phi))
-		err_un = np.max(abs(np.subtract(Phi_un, Phi)) / abs(Phi))
+		err_im = np.max(np.abs(np.subtract(Phi_im, Phi)) / np.abs(Phi))
+		err_un = np.max(np.abs(np.subtract(Phi_un, Phi)) / np.abs(Phi))
 
 		if err_im < 1e-6:
 			print('The implemented Phi is correct')

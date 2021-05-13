@@ -6,6 +6,7 @@
 # ================================================= #
 
 import numpy as np
+from numba import njit, objmode
 import time
 
 # =========================================================================== #
@@ -27,6 +28,7 @@ import time
 # - time_im : CPU time to compute R using implemented algorithm
 # - time_un : CPU time to compute R using unaltered algorithm
 # =========================================================================== #
+@njit
 def compute_R_CPU(X, X_grid, R, d_l, nt, nspat, finest):
 
 	# =========================================================================
@@ -34,7 +36,8 @@ def compute_R_CPU(X, X_grid, R, d_l, nt, nspat, finest):
 	# =========================================================================
 
 	# Initialize timer
-	tic  = time.time()
+	with objmode(tic='f8'):
+		tic  = time.time()
 
 	# Initialize R matrix for unaltered computation  
 	R_un = np.empty((nt, nt))
@@ -56,14 +59,16 @@ def compute_R_CPU(X, X_grid, R, d_l, nt, nspat, finest):
 			R_un[n,m] = r_sum
 
 	# Compute total cpu time
-	time_un = time.time() - tic
+	with objmode(time_un='f8'):
+		time_un = time.time() - tic
 
 	# =========================================================================
 	# Implemented Computation 
 	# =========================================================================
 
 	# Initialize timer
-	tic   = time.time()
+	with objmode(tic='f8'):
+		tic   = time.time()
 
 	# Initialize R matrix for computation of implemented algorithm
 	R_im = np.empty((nt, nt))
@@ -132,7 +137,8 @@ def compute_R_CPU(X, X_grid, R, d_l, nt, nspat, finest):
 			R_im[n,m] = r_sum
 
 	# Compute total cpu time
-	time_im = time.time() - tic
+	with objmode(time_im='f8'):
+		time_im = time.time() - tic
 
 	# =========================================================================
 	# Check Correctness of Matrices 
@@ -142,8 +148,8 @@ def compute_R_CPU(X, X_grid, R, d_l, nt, nspat, finest):
 	if R is not None:
 	
 		# Compute relative error for each cell
-		err_im = np.max(abs(np.subtract(R_im, R)) / abs(R))
-		err_un = np.max(abs(np.subtract(R_un, R)) / abs(R))
+		err_im = np.max(np.abs(np.subtract(R_im, R)) / np.abs(R))
+		err_un = np.max(np.abs(np.subtract(R_un, R)) / np.abs(R))
 
 		if err_im < 1e-6:
 			print('The implemented R is correct')
