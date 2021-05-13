@@ -141,7 +141,7 @@ def compute_A_CPU(X, X_grid, Phi, A, d_l, nt, nspat, finest):
 	# =========================================================================
 	
 	# Check if we should check for correctness
-	if type(A) != bool:
+	if A is not None:
 
 		# Compute relative error for each cell
 		err_im = np.max(abs(np.subtract(A_im, A)) / abs(A))

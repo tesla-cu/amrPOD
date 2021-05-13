@@ -225,7 +225,7 @@ def compute_R_TC(X, X_grid, R, d_l, nt, nspat, finest, \
 	# =========================================================================
 
 	# Check if we should check for correctness
-	if type(R) != bool:
+	if R is not None:
 	
 		# Compute relative error for each cell
 		err_im = np.max(abs(np.subtract(R_im, R)) / abs(R))

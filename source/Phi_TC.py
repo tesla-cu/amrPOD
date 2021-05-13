@@ -592,7 +592,7 @@ def compute_Phi_TC(X, X_grid, Psi, Lambda, method, Phi, d_l, nt, nspat, finest,\
 	# =========================================================================
 
 	# Check if we should check for correctness
-	if type(Phi) != bool:
+	if Phi is not None:
 
 		# Compute relative error for each cell
 		err_im = np.max(abs(np.subtract(Phi_im, Phi)) / abs(Phi))

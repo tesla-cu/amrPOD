@@ -118,31 +118,31 @@ def Compute_POD(gen_grid, nx, ny, nz, finest, l_fracs, lc_fracs, nt, \
 	# Compute time complexity of each operation
 	if TC_CPU == 'TC':
 
-		R_imp,  R_unalt  = compute_R_TC  (X, X_grid,                 False, \
+		R_imp,  R_unalt  = compute_R_TC  (X, X_grid,                 None, \
 			d_l, nt, nspat, finest, wt_art, wt_acc, wt_asn, wt_log, wt_fun)
 
-		P1_imp, P1_unalt = compute_Phi_TC(X, X_grid, Psi, Lambda, 1, False, \
+		P1_imp, P1_unalt = compute_Phi_TC(X, X_grid, Psi, Lambda, 1, None, \
 			d_l, nt, nspat, finest, wt_art, wt_acc, wt_asn, wt_log, wt_fun)
 
-		P2_imp, P2_unalt = compute_Phi_TC(X, X_grid, Psi, Lambda, 2, False, \
+		P2_imp, P2_unalt = compute_Phi_TC(X, X_grid, Psi, Lambda, 2, None, \
 			d_l, nt, nspat, finest, wt_art, wt_acc, wt_asn, wt_log, wt_fun)
 
-		A_imp,  A_unalt  = compute_A_TC  (X, X_grid, Phi,            False, \
+		A_imp,  A_unalt  = compute_A_TC  (X, X_grid, Phi,            None, \
 			d_l, nt, nspat, finest, wt_art, wt_acc, wt_asn, wt_log, wt_fun)
 
 	# Compute CPU time of each operation
 	elif TC_CPU == 'CPU':
 
-		R_imp,  R_unalt  = compute_R_CPU  (X, X_grid,                 False, \
+		R_imp,  R_unalt  = compute_R_CPU  (X, X_grid,                 None, \
 			d_l, nt, nspat, finest)
 
-		P1_imp, P1_unalt = compute_Phi_CPU(X, X_grid, Psi, Lambda, 1, False, \
+		P1_imp, P1_unalt = compute_Phi_CPU(X, X_grid, Psi, Lambda, 1, None, \
 			d_l, nt, nspat, finest)
 
-		P2_imp, P2_unalt = compute_Phi_CPU(X, X_grid, Psi, Lambda, 2, False, \
+		P2_imp, P2_unalt = compute_Phi_CPU(X, X_grid, Psi, Lambda, 2, None, \
 			d_l, nt, nspat, finest)
 
-		A_imp,  A_unalt  = compute_A_CPU  (X, X_grid, Phi,            False, \
+		A_imp,  A_unalt  = compute_A_CPU  (X, X_grid, Phi,            None, \
 			d_l, nt, nspat, finest)
 
 	else:
