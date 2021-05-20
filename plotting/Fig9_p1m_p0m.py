@@ -51,7 +51,7 @@ def Fig9_p1m_p0m(datadir, imgdir):
 
 
     # Plot figure -------------------------------------------------------------
-    grid = AxesGrid(fig, (0.08,0.13,0.81,0.80),
+    grid = AxesGrid(fig, (0.08,0.15,0.81,0.80),
         nrows_ncols = (1, 4),
         axes_pad = 0.1,
         aspect = True,
@@ -74,11 +74,11 @@ def Fig9_p1m_p0m(datadir, imgdir):
         elif i == 1:
             num = TC_P1_avg_imp
             den = TC_P1_avg_unalt
-            ax.set_title(r'$\mathbf{\Phi}$ -- Method 1')
+            ax.set_title(r'$\mathbf{\Phi}$ (method 1)')
         elif i == 2:
             num = TC_P2_avg_imp
             den = TC_P2_avg_unalt
-            ax.set_title(r'$\mathbf{\Phi}$ -- Method 2')
+            ax.set_title(r'$\mathbf{\Phi}$ (method 2)')
         elif i == 3:
             num = TC_A_avg_imp
             den = TC_A_avg_unalt
@@ -93,10 +93,12 @@ def Fig9_p1m_p0m(datadir, imgdir):
         im = ax.contourf(Lc0, Lc1, ratio, 100, origin='lower', \
             extent=[lc0min,lc0max,lc1min,lc1max], cmap='bwr', \
             vmin=-0.09, vmax=0.09)
+        lin = ax.contour(Lc0, Lc1, ratio, [0.0], linewidth=0.25, colors=['k'], \
+            linestyles=['--'])
 
         # Colorbar information
         cbar = ax.cax.colorbar(im, format='%0.0e')
-        ax.cax.set_ylabel(r'$\log(\overline{T}_a/T_s)$ [ops]')
+        ax.cax.set_ylabel(r'$\log(\overline{T}_\mathrm{AMR}/T_\mathrm{std})$ (ops)')
         cbar.ax.set_ylim(-0.09,0.09)
         cbar.ax.set_yticks(np.linspace(-0.08,0.08,5))
         cbar.ax.set_yticklabels(['-0.08','-0.04','0.00','0.04','0.08'])
@@ -105,8 +107,8 @@ def Fig9_p1m_p0m(datadir, imgdir):
         ax.set_yticks(np.linspace(1/8,3/8,3))
         ax.set_xticklabels(['1/8','2/8','3/8'])
         ax.set_yticklabels(['1/8','2/8','3/8'])
-        ax.set_xlabel(r'$\tilde{p}_0^m$')
-        ax.set_ylabel(r'$\tilde{p}_1^m$')
+        ax.set_xlabel(r'$p_0^\mathrm{max}$')
+        ax.set_ylabel(r'$p_1^\mathrm{max}$')
 
     # Save image
     fig.set_size_inches(6.5,1.8,forward=True) # figure size must be set here

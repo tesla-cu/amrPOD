@@ -64,10 +64,10 @@ def Fig12_pl_nt(datadir, imgdir):
 
             ax.plot(nt, ps[j,:],  linestyle=lins[0], color=clrs[j], \
                 marker=mrks[j], markersize=4, linewidth=1, \
-                label=('$\overline{p}_%i$'%j))
+                label=(r'$\langle p_%i\rangle$'%j))
             ax.plot(nt, pms[j,:], linestyle=lins[1], color=clrs[j], \
                 marker=mrks[j], markersize=4, linewidth=1, \
-                label=('$p_%i^m$'%j))
+                label=('$p_%i^\mathrm{max}$'%j))
 
             ax.grid('on', linestyle=':')
 

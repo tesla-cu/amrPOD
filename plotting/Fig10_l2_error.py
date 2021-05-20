@@ -116,11 +116,11 @@ def Fig10_l2_error(datadir, imgdir):
         elif i == 1:
             num = TC_P1_avg_imp
             den = TC_P1_avg_unalt
-            ax.set_title(r'$\mathbf{\Phi}$ -- Method 1')
+            ax.set_title(r'$\mathbf{\Phi}$ (method 1)')
         elif i == 2:
             num = TC_P2_avg_imp
             den = TC_P2_avg_unalt
-            ax.set_title(r'$\mathbf{\Phi}$ -- Method 2')
+            ax.set_title(r'$\mathbf{\Phi}$ (method 2)')
         elif i == 3:
             num = TC_A_avg_imp
             den = TC_A_avg_unalt
@@ -135,10 +135,12 @@ def Fig10_l2_error(datadir, imgdir):
         im = ax.contourf(L0, L1, ratio, 100, origin='lower', \
             extent=[l0min,l0max,l1min,l1max], cmap='bwr', \
             vmin=0.35, vmax=1.65)
+        lin = ax.contour(L0, L1, ratio, [1.0], linewidth=0.25, colors=['k'], \
+            linestyles=['--'])
 
         # Colorbar information
         cbar = ax.cax.colorbar(im, format='%0.1f')
-        ax.cax.set_ylabel(r'$\overline{T}_a/T_s$ [ops]')
+        ax.cax.set_ylabel(r'$\overline{T}_\mathrm{AMR}/T_\mathrm{std}$ (ops)')
         cbar.ax.set_ylim(0.35,1.35)
         cbar.ax.set_yticks(np.linspace(0.4,1.2,5))
 
@@ -157,7 +159,7 @@ def Fig10_l2_error(datadir, imgdir):
         if i==2:
             ax.set_ylabel(r'$p_1$', labelpad=-3.5)
         elif i==1 or i==3:
-            ax.set_ylabel(r'$p_1 = p_1^m$', labelpad=-3.5)
+            ax.set_ylabel(r'$p_1 = p_1^\mathrm{max}$', labelpad=-3.5)
 
 
         # Bottom half of figure -----------------------------------------------
@@ -210,7 +212,7 @@ def Fig10_l2_error(datadir, imgdir):
         cbar.ax.set_yticks(clims)
         cbar.ax.set_yticklabels(['',''])
         if i==3:
-            ax.cax.set_ylabel('log(error) [ops]')
+            ax.cax.set_ylabel('log(error) (ops)')
         ax.text(0.52, 0.51, '%0.1f'%clims[0], ha='left', va='bottom')
         ax.text(0.52,-0.015, '%0.1f'%clims[1], ha='left', va='top')
 
@@ -229,8 +231,8 @@ def Fig10_l2_error(datadir, imgdir):
             ax.set_xlabel(r'$p_0$')
             ax.set_ylabel(r'$p_1$', labelpad=-3.5)
         elif i==1 or i==3:
-            ax.set_xlabel(r'$p_0 = p_0^m$')
-            ax.set_ylabel(r'$p_1 = p_1^m$', labelpad=-3.5)
+            ax.set_xlabel(r'$p_0 = p_0^\mathrm{max}$')
+            ax.set_ylabel(r'$p_1 = p_1^\mathrm{max}$', labelpad=-3.5)
 
     # print('saving image ...')
     fig.set_size_inches(6.5,3.2,forward=True) # figure size must be set here

@@ -85,13 +85,13 @@ def Fig8_p1_nt_3D(datadir, imgdir):
             den_2D = TC_P1_avg_unalt_2D
             num_3D = TC_P1_avg_imp_3D
             den_3D = TC_P1_avg_unalt_3D
-            ax.set_title(r'$\mathbf{\Phi}$ -- Method 1')
+            ax.set_title(r'$\mathbf{\Phi}$ (method 1)')
         elif i == 2:
             num_2D = TC_P2_avg_imp_2D
             den_2D = TC_P2_avg_unalt_2D
             num_3D = TC_P2_avg_imp_3D
             den_3D = TC_P2_avg_unalt_3D
-            ax.set_title(r'$\mathbf{\Phi}$ -- Method 2')
+            ax.set_title(r'$\mathbf{\Phi}$ (method 2)')
         elif i == 3:
             num_2D = TC_A_avg_imp_2D
             den_2D = TC_A_avg_unalt_2D
@@ -112,10 +112,12 @@ def Fig8_p1_nt_3D(datadir, imgdir):
         # im = ax.contourf(Nt, L1, ratio, 100, origin='lower', \
         #     extent=[ntmin,ntmax,l1min,l1max], cmap='bwr', \
         #     vmin=0.5, vmax=1.5)
+        lin = ax.contour(Nt, L1, ratio_3D, [0.0], linewidth=0.25, colors=['k'], \
+            linestyles=['--'])
 
         # Colorbar information
         cbar = ax.cax.colorbar(im)
-        ax.cax.set_ylabel(r'$\log(\overline{T}_a/T_s)$ (ops)')
+        ax.cax.set_ylabel(r'$\log(\overline{T}_\mathrm{AMR}/T_\mathrm{std})$ (ops)')
         cbar.ax.set_ylim(-0.25,0.1)
         cbar.ax.set_yticks(np.linspace(-0.2,0.1,4))
         cbar.ax.set_yticklabels(['-0.2','-0.1','0.0','0.1'])
@@ -177,8 +179,8 @@ def Fig8_p1_nt_3D(datadir, imgdir):
         ax.set_yticks(np.linspace(-0.1,0.1,3))
         ax.set_xticklabels(['10', '30', '50'])
         ax.set_yticklabels(['-0.1','0','0.1'])
-        ax.set_xlabel('$n_t$')
-        ax.set_ylabel(r'$\log(\overline{T}_a/T_s)$ (ops)')
+        ax.set_xlabel(r'$N_\mathrm{t}$')
+        ax.set_ylabel(r'$\log(\overline{T}_\mathrm{AMR}/T_\mathrm{std})$ (ops)')
         ax.set_xlim(np.min(nt),np.max(nt))
         if i == 3:
             ax.legend(loc='right', bbox_to_anchor=(1.5, 0.3), ncol=2, \

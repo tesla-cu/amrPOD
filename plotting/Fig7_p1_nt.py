@@ -68,11 +68,11 @@ def Fig7_p1_nt(datadir, imgdir):
         elif i == 1:
             num = TC_P1_avg_imp
             den = TC_P1_avg_unalt
-            ax.set_title(r'$\mathbf{\Phi}$ -- Method 1')
+            ax.set_title(r'$\mathbf{\Phi}$ (method 1)')
         elif i == 2:
             num = TC_P2_avg_imp
             den = TC_P2_avg_unalt
-            ax.set_title(r'$\mathbf{\Phi}$ -- Method 2')
+            ax.set_title(r'$\mathbf{\Phi}$ (method 2)')
         elif i == 3:
             num = TC_A_avg_imp
             den = TC_A_avg_unalt
@@ -91,10 +91,12 @@ def Fig7_p1_nt(datadir, imgdir):
         # im = ax.contourf(Nt, L1, ratio, 100, origin='lower', \
         #     extent=[ntmin,ntmax,l1min,l1max], cmap='bwr', \
         #     vmin=0.5, vmax=1.5)
+        lin = ax.contour(Nt, L1, ratio, [0.0], linewidth=0.25, colors=['k'], \
+            linestyles=['--'])
 
         # Colorbar information
         cbar = ax.cax.colorbar(im)
-        ax.cax.set_ylabel(r'$\log(\overline{T}_a/T_s)$ (ops)')
+        ax.cax.set_ylabel(r'$\log(\overline{T}_\mathrm{AMR}/T_\mathrm{std})$ (ops)')
         cbar.ax.set_ylim(-0.25,0.25)
         cbar.ax.set_yticks(np.linspace(-0.2,0.2,5))
         cbar.ax.set_yticklabels(['-0.2','-0.1','0.0','0.1','0.2'])
@@ -156,7 +158,7 @@ def Fig7_p1_nt(datadir, imgdir):
 
         # Colorbar information
         cbar = ax.cax.colorbar(im)
-        ax.cax.set_ylabel(r'RMS$({T}_a)/\overline{T}_a \times 10^3$ (ops)')
+        ax.cax.set_ylabel(r'$T^\mathrm{rms}_\mathrm{AMR}/\overline{T}_\mathrm{AMR} \times 10^3$ (ops)')
         cbar.ax.set_ylim(0,8)
         cbar.ax.set_yticks(np.linspace(0,7.5,4))
         cbar.ax.set_yticklabels(['0.0','2.5','5.0','7.5'])
@@ -167,8 +169,8 @@ def Fig7_p1_nt(datadir, imgdir):
         ax.set_yticks(np.linspace(1/8,5/8,3))
         ax.set_xticklabels(['10','30','50'])
         ax.set_yticklabels(['1/8','3/8','5/8'])
-        ax.set_xlabel('$n_t$')
-        ax.set_ylabel('$p_1$')
+        ax.set_xlabel(r'$N_\mathrm{t}$')
+        ax.set_ylabel(r'$p_1$')
 
 
     # Save figure
