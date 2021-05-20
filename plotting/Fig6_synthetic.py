@@ -53,9 +53,10 @@ def Fig6_synthetic(datadir, imgdir):
         cbar.ax.set_ylim(0,2)
         cbar.ax.set_yticks([0.5,1.5])
         cbar.ax.set_yticklabels(['0','1'])
+        cbar.ax.tick_params(length=0, direction='in')
 
         # Label information
-        ax.set_title(r'$t=%i$' % i)
+        ax.set_title(r'$n=%i$' % (i+1))
         ax.set_xticks(np.linspace(8,56,4))
         ax.set_yticks(np.linspace(8,56,4))
         ax.set_xticklabels(['8','24','40','56'])
