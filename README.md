@@ -49,7 +49,18 @@ Specifically within `tests/`, we provide testing for:
   * our fortran code against Matlab in `fortran_vs_matlab/`. Follow the same steps as above, expect compile the fortran code, modify `POD.inputs` to match those of the data, and run the fortran program using `./POD.ex`. The Matlab script with show the error between the two approaches.
 
 ## Citation
-CITATION. COPY amrex.
+
+To cite our code, please use
+```
+@article{meehan2022efficient,
+  title={Efficient algorithm for proper orthogonal decomposition of block-structured adaptively refined numerical simulations},
+  author={Meehan, Michael A and Simons-Wellin, Sam and Hamlington, Peter E},
+  journal={Journal of Computational Physics},
+  pages={111527},
+  year={2022},
+  publisher={Elsevier}
+}
+```
 
 ## License
 LICENSE INFORMATION
